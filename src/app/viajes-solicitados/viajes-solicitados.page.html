@@ -1,0 +1,104 @@
+<ion-app>
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+
+  <!-- encabezado-->
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>viajes Solicitados</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+          </ion-col>
+        </ion-row>
+
+      
+        <div class="ion-page" id="main-content">
+          <ion-header>
+            <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-menu-button></ion-menu-button>
+              </ion-buttons>
+              <ion-title>Viajes Solicitados</ion-title>
+            </ion-toolbar>
+          </ion-header>
+      
+          <!-- Único ion-content -->
+          <ion-content [fullscreen]="true">
+            <div class="form-wrapper ion-padding">
+              <ng-container *ngIf="solicitudes.length > 0; else noHay">
+                <ion-card *ngFor="let sol of solicitudes; trackBy: trackByFn">
+                  <ion-card-header>
+                    <ion-card-title>
+                      Solicitud Nº {{ sol.id }} – {{ sol.estado | titlecase }}
+                    </ion-card-title>
+                    <ion-card-subtitle>
+                      Fecha: {{ sol.fecha }} – Hora: {{ sol.hora }}
+                    </ion-card-subtitle>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <p><strong>Solicitante:</strong> {{ sol.solicitante }}</p>
+                    <p><strong>Destino:</strong> {{ sol.direccion || 'Centro designado' }}</p>
+                    <p><strong>Motivo:</strong> {{ sol.motivo }}</p>
+                    <p><strong>Responsable:</strong> {{ sol.ocupante }}</p>
+                    <p><strong>Vehículo:</strong> {{ sol.tipoVehiculo }} – {{ sol.ocupantes }} ocupantes</p>
+                    <p *ngIf="sol.motivoRechazo">
+                      <strong>Razón Rechazo:</strong> {{ sol.motivoRechazo }}
+                    </p>
+      
+                    <ion-button color="success" (click)="aceptarSolicitud(sol.id)">
+                      Aceptar
+                    </ion-button>
+                    <ion-button
+                      *ngIf="rechazandoId !== sol.id"
+                      color="danger"
+                      (click)="mostrarCampoMotivo(sol.id)">
+                      Rechazar
+                    </ion-button>
+      
+                    <div *ngIf="rechazandoId === sol.id" class="rechazo-form">
+                      <ion-item>
+                        <ion-input
+                          [(ngModel)]="motivoRechazo"
+                          name="motivoRechazo"
+                          placeholder="Motivo de rechazo">
+                        </ion-input>
+                      </ion-item>
+                      <ion-button
+                        color="danger"
+                        expand="block"
+                        (click)="rechazarConMotivo()">
+                        Confirmar Rechazo
+                      </ion-button>
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+              </ng-container>
+      
+              <ng-template #noHay>
+                <h2 class="ion-text-center">No hay viajes solicitados</h2>
+              </ng-template>
+            </div>
+          </ion-content>
+      
+        </div>
+
+      
+    
+              <!--<ion-button fill="outline" (click)="reagendarSolicitud(solicitud.id)">
+                Reagendar
+              </ion-button>
+            -->
+
+
+
+        

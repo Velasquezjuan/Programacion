@@ -1,0 +1,16 @@
+<ion-app>
+  <!-- Menú lateral -->
+  <ion-menu side="start" contentId="main-content" type="overlay">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title class="ion-text-center">CMPA</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+    </ion-content>
+  </ion-menu>
+
+  <!-- Outlet principal -->
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-app>

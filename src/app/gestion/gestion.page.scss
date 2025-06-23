@@ -1,0 +1,165 @@
+/* Centrado de contenido */
+.form-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Estilo del logo */
+.logo-image {
+  max-height: 120px;
+  width: auto;
+  margin: 16px auto;
+  display: block;
+}
+
+/* Alineación centrada del título */
+.text-center {
+  text-align: center;
+}
+
+/* Espaciado general entre tarjetas */
+ion-item {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  background: #f8f9fa;
+}
+
+/* Botones con separación clara */
+ion-button {
+  margin-left: 8px;
+}
+
+/* Reglas responsive */
+@media screen and (max-width: 768px) {
+  .form-wrapper {
+    padding: 8px;
+  }
+
+  .logo-image {
+    max-height: 90px;
+  }
+
+  ion-title {
+    font-size: 18px;
+  }
+
+  ion-item h2 {
+    font-size: 16px;
+  }
+
+  ion-item p {
+    font-size: 14px;
+  }
+
+  ion-button {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  ion-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  ion-button {
+    width: 100%;
+    margin: 6px 0;
+  }
+}
+.logo-image {
+    max-height: 150px;
+    width: auto;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+  
+  .large-icon {
+    width: 40px;
+    height: 40px;
+    color: #007bff;
+  }
+  
+  .auto-image {
+    max-width: 100%; /* O un valor específico en píxeles como 500px */
+    height: auto;
+    object-fit: contain;
+    display: block; /* Evita un pequeño espacio debajo de la imagen */
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+  }
+  .text-center {
+    text-align: center;
+  }
+  
+  .logo-image {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .auto-image {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .large-icon {
+    font-size: 24px;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  ion-searchbar.custom {
+    --background: #1a17b6;
+    --color: #fff;
+    --placeholder-color: #fff;
+    --icon-color: #fff;
+    --clear-button-color: #4ac6ff;
+  
+    --border-radius: 4px;
+  }
+  
+  ion-searchbar.ios.custom {
+    --cancel-button-color: #192342;
+  }
+  
+  ion-searchbar.md.custom {
+    --cancel-button-color: #fff;
+  }
+
+  ion-searchbar.movil {
+    --background: #1a17b6;
+    --color: #ff830f;
+    --placeholder-color: #fff;
+    --icon-color: #fff;
+    --clear-button-color: #ff0381;
+  
+    --border-radius: 4px;
+  }
+  
+  ion-searchbar.ios.movil {
+    --cancel-button-color: #192342;
+  }
+  
+  ion-searchbar.md.movil {
+    --cancel-button-color: #fff;
+  }
+  
+  ion-menu::part(backdrop) {
+    background-color: rgba(0, 60, 255, 0.644);
+  }
+  
+  ion-menu::part(container) {
+    border-radius: 0 20px 20px 0;
+  
+    box-shadow: 4px 0px 16px rgba(0, 68, 255, 0.733);
+  }

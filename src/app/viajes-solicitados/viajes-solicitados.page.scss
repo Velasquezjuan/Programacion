@@ -1,0 +1,98 @@
+/* Contenedor principal: deja que crezca en altura según su contenido */
+.form-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Fija el grid para ocupar todo el ancho disponible */
+ion-grid {
+  width: 100%;
+}
+
+/* Filas y columnas sin flex forzado, para que el contenido fluya */
+ion-row, ion-col {
+  display: block;
+  width: 100%;
+}
+
+/* Logo centrado y con espacio */
+.logo-image {
+  display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
+}
+
+/* Alineación centrada de textos */
+.text-center {
+  text-align: center;
+}
+
+/* Estilo de cada tarjeta */
+ion-card {
+  margin: 16px auto;
+  width: 100%;
+  max-width: 800px;
+  --padding-start: 0;
+  --padding-end: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Centrar encabezados dentro de la tarjeta */
+ion-card-title,
+ion-card-subtitle {
+  text-align: center;
+}
+
+/* Separación interior */
+ion-card-content {
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* Elementos de formulario de rechazo */
+.rechazo-form {
+  margin-top: 12px;
+}
+
+/* Botones con pequeño margen */
+ion-button {
+  margin: 8px 4px 0 0;
+}
+
+/* Input dentro del rechazo, para que no se corte */
+ion-input {
+  width: 100%;
+}
+
+/* Para que el ion-content permita scroll solo si sobrepasa verticalmente */
+ion-content {
+  --overflow: hidden auto; /* x hidden, y auto */
+}
+
+/* Responsive: ajusta tamaños en pantallas pequeñas */
+@media screen and (max-width: 768px) {
+  .logo-image {
+    max-height: 90px;
+  }
+  ion-card-content {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  ion-button {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  ion-card {
+    margin: 12px 0;
+  }
+  ion-button {
+    width: 100%;
+    margin: 6px 0;
+  }
+}

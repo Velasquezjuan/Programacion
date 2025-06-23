@@ -1,0 +1,174 @@
+<ion-app>
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Gestión</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+        <ion-grid>
+          <ion-row class="ion-justify-content-center">
+            <ion-title class="text-center">
+              <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+            </ion-title>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Tipo de búsqueda -->
+        <ion-list>
+          <ion-item>
+            <ion-select aria-label="Selección de búsqueda" [(ngModel)]="tipoBusqueda">
+              <ion-select-option value="usuario">Usuarios</ion-select-option>
+              <ion-select-option value="vehiculos">Vehículos</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+
+        <!-- Buscador -->
+        <ion-searchbar
+          *ngIf="tipoBusqueda === 'usuario'"
+          [(ngModel)]="terminoBusqueda"
+          (ionInput)="filtrarUsuarios()"
+          placeholder="Buscar por RUT"
+          showCancelButton="focus">
+        </ion-searchbar>
+
+        <ion-searchbar
+          *ngIf="tipoBusqueda === 'vehiculos'"
+          [(ngModel)]="criterioBusqueda"
+          (ionInput)="filtrarVehiculos()"
+          placeholder="Buscar por Patente"
+          showCancelButton="focus">
+        </ion-searchbar>
+
+        <!-- Lista de usuarios -->
+        <ion-list *ngIf="tipoBusqueda === 'usuario' && usuariosFiltrados.length > 0">
+          <ion-item *ngFor="let user of usuariosFiltrados">
+            <ion-label *ngIf="usuarioEditandoRut !== user.rut">
+              <h2>Nombre: {{ user.nombre }}</h2>
+              <p>RUT: {{ user.rut }}</p>
+              <p>Correo: {{ user.correo }}</p>
+              <p>Rol: {{ user.rol }}</p>
+            </ion-label>
+
+            <div *ngIf="usuarioEditandoRut === user.rut" style="width: 100%;">
+              <ion-item>
+                <ion-label position="floating">Nombre</ion-label>
+                <ion-input [(ngModel)]="user.nombre"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label>Rol</ion-label>
+                <ion-select [(ngModel)]="user.rol">
+                  <ion-select-option value="adminSistema">Administrador</ion-select-option>
+                  <ion-select-option value="its">ITS</ion-select-option>
+                  <ion-select-option value="solicitante">Solicitante</ion-select-option>
+                  <ion-select-option value="coordinador">Coordinador</ion-select-option>
+                  <ion-select-option value="conductor">Conductor</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+
+            <ion-button slot="end" color="warning" *ngIf="usuarioEditandoRut !== user.rut" (click)="editarUsuario(user)">
+              Modificar
+              <ion-icon slot="end" name="sync"></ion-icon>
+            </ion-button>
+
+            <ion-button slot="end" color="success" *ngIf="usuarioEditandoRut === user.rut" (click)="guardarUsuario(user)">
+              Guardar
+            </ion-button>
+
+            <ion-button slot="end" color="danger" (click)="desactivarUsuario(user.rut)">
+              Desactivar
+              <ion-icon slot="end" name="trash"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+
+        <!-- Lista de vehículos -->
+        <ion-list *ngIf="tipoBusqueda === 'vehiculos' && vehiculosFiltrados.length > 0">
+          <ion-item *ngFor="let vehiculo of vehiculosFiltrados">
+            <ion-label *ngIf="vehiculoEditandoPatente !== vehiculo.patente">
+              <h2>Patente: {{ vehiculo.patente }}</h2>
+              <p>Marca: {{ vehiculo.marca }} - Modelo: {{ vehiculo.modelo }}</p>
+              <p>Conductor: {{ vehiculo.conductorTitular }}</p>
+              <p>Encargado: {{ vehiculo.Encargado }}</p>
+            </ion-label>
+
+            <div *ngIf="vehiculoEditandoPatente === vehiculo.patente" style="width: 100%;">
+              <ion-item>
+                <ion-label position="floating">Marca</ion-label>
+                <ion-input [(ngModel)]="vehiculo.marca"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Modelo</ion-label>
+                <ion-input [(ngModel)]="vehiculo.modelo"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Conductor</ion-label>
+                <ion-input [(ngModel)]="vehiculo.conductorTitular"></ion-input>
+              </ion-item>
+            </div>
+
+            <ion-button slot="end" color="warning" *ngIf="vehiculoEditandoPatente !== vehiculo.patente" (click)="editarVehiculo(vehiculo)">
+              Modificar
+              <ion-icon slot="end" name="sync"></ion-icon>
+            </ion-button>
+
+            <ion-button slot="end" color="success" *ngIf="vehiculoEditandoPatente === vehiculo.patente" (click)="guardarVehiculo(vehiculo)">
+              Guardar
+            </ion-button>
+
+            <ion-button slot="end" color="danger" (click)="desactivarVehiculo(vehiculo.patente)">
+              Desactivar
+              <ion-icon slot="end" name="trash"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+
+        <!-- ACTIVIDAD / REEMPLAZO -->
+        <ng-container *ngIf="tipoBusqueda === 'vehiculos' && vehiculosFiltrados.length > 0">
+          <ion-item>
+            <ion-label>Actividad</ion-label>
+            <ion-toggle [(ngModel)]="actividadActiva" [color]="actividadActiva ? 'success' : 'danger'"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>¿Requiere vehículo de reemplazo?</ion-label>
+            <ion-toggle [(ngModel)]="requiereReemplazo"></ion-toggle>
+          </ion-item>
+
+          <ng-container *ngIf="requiereReemplazo">
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="floating">Patente del vehículo de reemplazo</ion-label>
+                <ion-input formControlName="patenteReemplazo" type="text"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="floating">Justificación del reemplazo</ion-label>
+                <ion-textarea formControlName="justificacionReemplazo" autoGrow="true"></ion-textarea>
+              </ion-item>
+            </ion-col>
+          </ng-container>
+        </ng-container>
+
+        <!-- Botones de navegación -->
+        <ion-row *ngIf="(tipoBusqueda === 'usuario' && usuariosFiltrados.length > 0) || (tipoBusqueda === 'vehiculos' && vehiculosFiltrados.length > 0)">
+          <ion-col size="12" class="ion-padding-top">
+            <ion-button fill="outline" type="button" color="primary" (click)="limpiarBusqueda()">Limpiar</ion-button>
+            <ion-button fill="outline" color="primary" (click)="goToHomePage()">Volver</ion-button>
+          </ion-col>
+        </ion-row>
+      </div>
+    </ion-content>
+  </div>
+</ion-app>

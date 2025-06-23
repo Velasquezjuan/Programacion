@@ -1,0 +1,17 @@
+{
+  "name": "ionic-app-base",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone",
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://localhost:3000/api"
+    }
+  ],
+  "scripts": {
+  "start": "ionic serve --proxy-config proxy.conf.json"
+}
+}
+

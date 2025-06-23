@@ -1,0 +1,70 @@
+.form-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+ion-col[size="12"] {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.logo-image {
+  max-width: 100%;
+  width: 180px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
+@media (min-width: 576px) {
+  .logo-image {
+    width: 200px;
+  }
+}
+
+@media (min-width: 768px) {
+  .logo-image {
+    width: 220px;
+  }
+}
+
+@media (min-width: 992px) {
+  .logo-image {
+    width: 250px;
+  }
+}
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .auto-image {
+    max-width: 100%; /* O un valor específico en píxeles como 500px */
+    height: auto;
+    object-fit: contain;
+    display: block; /* Evita un pequeño espacio debajo de la imagen */
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+  }
+  .button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;   /* Espaciado entre botones */
+    margin-top: 20px; /* Ajusta el margen superior según lo necesites */
+  }
+
+  
+  ion-menu::part(backdrop) {
+    background-color: rgba(0, 60, 255, 0.644);
+  }
+  
+  ion-menu::part(container) {
+    border-radius: 0 20px 20px 0;
+  
+    box-shadow: 4px 0px 16px rgba(0, 68, 255, 0.733);
+  }

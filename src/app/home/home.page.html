@@ -1,0 +1,47 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+
+    <!-- Menú hamburguesa si está logeado -->
+    <ion-buttons slot="start" *ngIf="estaLogeado">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <!-- Logo siempre centrado -->
+    <ion-title class="ion-text-center">
+      <img src="assets/img/Logo 2024 - Firma_azul 1.PNG"
+           alt="Logo"
+           class="logo-image" />
+    </ion-title>
+
+    <!-- Acciones: iniciar / bienvenido + cerrar sesión -->
+    <ion-buttons slot="end" class="header-actions">
+
+      <!-- Si NO está logeado: botón Iniciar Sesión -->
+      <ion-button fill="clear" *ngIf="!estaLogeado" (click)="goToLoginPage()">
+        <ion-icon slot="start" name="person"></ion-icon>
+        <span class="action-label">Iniciar<br/>Sesión</span>
+      </ion-button>
+
+      <!-- Si SÍ está logeado: muestra nombre y botón cerrar -->
+      <ng-container *ngIf="estaLogeado">
+        <ion-button fill="clear">
+          <ion-icon slot="start" name="person"></ion-icon>
+          <span class="action-label">{{ nombreUsuario }}</span>
+        </ion-button>
+        <ion-button fill="clear" (click)="logout()">
+          <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen class="ion-padding">
+  <div class="ion-text-center">
+    <img src="assets/img/auto_centro.png"
+         alt="Auto"
+         class="auto-image" />
+    <p>Viaja con nosotros, viaja con la Corpo</p>
+  </div>
+</ion-content>

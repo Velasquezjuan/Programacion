@@ -1,0 +1,53 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title class="text-center">
+      <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+    </ion-title>    
+  </ion-toolbar>
+</ion-header>
+
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <!-- Imagen centrada debajo del encabezado -->
+    <div class="container text-center mt-4 d-flex justify-content-center align-items-center">
+      <img src="assets/img/auto_centro.png" alt="Auto" class="img-fluid auto-image">
+    </div>
+  
+    <!-- Texto debajo de la imagen -->
+     <!-- Lista de inputs -->
+      <ion-list class="ion-text-center">
+        <ion-item class="ion-margin-bottom">
+          <ion-icon class="icono-izquierda" slot="start" name="at-sharp" aria-hidden="true" color="primary"></ion-icon>
+              <ion-input
+              [(ngModel)]="correo"
+              type="email"
+              placeholder="nombre.apellido@cmpuentealto.cl"
+              label-placement="floating"
+              fill="outline"></ion-input>
+            </ion-item>
+            
+            <ion-item class="ion-margin-bottom">
+              <ion-icon class="icono-izquierda" slot="start" name="lock-closed" aria-hidden="true" color="primary"></ion-icon>
+              <ion-input name="contrasena"
+              [(ngModel)]="contrasena"
+               type="password"
+               placeholder="Contraseña"
+              label-placement="floating"
+              placeholder="Ingrese su Contraseña"
+              fill="outline"></ion-input>
+              <!--Boton para la recuperacion de contraseña-->
+        </ion-item>
+            <ion-item class="ion-margin-bottom">
+              <ion-button src="asset/icon/log-in-outline" fill="clear" (click)="goToRecuperarContrasenaPage()">Olvido su Contraseña</ion-button>
+            </ion-item>
+            </ion-list>
+            <!--Botones para inicio y registro usuarios-->
+      <div class="button-container">
+        <ion-button fill="outline"  (click)="login()" >Iniciar sesión</ion-button>
+         
+        <ion-button fill="outline" (click)="goToRegistroUsuarioPage()" >Registro Usuario</ion-button>
+
+      </div>
+
+     
+</ion-content>
+

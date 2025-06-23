@@ -1,0 +1,17 @@
+<ion-menu contentId="main-content" class="custom-menu" type="overlay">
+  <ion-header>
+    <ion-toolbar color="primary" class="menu-header">
+      <ion-title class="ion-text-center">CMPA</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <ion-list lines="full">
+      <ion-menu-toggle auto-hide="true" *ngFor="let item of menuItems">
+        <ion-item button [routerLink]="item.path" routerDirection="root">
+          <ion-label>{{ item.label }}</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+    </ion-list>
+  </ion-content>
+</ion-menu>

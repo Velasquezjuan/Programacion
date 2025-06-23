@@ -1,0 +1,196 @@
+<ion-app>
+  <!-- MENÚ LATERAL -->
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Registro de usuarios</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+        <ion-grid>
+          <ion-row class="ion-justify-content-center">
+            <ion-title class="text-center">
+              <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+            </ion-title>
+          </ion-row>
+
+      <ion-row>
+
+        <!-- RUT -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">RUT</ion-label>
+            <ion-input formControlName="rut" type="text" placeholder="Ej: 12345678K"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('rut')?.invalid && (registroForm.get('rut')?.touched || registroForm.get('rut')?.dirty)">
+            <small *ngIf="registroForm.get('rut')?.errors?.['required']">El RUT es requerido.</small>
+            <small *ngIf="registroForm.get('rut')?.errors?.['validarRut']">Debe agregar un formato valido para el rut.</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Nombre -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Nombre</ion-label>
+            <ion-input formControlName="nombre" type="text"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('nombre')?.invalid && (registroForm.get('nombre')?.touched || registroForm.get('nombre')?.dirty)">
+            <small *ngIf="registroForm.get('nombre')?.errors?.['required']">El nombre es obligatorio.</small>
+            <small *ngIf="registroForm.get('nombre')?.errors?.['textoInvalido']">debe ingresar solamente letras</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Apellido Paterno -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Apellido Paterno</ion-label>
+            <ion-input formControlName="apellidoPaterno" type="text"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('apellidoPaterno')?.invalid && (registroForm.get('apellidoPaterno')?.touched || registroForm.get('apellidoPaterno')?.dirty)">
+            <small *ngIf="registroForm.get('apellidoPaterno')?.errors?.['required']">El Apellido Paterno es obligatorio.</small>
+            <small *ngIf="registroForm.get('apellidoPaterno')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+          </ion-text> 
+        </ion-col>
+
+        <!-- Apellido Materno -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Apellido Materno</ion-label>
+            <ion-input formControlName="apellidoMaterno" type="text"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('apellidoMaterno')?.invalid && (registroForm.get('apellidoMaterno')?.touched || registroForm.get('apellidoMaterno')?.dirty)">
+            <small *ngIf="registroForm.get('apellidoMaterno')?.errors?.['required']">El Apellido Materno es obligatorio.</small>
+            <small *ngIf="registroForm.get('apellidoMaterno')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Correo -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Correo Electrónico</ion-label>
+            <ion-input formControlName="correo" type="email" placeholder="nombre.apellido@cmpuentealto.cl"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('correo')?.invalid && (registroForm.get('correo')?.touched || registroForm.get('correo')?.dirty)">
+            <small *ngIf="registroForm.get('correo')?.errors?.['required']">El correo es obligatorio.</small>
+            <small *ngIf="registroForm.get('correo')?.errors?.['correoInvalido']">El formato del correo no es válido.</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Contraseña -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating" >Contraseña</ion-label>
+            <ion-input formControlName="contrasena" type="password" >
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+          </ion-item>
+          
+          <ion-text color="danger" *ngIf="registroForm.get('contrasena')?.invalid && (registroForm.get('contrasena')?.touched || registroForm.get('contrasena')?.dirty)">
+            <small *ngIf="registroForm.get('contrasena')?.errors?.['required']">Ingrese una clave valida.</small>
+            <small *ngIf="registroForm.get('contrasena')?.errors?.['claveInvalida']">El formato de la contraseña no es válido.</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Cargo -->
+        <ion-col size="12">
+          <ion-item>
+            <ion-label>Cargo</ion-label>
+            <ion-select formControlName="cargo" (ionChange)="onCargoChange($event)">
+              <ion-select-option value="adminSistema">Administrador del Sistema</ion-select-option>
+              <ion-select-option value="its">ITS</ion-select-option>
+              <ion-select-option value="solicitante">Solicitante</ion-select-option>
+              <ion-select-option value="coordinador">Coordinador</ion-select-option>
+              <ion-select-option value="conductor">Conductor</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('cargo')?.invalid && registroForm.get('cargo')?.touched">
+            <small>Selecciona un cargo válido.</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Datos adicionales -->
+        <ion-col size="12" *ngIf="showConductorFields">
+          <ion-item>
+            <ion-label position="floating">Licencia de Conducir</ion-label>
+            <ion-input formControlName="licenciaConducir" type="text"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Fecha de Vencimiento</ion-label>
+            <ion-input formControlName="fechaVencimientoLicencia" type="date"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <!-- Centros -->
+        <ion-col size="12" *ngIf="showCoordinadorFields || showItsFields || showAdminSistemaFields || showSolicitanteFields">
+          <ion-item>
+            <ion-label>Centro</ion-label>
+              <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
+                <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>             
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+            <small>Selecciona un centro válido.</small>
+          </ion-text>
+        </ion-col>
+
+          <!-- Centros de Salud -->
+        <ion-col size="12" *ngIf="showSaludFields">
+          <ion-item>
+            <ion-label>Centro de salud</ion-label>
+              <ion-select formControlName="centroSalud"  >
+                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
+              </ion-select>                          
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centroSalud')?.invalid && registroForm.get('centroSalud')?.touched">
+            <small>Selecciona un centro válido.</small>
+          </ion-text>
+        </ion-col>
+
+        <ion-col size="12" *ngIf="showCoordinadorFields || showItsFields || showAdminSistemaFields || showSolicitanteFields">
+          <ion-item>
+            <ion-label position="floating">Área</ion-label>
+            <ion-input formControlName="areaDesempeno" type="text"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('areaDesempeno')?.invalid && (registroForm.get('areaDesempeno')?.touched || registroForm.get('areaDesempeno')?.dirty)">
+            <small *ngIf="registroForm.get('areaDesempeno')?.errors?.['required']">El Area de desempeño es obligatorio.</small>
+            <small *ngIf="registroForm.get('areaDesempeno')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+          </ion-text>
+          <ion-item>
+            <ion-label position="floating">Departamento</ion-label>
+            <ion-input formControlName="departamento" type="text"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('departamento')?.invalid && (registroForm.get('departamento')?.touched || registroForm.get('departamento')?.dirty)">
+            <small *ngIf="registroForm.get('departamento')?.errors?.['required']">El Departamento es obligatorio.</small>
+            <small *ngIf="registroForm.get('departamento')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+          </ion-text>
+        </ion-col>
+
+        <!-- Botones -->
+        <ion-col size="12" class="ion-padding-top">
+          <ion-button fill="outline" type="submit" color="primary">Registrar</ion-button>
+          <ion-button fill="outline" color="primary" (click)="goToLoginPage()" >Volver</ion-button>
+        </ion-col>
+
+      </ion-row>
+    </ion-grid>
+  </form>
+</div>
+</ion-content>

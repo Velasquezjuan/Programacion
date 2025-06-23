@@ -1,0 +1,251 @@
+<ion-app>
+  <!-- MENÚ LATERAL -->
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Registro de Vehículos</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+        <ion-grid>
+          <ion-row class="ion-justify-content-center">
+            <ion-title class="text-center">
+              <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+            </ion-title>
+          </ion-row>
+          
+      
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Nombre Enc. Vehículo</ion-label>
+              <ion-input formControlName="nombreEncVehiculo" type="text"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('nombreEncVehiculo')?.invalid && (registroForm.get('nombreEncVehiculo')?.touched || registroForm.get('nombreEncVehiculo')?.dirty)">
+              <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['required']">El Nombre del Enc Vehículo es obligatorio.</small>
+              <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+          </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Apellido Enc. Vehículo</ion-label>
+              <ion-input formControlName="apellidoEncVehiculo" type="text"></ion-input>
+             </ion-item>
+             <ion-text color="danger" *ngIf="registroForm.get('apellidoEncVehiculo')?.invalid && (registroForm.get('apellidoEncVehiculo')?.touched || registroForm.get('apellidoEncVehiculo')?.dirty)">
+              <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['required']">El Apellido del Enc Vehículo es obligatorio.</small>
+              <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+         </ion-col>
+
+            <ion-col size="12">
+             <ion-item>
+              <ion-label position="floating">Rut Enc Vehículo</ion-label>
+              <ion-input formControlName="rutEncVehiculo" type="text"></ion-input>
+             </ion-item>
+             <ion-text color="danger" *ngIf="registroForm.get('rutEncVehiculo')?.invalid && (registroForm.get('rutEncVehiculo')?.touched || registroForm.get('rutEncVehiculo')?.dirty)">
+              <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['required']">El Rut del Enc de Vehículo es obligatorio.</small>
+              <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['validarRut']">Debe agregar un formato valido para el rut.</small>
+             </ion-text>
+           </ion-col>
+
+          <ion-row>
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="floating">Patente</ion-label>
+                <ion-input formControlName="patente" type="text"></ion-input>
+              </ion-item>
+              <ion-text color="danger" *ngIf="registroForm.get('patente')?.invalid && (registroForm.get('patente')?.touched || registroForm.get('patente')?.dirty)">
+                <small *ngIf="registroForm.get('patente')?.errors?.['required']">La patente es obligatoria.</small>
+                <small *ngIf="registroForm.get('patente')?.errors?.['patenteInvalida']">La patente debe tener 4 letras seguidas de 2 números. Ej: ABCD12</small>
+              </ion-text>
+            </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Marca</ion-label>
+              <ion-input formControlName="marca" type="text"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('marca')?.invalid && (registroForm.get('marca')?.touched || registroForm.get('marca')?.dirty)">
+              <small *ngIf="registroForm.get('marca')?.errors?.['required']">La Marca del Vehículo es obligatoria</small>
+              <small *ngIf="registroForm.get('marca')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+          </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Modelo</ion-label>
+              <ion-input formControlName="modelo" type="text"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('modelo')?.invalid && (registroForm.get('modelo')?.touched || registroForm.get('modelo')?.dirty)">
+              <small *ngIf="registroForm.get('modelo')?.errors?.['required']">El Modelo del Vehículo es obligatorio.</small>
+              <small *ngIf="registroForm.get('modelo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+          </ion-col>
+
+          
+
+          <!--Segmento para introducir si el vehiculo tiene carga con un toogle-->
+          <ion-item>
+            <ion-label>Tiene Capacidad de Carga</ion-label>
+            <ion-toggle formControlName="tieneCarga" [enableOnOffLabels]="true"></ion-toggle>
+          </ion-item>
+         <ion-col size="12">
+            <ion-item>
+              <ion-label>Tipo de Vehículo</ion-label>
+                <ion-select formControlName="tipoVehiculo">
+                  <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('tipoVehiculo')?.invalid && (registroForm.get('tipoVehiculo')?.touched || registroForm.get('tipoVehiculo')?.dirty)">
+              <small *ngIf="registroForm.get('tipoVehiculo')?.errors?.['required']">Debe ingresar un Tipo de Vehículo.</small>
+            </ion-text>
+          </ion-col>
+
+              <!-- Botón para seleccionar año -->
+              <ion-col size="12">
+                <ion-item>
+                  <ion-label>Año Vehículo</ion-label>
+                  <ion-button expand="block" fill="outline" (click)="openYearPicker()">
+                    Seleccionar Año
+                  </ion-button>
+                </ion-item>
+                <ion-text color="danger" *ngIf="registroForm.get('añoVehiculo')?.invalid && registroForm.get('añoVehiculo')?.touched">
+                  <small>Selecciona el año del vehículo.</small>
+                </ion-text>
+              
+              <ion-item lines="none" *ngIf="registroForm.get('añoVehiculo')?.value">
+                <ion-label color="medium">
+                  Año: {{ registroForm.get('añoVehiculo')?.value }}
+                </ion-label>
+              </ion-item>
+              <ion-text color="danger" *ngIf="registroForm.get('añoVehiculo')?.invalid && registroForm.get('añoVehiculo')?.touched">
+                <small>Selecciona el año del vehículo.</small>
+              </ion-text>
+            </ion-col>
+              
+              <!-- Selector de año -->
+              <ion-col size="12" *ngIf="showYearPicker">
+                <ion-item>
+                  <ion-datetime
+                    presentation="year"
+                    (ionChange)="onYearSelected($event)"
+                  ></ion-datetime>
+                </ion-item>
+              </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+             <ion-label position="floating">Conductor Titular</ion-label>
+             <ion-input formControlName="conductorTitular" type="text"></ion-input>             
+             <ion-text color="danger" *ngIf="registroForm.get('conductorTitular')?.invalid && (registroForm.get('conductorTitular')?.touched || registroForm.get('conductorTitular')?.dirty)">
+              <small *ngIf="registroForm.get('conductorTitular')?.errors?.['required']">Es obligatorio ingresar al Conductor Titular.</small>
+              <small *ngIf="registroForm.get('conductorTitular')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+            </ion-item> 
+            </ion-col>
+    
+          <ion-col size="12">
+            <ion-item>
+             <ion-label position="floating">Conductor Reemplazo</ion-label>
+             <ion-input formControlName="conductorReemplazo" type="text"></ion-input>              
+             <ion-text color="danger" *ngIf="registroForm.get('conductorReemplazo')?.invalid && (registroForm.get('conductorReemplazo')?.touched || registroForm.get('conductorReemplazo')?.dirty)">
+              <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['required']">Es obligatorio ingresar al Conductor de Reemplazo.</small>
+              <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
+            </ion-text>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label>Programa</ion-label>
+                  <ion-select formControlName="programa" [multiple]="true" >
+                  <ion-select-option *ngFor="let item of programa.prog" [value]="item.value">{{ item.label }}</ion-select-option>  
+                  </ion-select>                      
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('programa')?.value?.length > 2 && registroForm.get('programa')?.touched">
+              <small>No puedes seleccionar más de 2 programas.</small>
+            </ion-text>
+          </ion-col>
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label>Centro</ion-label>
+                <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
+                  <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>             
+              </ion-select>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+              <small>Selecciona un centro válido.</small>
+            </ion-text>
+          </ion-col>
+
+          <!-- Centros -->
+        <ion-col size="12" *ngIf="showSaludFields">
+          <ion-item>
+            <ion-label>Centro de salud</ion-label>
+              <ion-select formControlName="centroSalud"  >
+                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
+              </ion-select>                          
+          </ion-item>
+          <!-- advertencia -->
+          <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+            <small>Selecciona un Centro de Salud válido.</small>
+          </ion-text>
+        </ion-col>
+
+     
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">N° de Contrato</ion-label>
+              <ion-input formControlName="contrato" type="text"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('contrato')?.invalid && (registroForm.get('contrato')?.touched || registroForm.get('contrato')?.dirty)">
+              <small *ngIf="registroForm.get('contrato')?.errors?.['required']">Es obligatorio ingresar el numero de contrato</small>
+            </ion-text>
+          </ion-col>        
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Última Revisión Técnica</ion-label>
+              <ion-input formControlName="fechaRevision" type="date"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('fechaRevision')?.invalid && (registroForm.get('fechaRevision')?.touched || registroForm.get('fechaRevision')?.dirty)">
+              <small *ngIf="registroForm.get('fechaRevision')?.errors?.['required']">Es obligatorio ingresar la fecha de la ultima revision tecnica</small>
+            </ion-text>
+          </ion-col>
+        </ion-row>
+
+        <!-- Botones -->
+        <ion-row>
+          <ion-col size="12" class="ion-padding-top">
+            <ion-button type="submit" color="primary" expand="block">Registrar</ion-button>
+          </ion-col>
+          <ion-col size="12">
+            <ion-button fill="clear" color="medium" expand="block" (click)="goToHomePage()">Volver</ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </form>
+  </div>
+  </ion-content>
+</div>

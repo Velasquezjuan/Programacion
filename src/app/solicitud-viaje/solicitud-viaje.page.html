@@ -1,0 +1,170 @@
+<ion-app>
+  <!-- MENÚ LATERAL -->
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+
+  <!-- encabezado-->
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Solicitud de Viajes</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+          </ion-col>
+        </ion-row>
+        <ion-col size="12" class="text-center">
+          <h3>Bienvenido a la solicitud de viaje, en esta seccion realizaremos nuestra solicitud de viaje
+            en la pestaña inferior donde dice "Destino" ud debe indicar si es un viaje dentro de uno de nuestros centros 
+            si es a si debe seleccionar uno para indicar donde se dirige, de lo contrario debe
+            seleccionar "Otros" e ingresar la direccion donde ud desea ir.
+          </h3>
+        </ion-col>
+
+        <ion-col size="12" >
+          <ion-item>
+            <ion-label>Destino</ion-label>
+            <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
+              <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>   
+              <ion-select-option value="otro">Otro</ion-select-option>           
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+            <small>Selecciona un centro válido.</small>
+          </ion-text>
+        </ion-col>
+
+        <ion-col size="12" *ngIf="showOtroFields || showNivelCentralFields" >
+          <ion-col size ="12">
+            <ion-item>
+              <ion-input label="Lugar de destino" type="text" label-placement="floating"
+               placeholder="Ingrese direccion" formControlName="direccion"></ion-input>
+            </ion-item>
+            </ion-col>
+        </ion-col>
+
+          <!-- Centros de Salud -->
+        <ion-col size="12" *ngIf="showSaludFields">
+          <ion-item>
+            <ion-label>Centro de salud</ion-label>
+            <ion-select formControlName="centroSalud"  >
+              <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centroSalud')?.invalid && registroForm.get('centroSalud')?.touched">
+            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
+          </ion-text>
+
+        </ion-col>
+        <ion-col size="12" *ngIf="showEducacionFields">
+          <ion-item>
+            <ion-label>Centro de Educacion</ion-label>
+            <ion-select formControlName="centroEducacion"  >
+              <ion-select-option *ngFor="let item of centros.educacion" [value]="item.value">{{ item.label }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centroEducacion')?.invalid && registroForm.get('centroEducacion')?.touched">
+            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
+          </ion-text>
+        </ion-col>
+
+        <ion-col size="12" *ngIf="showAtmFields">
+          <ion-item>
+            <ion-label>Atencion A Menores</ion-label>
+            <ion-select formControlName="centroAtm">
+              <ion-select-option *ngFor="let item of centros.atm" [value]="item.value">{{ item.label }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-text color="danger" *ngIf="registroForm.get('centroAtm')?.invalid && registroForm.get('centroAtm')?.touched">
+            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
+          </ion-text>
+        </ion-col>     
+        
+        <ion-col size="12" *ngIf="showNivelCentralFields || showOtroFields ">
+          <ion-item>
+            <ion-label>Es dentro de la comuna?</ion-label>
+            <ion-toggle aria-label="Primary toggle" color="primary"
+            [enableOnOffLabels]="true"></ion-toggle>
+        </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Fecha de salida</ion-label>
+            <ion-input type="date" formControlName="fecha"></ion-input>
+          </ion-item>
+          
+          <ion-item>
+            <ion-label position="floating">Hora de salida</ion-label>
+            <ion-input type="time" formControlName="hora"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size ="12">
+          <ion-item>
+            <ion-label position="floating"> Tiempo aproximado de uso</ion-label>
+            <ion-input formControlName="tiempoUso" type="text" 
+              placeholder="Ej: 2 hrs "></ion-input>
+          </ion-item>
+          </ion-col>
+        
+
+          <ion-col size="12">
+            <ion-item>
+              <ion-label>Tipo de Vehículo</ion-label>
+              <ion-select formControlName="tipoVehiculo" (ionChange)="actualizarMaxOcupantes($event.detail.value)">
+                <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <!-- Cantidad de ocupantes (máximo según tipo de vehículo) -->
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating" >Cantidad de ocupantes</ion-label>
+              <ion-input type="number" placeholder="Ej: 4"
+                formControlName="ocupantes" [max]="maxOcupantes" min="1">
+              </ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registroForm.get('ocupantes')?.value > maxOcupantes">
+              <small>Máximo permitido: {{ maxOcupantes }} ocupantes según tipo de vehículo.</small>
+            </ion-text>
+          </ion-col>
+
+          <ion-col size ="12">
+          <ion-item>
+            <ion-label position="floating">Motivo</ion-label>
+            <ion-input formControlName="motivo"  type="text" placeholder="Indique el motivo del uso del movil"></ion-input>
+          </ion-item>
+        </ion-col>
+
+
+        <ion-col size ="12">
+          <ion-item>
+            <ion-label positon="floating">Ocupante responsable</ion-label>
+            <ion-input formControlName="ocupante"  type="text" ></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size ="12">
+          <div class="button-container">
+            <ion-button fill="outline" (click)="goToHomePage()" >Inicio</ion-button>
+             
+            <ion-button fill="outline"  type="submit">Solicitar Viaje</ion-button>    
+          </div>
+        </ion-col>
+
+      </ion-grid>
+
+  </form>
+</div>
+</ion-content>

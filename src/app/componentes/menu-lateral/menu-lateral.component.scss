@@ -1,0 +1,39 @@
+.custom-menu {
+  --width: 260px;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden; // evita que el contenido sobresalga
+}
+
+.menu-header {
+  background: linear-gradient(to right, #6a11cb, #2575fc); // Degradado morado-azul
+  color: white;
+  font-weight: bold;
+  padding-left: 15px;
+  border-top-right-radius: 20px;
+}
+
+ion-title {
+  font-size: 1.2rem;
+}
+
+ion-item {
+  --background: transparent;
+  --color: #000;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 15px;
+  transition: background 0.3s ease;
+}
+
+ion-item:hover,
+ion-item.ion-focused,
+ion-item.ion-activated {
+  background: #f0f4ff; // azul muy suave para hover/focus
+}
+
+ion-content {
+  background: #fff;
+  border-bottom-right-radius: 20px;
+  padding-top: 10px;
+}
