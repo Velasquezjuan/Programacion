@@ -80,4 +80,8 @@ export const routes: Routes = [
     path: 'gestion',
     loadComponent: () => import('./gestion/gestion.page').then( m => m.GestionPage)
   },
+  {
+    path: 'calendario',
+    loadComponent: () => import('./calendario/calendario.page').then( m => m.CalendarioPage)
+  },
 ];
