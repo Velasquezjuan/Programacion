@@ -52,12 +52,30 @@ export class CalendarioPage implements OnInit {
       minute: '2-digit',
       hour12: false
     },  
+     eventContent: (arg) => {
+    const p = (arg.event.extendedProps as any);
+    const div = document.createElement('div');
+    div.style.fontSize = '0.75em';
+    div.innerHTML = `
+      <b>${arg.event.title}</b><br>
+      <big>${p.destino}</big><br>
+      <big><i>${p.vehiculo}</i></big><br>
+      <big><i> ${p.destino}</i></big><br>
+      <big><i> ${p.ocupantes}</i></big><br>
+      <big><i> ${p.responsable}</i></big><br>
+      <big><i> ${p.motivo}</i></big><br>
+      <big><i> ${arg.timeText}</i></big>
+    `;
+    return { domNodes: [ div ] };
+  },
     displayEventTime: true,
  
   };
+  
+  
 
     async ngOnInit() {
-       const usr = await this.auth.obtenerUsuarioActivo();
+    const usr = await this.auth.obtenerUsuarioActivo();
     this.rolUsuario = usr?.rol ?? null;
 
 
@@ -87,6 +105,7 @@ export class CalendarioPage implements OnInit {
       }
     }));
   }
+  
 
  async handleEventClick(clickInfo: EventClickArg) {
   const ev    = clickInfo.event;
