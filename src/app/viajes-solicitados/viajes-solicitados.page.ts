@@ -1,28 +1,25 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  IonApp, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonGrid, IonRow, IonCol, IonButtons, IonMenuButton,
-  IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
-  IonInput, IonButton, AlertController
-} from '@ionic/angular/standalone';
+import { IonApp, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
+  IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput,
+  IonButton, AlertController, ToastController } from '@ionic/angular/standalone';
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
-import { ToastController } from '@ionic/angular';
 import { Memorialocal } from '../almacen/memorialocal';
+import { addIcons } from 'ionicons';
+import { calendarOutline, carOutline, personOutline, closeCircleOutline } from 'ionicons/icons';
 
 interface UsuarioActivo { id: string; usuario: string; rol: string; }
-interface Solicitud { 
+interface Solicitud {
   id: string;
   solicitante: string;
-  fecha: string;
-  hora: string;
+  fecha: string;    // 'YYYY-MM-DD'
+  hora: string;     // 'HH:mm'
   direccion?: string;
   motivo: string;
   ocupante: string;
   ocupantes: number;
-  estado: string;
-  // tras agendar:
+  estado: string;   // 'pendiente' | 'aceptado' | 'rechazado'
   patenteVehiculo?: string;
   tipoVehiculo?: string;
 }
@@ -34,10 +31,9 @@ interface Vehiculo { id: string; patente: string; tipoVehiculo: string; }
   styleUrls: ['./viajes-solicitados.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [ IonApp, MenuLateralComponent, IonHeader, IonToolbar, IonButtons, IonMenuButton,
-    IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle,
-    IonCardSubtitle, IonCardContent, IonInput, IonButton, CommonModule, FormsModule
-  ]
+  imports: [ IonApp, MenuLateralComponent, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,  IonContent, 
+    IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput, IonButton,
+    CommonModule, FormsModule ]
 })
 export class ViajesSolicitadosPage implements OnInit {
   solicitudes: Solicitud[] = [];
@@ -49,7 +45,10 @@ export class ViajesSolicitadosPage implements OnInit {
   constructor(
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
-  ) {}
+  ) {
+    addIcons({
+      calendarOutline,carOutline, personOutline, closeCircleOutline });
+  }
 
   private async showToast(
     msg: string,
@@ -60,25 +59,30 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   async ngOnInit() {
-    // 1) Cargo el usuario activo
+    // Carga usuario activo
     const activos = await Memorialocal.obtener<UsuarioActivo>('usuarioActivo');
-    const ua = activos.length ? activos[0] : null;
-    this.rolUsuario = ua?.rol ?? '';
+    this.rolUsuario = activos[0]?.rol ?? '';
+    // Luego datos
+    await this.reloadData();
+  }
 
-    // 2) Cargo solicitudes pendientes
+  private async reloadData() {
     const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
     this.solicitudes = todas.filter(s => s.estado === 'pendiente');
-
-    // 3) Cargo vehículos disponibles
-    this.vehiculos = await Memorialocal.obtener<Vehiculo>('vehiculos');
+    this.vehiculos    = await Memorialocal.obtener<Vehiculo>('vehiculos');
   }
 
   trackByFn(_: number, item: Solicitud) {
     return item.id;
   }
 
-  /** Abre el alerta para seleccionar vehículo */
+  /** 1) Selección de vehículo al agendar */
   async abrirAgendar(solicitudId: string) {
+    // buscamos la solicitud (solo para chequear que exista)
+    const sol = this.solicitudes.find(s => s.id === solicitudId);
+    if (!sol) return this.showToast('Solicitud no encontrada', 'danger');
+
+    // inputs radio de vehículos
     const inputs = this.vehiculos.map(v => ({
       type: 'radio' as const,
       label: `${v.tipoVehiculo} – ${v.patente}`,
@@ -92,13 +96,13 @@ export class ViajesSolicitadosPage implements OnInit {
         { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Confirmar',
-          handler: value => {
-            if (!value) {
+          handler: (vehId: string) => {
+            if (!vehId) {
               this.showToast('Debe elegir un vehículo.', 'warning');
-              return;
+              return false; // no cierra
             }
-            // delegamos la actualización
-            this.procesarAgendar(solicitudId, value);
+            this.procesarAgendar(solicitudId, vehId);
+            return true; // cierra
           }
         }
       ]
@@ -106,30 +110,44 @@ export class ViajesSolicitadosPage implements OnInit {
     await alert.present();
   }
 
-  /** Actualiza la solicitud en IndexedDB y en la vista */
+  /** 2) Guarda el vehículo elegido y marca como aceptado */
   private async procesarAgendar(solicitudId: string, vehiculoId: string) {
     const veh = this.vehiculos.find(v => v.id === vehiculoId)!;
     const sol = await Memorialocal.buscarPorCampo<Solicitud>(
-      'viajesSolicitados',
-      'id',
-      solicitudId
+      'viajesSolicitados','id', solicitudId
     );
-    if (sol) {
-      sol.estado = 'aceptado';
-      sol.patenteVehiculo = veh.patente;
-      sol.tipoVehiculo = veh.tipoVehiculo;
-      await Memorialocal.reemplazarPorCampo(
-        'viajesSolicitados',
-        'id',
-        solicitudId,
-        sol
+    if (!sol) return;
+
+    // Evita choque: mismo vehículo, misma fecha/hora ya aceptado
+    if (sol.patenteVehiculo) {
+      const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
+      const choque = todas.find(s =>
+        s.id !== sol.id &&
+        s.estado === 'aceptado' &&
+        s.patenteVehiculo === veh.patente &&
+        s.fecha === sol.fecha &&
+        s.hora === sol.hora
       );
-      // lo quitamos de la lista local
-      this.solicitudes = this.solicitudes.filter(s => s.id !== solicitudId);
-      this.showToast('Viaje agendado correctamente.', 'success');
+      if (choque) {
+        return this.showToast(
+          'Ese vehículo ya está ocupado en ese horario',
+          'warning'
+        );
+      }
     }
+
+    sol.estado = 'aceptado';
+    sol.patenteVehiculo = veh.patente;
+    sol.tipoVehiculo   = veh.tipoVehiculo;
+    await Memorialocal.reemplazarPorCampo(
+      'viajesSolicitados','id', sol.id, sol
+    );
+
+    this.showToast('Viaje agendado correctamente.', 'success');
+    await this.reloadData();
   }
 
+  /** 3) Rechazo con motivo */
   mostrarCampoMotivo(id: string) {
     this.rechazandoId = id;
     this.motivoRechazo = '';
@@ -138,16 +156,76 @@ export class ViajesSolicitadosPage implements OnInit {
   async rechazarConMotivo() {
     if (!this.rechazandoId) return;
     if (!this.motivoRechazo.trim()) {
-      this.showToast('Debe ingresar un motivo.', 'warning');
-      return;
+      return this.showToast('Debe ingresar un motivo.', 'warning');
     }
     await Memorialocal.actualizarEstadoSolicitudConMotivo(
-      this.rechazandoId,
-      'rechazado',
-      this.motivoRechazo
+      this.rechazandoId,'rechazado', this.motivoRechazo
     );
-    this.solicitudes = this.solicitudes.filter(s => s.id !== this.rechazandoId);
-    this.rechazandoId = null;
     this.showToast('Solicitud rechazada con motivo.', 'danger');
+    this.rechazandoId = null;
+    await this.reloadData();
+  }
+
+  /** 4) Reagendar (cambia fecha+hora) */
+  async abrirReagendar(solicitudId: string) {
+    const sol = this.solicitudes.find(s => s.id === solicitudId);
+    if (!sol) {
+      return this.showToast('Solicitud no encontrada', 'danger');
+    }
+
+    const alert = await this.alertCtrl.create({
+      header: 'Reagendar viaje',
+      inputs: [{
+        name: 'nuevoDateTime',
+        type: 'datetime-local',
+        value: `${sol.fecha}T${sol.hora}`
+      }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar',
+          handler: async (data: any) => {
+            if (!data.nuevoDateTime) {
+              this.showToast('Debes seleccionar fecha y hora', 'warning');
+              return false;
+            }
+            const [nuevaFecha, nuevaHora] = data.nuevoDateTime.split('T');
+            await this.procesarReagendar(sol, nuevaFecha, nuevaHora);
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private async procesarReagendar(
+    sol: Solicitud,
+    nuevaFecha: string,
+    nuevaHora: string
+  ) {
+    // idem choque de vehículo
+    if (sol.patenteVehiculo) {
+      const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
+      const choque = todas.find(s =>
+        s.id !== sol.id &&
+        s.estado === 'aceptado' &&
+        s.patenteVehiculo === sol.patenteVehiculo &&
+        s.fecha === nuevaFecha &&
+        s.hora === nuevaHora
+      );
+      if (choque) {
+        return this.showToast(
+          'Ese vehículo ya está ocupado en ese horario',
+          'warning'
+        );
+      }
+    }
+
+    sol.fecha = nuevaFecha;
+    sol.hora  = nuevaHora;
+    await Memorialocal.reemplazarPorCampo('viajesSolicitados','id', sol.id, sol);
+    this.showToast('Viaje reagendado correctamente.', 'success');
+    await this.reloadData();
   }
 }

@@ -41,6 +41,7 @@
               expand="block"
               (click)="abrirAgendar(sol.id)"
             >
+              <ion-icon slot="start" name="car-outline"></ion-icon>
               Agendar
             </ion-button>
 
@@ -52,8 +53,20 @@
               expand="block"
               (click)="mostrarCampoMotivo(sol.id)"
             >
+              <ion-icon slot="start" name="close-circle-outline"></ion-icon>
               Rechazar
             </ion-button>
+                 <!-- Reagendar-->
+             <ion-button
+                fill="outline"
+                color="warning"
+                expand="block"
+                (click)="abrirReagendar(sol.id)"
+              >
+                <ion-icon slot="start" name="calendar-outline"></ion-icon>
+                Reagendar
+              </ion-button>
+
 
             <!-- Campo y botón Confirmar Rechazo -->
             <div *ngIf="rechazandoId === sol.id" class="rechazo-form">
@@ -62,6 +75,7 @@
                 placeholder="Motivo de rechazo"
               ></ion-input>
               <ion-button
+               fill="outline"
                 color="danger"
                 expand="block"
                 (click)="rechazarConMotivo()"
@@ -73,6 +87,7 @@
         </ion-card>
       </ng-container>
 
+      
       <ng-template #noHay>
         <h2 class="ion-text-center">No hay viajes pendientes</h2>
       </ng-template>

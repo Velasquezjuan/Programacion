@@ -14,7 +14,7 @@ import { Menu, MenuItem } from '../servicio/menu';
 import { Agenda } from '../servicio/agenda';
 import { ToastController } from '@ionic/angular';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
-
+import { Validator } from '@angular/forms';
 
 
 @Component({
@@ -56,6 +56,8 @@ export class SolicitudViajePage implements OnInit {
   showComunalFields = false;
   showOtroFields = false;
   horasAgendadas: string[] = [];
+  showOtroSalida = false;
+  showOtroDestino = false;
 
 
   constructor(
@@ -73,8 +75,12 @@ export class SolicitudViajePage implements OnInit {
 
   async ngOnInit() {
     this.registroForm = this.fb.group({
-      direccion: [''],
+      puntoSalida: ['', Validators.required],
+      direccionSalida: [''],
+      dentroComuna: [false],             
+      necesitaCarga: [false],
       centro: ['', Validators.required],
+      direccionDestino: [''], 
       centroSalud: [''],
       centroEducacion: [''],
       centroAtm: [''],
@@ -104,45 +110,115 @@ export class SolicitudViajePage implements OnInit {
 
   }
 
-  onCentroChange(event: any) {
-    
-    const selectedCentro = event.detail.value;
+ onSalidaChange(ev: any) {
+  const selected = ev.detail.value;
 
-      // Resetear todos
-    this.registroForm.get('centroSalud')?.clearValidators();
-    this.registroForm.get('centroEducacion')?.clearValidators();
-    this.registroForm.get('centroAtm')?.clearValidators();
-    this.registroForm.get('direccion')?.clearValidators();
+  // mostramos u ocultamos el input “otro” de salida
+  this.showOtroSalida = (selected === 'otro');
 
-    // Restablecer los campos visibles
-    this.showNivelCentralFields = false;
-    this.showEducacionFields = false;
-    this.showAtmFields = false;
-    this.showSaludFields = false; 
-    this.showComunalFields = false; 
-    this.showOtroFields = false;  
-
-    // Mostrar campos según el cargo seleccionado
-   if (selectedCentro === 'comunal') {
-      this.showComunalFields = true;
-    } else if (selectedCentro === 'educacion') {
-      this.showEducacionFields = true;
-    } else if (selectedCentro === 'atm') {
-      this.showAtmFields = true;
-    } else if (selectedCentro === 'salud') {
-     this.showSaludFields= true;
-    } else if (selectedCentro === 'nivelCentral') {
-      this.showNivelCentralFields= true;
-    } else if (selectedCentro === 'otro'){
-      this.showOtroFields = true;
-    }
-
-    // Actualizar validaciones
-    this.registroForm.get('centroSalud')?.updateValueAndValidity();
-    this.registroForm.get('centroEducacion')?.updateValueAndValidity();
-    this.registroForm.get('centroAtm')?.updateValueAndValidity();
-    this.registroForm.get('direccion')?.updateValueAndValidity();
+  // si ya no es “otro”, limpiamos su valor
+  if (!this.showOtroSalida) {
+    this.registroForm.get('direccionSalida')!.setValue('');
   }
+
+  // reutilizamos la lógica de limpiar validadores y ocultar todos
+  this.resetCentroFields();
+
+  // mostramos el resto de campos según el select (si quieres)
+  this.applyCentroLogic(selected);
+
+  // actualizamos validaciones de esos campos
+  this.updateCentroValidators();
+}
+
+/** Cuando cambia el Punto de Destino */
+onDestinoChange(ev: any) {
+  const selected = ev.detail.value;
+
+  // mostramos u ocultamos el input “otro” de destino
+  this.showOtroDestino = (selected === 'otro');
+
+  // si ya no es “otro”, limpiamos su valor
+  if (!this.showOtroDestino) {
+    this.registroForm.get('direccionDestino')!.setValue('');
+  }
+
+  // limpiamos validador de los sub-centros y ocultamos
+  this.resetCentroFields();
+
+  // mostramos dinámicamente tus campos de salud/educación/atm/etc
+  this.applyCentroLogic(selected);
+
+  // actualizamos validador de esos sub-centros
+  this.updateCentroValidators();
+}
+
+/** Tu función original de Centro (educación/salud/atm/nivelCentral/otro) */
+onCentroChange(ev: any) {
+  const selected = ev.detail.value;
+
+  // limpiamos validador y ocultamos todo
+  this.resetCentroFields();
+
+  // mostramos sólo el bloque que corresponda
+  this.applyCentroLogic(selected);
+
+  // actualizamos validaciones
+  this.updateCentroValidators();
+}
+
+/** Helpers para no repetir código */
+private resetCentroFields() {
+  // quitar validadores de los selects + direcciones
+  this.registroForm.get('centroSalud')?.clearValidators();
+  this.registroForm.get('centroEducacion')?.clearValidators();
+  this.registroForm.get('centroAtm')?.clearValidators();
+  this.registroForm.get('direccion')?.clearValidators();
+  this.registroForm.get('direccionSalida')?.clearValidators();
+  this.registroForm.get('direccionDestino')?.clearValidators();
+
+  // ocultar todos los bloques dinámicos
+  this.showSaludFields       = false;
+  this.showEducacionFields   = false;
+  this.showAtmFields         = false;
+  this.showNivelCentralFields= false;
+  this.showOtroFields        = false;
+  this.showComunalFields     = false;
+}
+
+/** Muestra el bloque correcto según el valor del select */
+private applyCentroLogic(value: string) {
+  switch (value) {
+    case 'comunal':
+      this.showComunalFields = true;
+      break;
+    case 'educacion':
+      this.showEducacionFields = true;
+      break;
+    case 'atm':
+      this.showAtmFields = true;
+      break;
+    case 'salud':
+      this.showSaludFields = true;
+      break;
+    case 'nivelCentral':
+      this.showNivelCentralFields = true;
+      break;
+    case 'otro':
+      this.showOtroFields = true;
+      break;
+  }
+}
+
+/** Finalmente, fijamos los validadores según los bloques visibles */
+private updateCentroValidators() {
+  this.registroForm.get('centroSalud')?.updateValueAndValidity();
+  this.registroForm.get('centroEducacion')?.updateValueAndValidity();
+  this.registroForm.get('centroAtm')?.updateValueAndValidity();
+  this.registroForm.get('direccion')?.updateValueAndValidity();
+  this.registroForm.get('direccionSalida')?.updateValueAndValidity();
+  this.registroForm.get('direccionDestino')?.updateValueAndValidity();
+}
 
   async mostrarToast(mensaje: string, color: string = 'success') {
     const toast = await this.toastController.create({
@@ -184,7 +260,7 @@ export class SolicitudViajePage implements OnInit {
     const fecha = this.registroForm.get('fecha')?.value;
     this.horasAgendadas = await this.agendaServicio.obtenerHorarios(fecha); 
   }
-  maxOcupantes: number = 4;
+  maxOcupantes: number = 9;
 
   actualizarMaxOcupantes(tipo: string) {
     switch (tipo) {
@@ -196,6 +272,9 @@ export class SolicitudViajePage implements OnInit {
         this.maxOcupantes = 6;
         break;
       case 'camioneta':
+        this.maxOcupantes = 4;
+        break;
+         case 'camion':
         this.maxOcupantes = 4;
         break;
       default:
@@ -212,19 +291,39 @@ export class SolicitudViajePage implements OnInit {
       return;
     }
   
-    const datos = this.registroForm.value;
+    const v = this.registroForm.value;
+
+    if (v.puntoSalida === v.centro) {
+      return this.mostrarToast(
+        'Punto de salida y destino no pueden ser iguales',
+        'warning'
+      );
+    }
+
+    const dentroComuna = v.dentroComuna ? 'si' : 'no';
+    const necesitaCarga = v.necesitaCarga ? 'si' : 'no';
+    
   
     const solicitud = {
       id: Date.now().toString(), 
-      ...datos,
-      estado: 'pendiente', 
+      puntoSalida:  v.puntoSalida,
+      centro:       v.centro,
+      dentroComuna,                        // "si" / "no"
+      necesitaCarga,                       // "si" / "no"
+      direccion:    v.direccion || null,
+      fecha:        v.fecha,
+      hora:         v.hora,
+      motivo:       v.motivo,
+      ocupante:     v.ocupante,
+      tipoVehiculo: v.tipoVehiculo,
+      ocupantes:    v.ocupantes,
+      estado:       'pendiente',
       fechaRegistro: new Date().toISOString(),
       solicitante: this.usuarioActivo?.usuario || 'desconocido'
     };
   
     try {
-      await this.agendaServicio.agregarHorario(datos.fecha, datos.hora);
-      await this.agendaServicio.guardarSolicitud(solicitud);
+      await this.agendaServicio.agregarHorario(v.fecha, v.hora);
       await Memorialocal.guardar('viajesSolicitados', solicitud); 
       this.registroForm.reset();
       this.mostrarToast('Solicitud de viaje registrada con éxito');

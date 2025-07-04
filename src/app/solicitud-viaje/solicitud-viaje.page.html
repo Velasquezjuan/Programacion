@@ -29,73 +29,75 @@
             seleccionar "Otros" e ingresar la direccion donde ud desea ir.
           </h3>
         </ion-col>
-
-        <ion-col size="12" >
-          <ion-item>
-            <ion-label>Destino</ion-label>
-            <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
-              <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>   
-              <ion-select-option value="otro">Otro</ion-select-option>           
-            </ion-select>
-          </ion-item>
-          <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
-            <small>Selecciona un centro válido.</small>
-          </ion-text>
-        </ion-col>
-
-        <ion-col size="12" *ngIf="showOtroFields || showNivelCentralFields" >
-          <ion-col size ="12">
-            <ion-item>
-              <ion-input label="Lugar de destino" type="text" label-placement="floating"
-               placeholder="Ingrese direccion" formControlName="direccion"></ion-input>
-            </ion-item>
-            </ion-col>
-        </ion-col>
-
-          <!-- Centros de Salud -->
-        <ion-col size="12" *ngIf="showSaludFields">
-          <ion-item>
-            <ion-label>Centro de salud</ion-label>
-            <ion-select formControlName="centroSalud"  >
-              <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
-            </ion-select>
-          </ion-item>
-          <ion-text color="danger" *ngIf="registroForm.get('centroSalud')?.invalid && registroForm.get('centroSalud')?.touched">
-            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
-          </ion-text>
-
-        </ion-col>
-        <ion-col size="12" *ngIf="showEducacionFields">
-          <ion-item>
-            <ion-label>Centro de Educacion</ion-label>
-            <ion-select formControlName="centroEducacion"  >
-              <ion-select-option *ngFor="let item of centros.educacion" [value]="item.value">{{ item.label }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-text color="danger" *ngIf="registroForm.get('centroEducacion')?.invalid && registroForm.get('centroEducacion')?.touched">
-            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
-          </ion-text>
-        </ion-col>
-
-        <ion-col size="12" *ngIf="showAtmFields">
-          <ion-item>
-            <ion-label>Atencion A Menores</ion-label>
-            <ion-select formControlName="centroAtm">
-              <ion-select-option *ngFor="let item of centros.atm" [value]="item.value">{{ item.label }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-text color="danger" *ngIf="registroForm.get('centroAtm')?.invalid && registroForm.get('centroAtm')?.touched">
-            <small>Selecciona un centro de la seleccion sino escoja la opcion "OTROS".</small>
-          </ion-text>
-        </ion-col>     
         
-        <ion-col size="12" *ngIf="showNivelCentralFields || showOtroFields ">
-          <ion-item>
-            <ion-label>Es dentro de la comuna?</ion-label>
-            <ion-toggle aria-label="Primary toggle" color="primary"
-            [enableOnOffLabels]="true"></ion-toggle>
-        </ion-item>
-        </ion-col>
+          <!-- Punto de Salida -->
+            <ion-col size="12">
+              <ion-item>
+                <ion-label>Punto de Salida</ion-label>
+                <ion-select formControlName="puntoSalida" (ionChange)="onSalidaChange($event)">
+                  <ion-select-option *ngFor="let it of centros.central" [value]="it.value">
+                    {{ it.label }}
+                  </ion-select-option>
+                  <ion-select-option value="otro">Otro</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-text color="danger"
+                        *ngIf="registroForm.get('puntoSalida')?.invalid && registroForm.get('puntoSalida')?.touched">
+                <small>Selecciona un centro válido.</small>
+              </ion-text>
+            </ion-col>
+
+            <!-- Input “Otro” Salida -->
+            <ion-col size="12" *ngIf="showOtroSalida">
+              <ion-item>
+                <ion-input
+                  label="Dirección salida"
+                  label-placement="floating"
+                  placeholder="Ingresa dirección de salida"
+                  formControlName="direccionSalida">
+                </ion-input>
+              </ion-item>
+            </ion-col>
+
+            <!-- Punto de Destino -->
+            <ion-col size="12">
+              <ion-item>
+                <ion-label>Punto de Destino</ion-label>
+                <ion-select formControlName="centro" (ionChange)="onDestinoChange($event)">
+                  <ion-select-option *ngFor="let it of centros.central" [value]="it.value">
+                    {{ it.label }}
+                  </ion-select-option>
+                  <ion-select-option value="otro">Otro</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-text color="danger"
+                        *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+                <small>Selecciona un centro válido.</small>
+              </ion-text>
+            </ion-col>
+
+            <!-- Input “Otro” Destino -->
+            <ion-col size="12" *ngIf="showOtroDestino">
+              <ion-item>
+                <ion-input
+                  label="Dirección destino"
+                  label-placement="floating"
+                  placeholder="Ingresa dirección de destino"
+                  formControlName="direccionDestino">
+                </ion-input>
+              </ion-item>
+            </ion-col>
+
+        <!-- Toggle “¿Necesita carga?” -->
+            <ion-col size="12" >
+              <ion-item>
+                <ion-label>¿Necesita carga?</ion-label>
+                <ion-toggle
+                  formControlName="necesitaCarga"
+                  [enableOnOffLabels]="true">
+                </ion-toggle>
+              </ion-item>
+            </ion-col>
 
         <ion-col size="12">
           <ion-item>
@@ -150,9 +152,9 @@
 
         <ion-col size ="12">
           <ion-item>
-            <ion-label positon="floating">Ocupante responsable</ion-label>
-            <ion-input formControlName="ocupante"  type="text" ></ion-input>
-          </ion-item>
+                <ion-label position="floating">Ocupante responsable</ion-label>
+                <ion-input formControlName="ocupante"></ion-input>
+              </ion-item>
         </ion-col>
 
         <ion-col size ="12">
