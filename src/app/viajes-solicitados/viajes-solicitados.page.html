@@ -26,11 +26,19 @@
           </ion-card-header>
           <ion-card-content>
             <p><strong>Solicitante:</strong> {{ sol.solicitante }}</p>
-            <p>
-              <strong>Destino:</strong>
-              {{ sol.direccion || 'Centro designado' }}
+
+              <p>
+              <strong>Punto de salida:</strong>
+              {{ getSalidaLabel(sol) }}
             </p>
+
+            <p>
+              <strong>Punto de destino:</strong>
+              {{ getDestinoLabel(sol) }}
+            </p> 
+            <p><strong>Vehículo Esperado:</strong> {{ sol.tipoVehiculo }}</p>
             <p><strong>Motivo:</strong> {{ sol.motivo }}</p>
+            <p><strong>necesita Carga:</strong> {{ sol.necesitaCarga }}</p>
             <p><strong>Responsable:</strong> {{ sol.ocupante }}</p>
             <p><strong>Ocupantes:</strong> {{ sol.ocupantes }}</p>
 

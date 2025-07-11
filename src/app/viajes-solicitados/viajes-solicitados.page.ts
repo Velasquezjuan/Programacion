@@ -8,6 +8,7 @@ import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.c
 import { Memorialocal } from '../almacen/memorialocal';
 import { addIcons } from 'ionicons';
 import { calendarOutline, carOutline, personOutline, closeCircleOutline } from 'ionicons/icons';
+import { CentroServicio } from '../servicio/centro-servicio';
 
 interface UsuarioActivo { id: string; usuario: string; rol: string; }
 interface Solicitud {
@@ -15,14 +16,32 @@ interface Solicitud {
   solicitante: string;
   fecha: string;    // 'YYYY-MM-DD'
   hora: string;     // 'HH:mm'
-  direccion?: string;
+  puntoSalida:string;
+  direccionSalida: string;
+  centroSaludSalida?: string; 
+  centroEducacionSalida?: string; 
+  centroAtmSalida?: string
+  nivelCentralSalida?: string; 
+  puntoDestino?: string;  
+  centro?: string; 
+  direccionDestino?: string;   
+  centroSaludDestino?:  string;
+  centroEducacionDestino?: string;
+  centroAtmDestino?:    string;
+  nivelCentralDestino?: string;
+  tiempoUso: number;
+  fechaCreacion: string; // 'YYYY-MM-DD'
+  dentroComuna?: 'si'|'no';
+  necesitaCarga?: 'si'|'no';
   motivo: string;
   ocupante: string;
   ocupantes: number;
   estado: string;   // 'pendiente' | 'aceptado' | 'rechazado'
   patenteVehiculo?: string;
   tipoVehiculo?: string;
+
 }
+
 interface Vehiculo { id: string; patente: string; tipoVehiculo: string; }
 
 @Component({
@@ -41,10 +60,19 @@ export class ViajesSolicitadosPage implements OnInit {
   rolUsuario = '';
   rechazandoId: string | null = null;
   motivoRechazo = '';
-
+ 
+   centros = {
+    central: [] as { value: string; label: string }[],
+    salud: [] as { value: string; label: string }[],
+    atm: [] as { value: string; label: string }[],
+    educacion: [] as { value: string; label: string }[],
+    comunal: [] as { value: string; label: string }[],
+    otro: [] as { value: string; label: string }[]
+  };
   constructor(
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private centroService: CentroServicio
   ) {
     addIcons({
       calendarOutline,carOutline, personOutline, closeCircleOutline });
@@ -59,6 +87,8 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   async ngOnInit() {
+    
+    this.centros.central = this.centroService.obtenerCentros('central');
     // Carga usuario activo
     const activos = await Memorialocal.obtener<UsuarioActivo>('usuarioActivo');
     this.rolUsuario = activos[0]?.rol ?? '';
@@ -228,4 +258,64 @@ export class ViajesSolicitadosPage implements OnInit {
     this.showToast('Viaje reagendado correctamente.', 'success');
     await this.reloadData();
   }
+
+  /** etiqueta para punto de salida */
+ private formatLabelWithAddress(
+  list: Array<{ value: string; label: string }>,
+  code?: string,
+  address?: string
+): string {
+  if (!code) return '';
+  const found = list.find(i => i.value === code);
+  const label = found ? found.label : code;
+  return address ? `${label} – ${address}` : label;
+}
+
+/** etiqueta para punto de salida */
+getSalidaLabel(sol: Solicitud): string {
+  let list = this.centros.central;
+  let code = sol.puntoSalida;
+  let subCode = sol.direccionSalida;
+  switch (sol.puntoSalida) {
+    case 'salud':
+      list = this.centros.salud;
+      subCode = sol.centroSaludSalida || '';
+      break;
+    case 'educacion':
+      list = this.centros.educacion;
+      subCode = sol.centroEducacionSalida || '';
+      break;
+    case 'atm':
+      list = this.centros.atm;
+      subCode = sol.centroAtmSalida || '';
+      break;
+    case 'nivelCentral':
+  }
+  return this.formatLabelWithAddress(list, code, subCode);
+}
+
+/** etiqueta para punto de destino */
+getDestinoLabel(sol: Solicitud): string {
+  let list = this.centros.central;       // fallback
+  let code = sol.puntoDestino;           // el valor del select principal
+  let subCode = sol.direccionDestino;    // aquí guardamos el id del sub-centro
+  switch (sol.puntoDestino) {
+    case 'salud':
+      list = this.centros.salud;
+      subCode = sol.centroSaludDestino;
+      break;
+    case 'educacion':
+      list = this.centros.educacion;
+      subCode = sol.centroEducacionDestino;
+      break;
+    case 'atm':
+      list = this.centros.atm;
+      subCode = sol.centroAtmDestino;
+      break;
+    case 'nivelCentral':
+  }
+  // Si es “otro”, el método formatLabelWithAddress ya muestra solo la dirección libre
+  return this.formatLabelWithAddress(list, code, subCode);
+}
+
 }

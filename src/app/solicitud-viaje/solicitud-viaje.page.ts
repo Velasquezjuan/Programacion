@@ -5,16 +5,15 @@ import { Router } from '@angular/router';
 import { Memorialocal } from '../almacen/memorialocal';
 
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
-import {IonContent, IonApp, IonMenuButton, IonHeader, IonTitle, 
+import {IonContent,IonMenuButton, IonHeader, IonTitle, 
   IonToolbar, IonInput, IonToggle,
   IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect, 
   IonSelectOption,  } from '@ionic/angular/standalone';
 import { CentroServicio } from '../servicio/centro-servicio';
-import { Menu, MenuItem } from '../servicio/menu';
 import { Agenda } from '../servicio/agenda';
 import { ToastController } from '@ionic/angular';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
-import { Validator } from '@angular/forms';
+
 
 
 @Component({
@@ -23,316 +22,225 @@ import { Validator } from '@angular/forms';
   styleUrls: ['./solicitud-viaje.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [IonContent, IonApp, IonMenuButton, IonHeader, IonTitle, 
+  imports: [IonContent, IonMenuButton, IonHeader, IonTitle, 
     IonToolbar, IonInput, IonToggle ,ReactiveFormsModule, MenuLateralComponent,
     IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect, 
     IonSelectOption, CommonModule, FormsModule, ]
 })
 export class SolicitudViajePage implements OnInit {
+ registroForm!: FormGroup;
 
-  centros: {
-    salud: any[];
-    atm: any[];
-    educacion: any[];
-    central: any[];
-  } = {
-    salud: [],
-    atm: [],
-    educacion: [],
-    central: []
+  // listas de centros
+  centros = {
+    central:   [] as Array<{ value: string; label: string }>,
+    salud:     [] as Array<{ value: string; label: string }>,
+    educacion: [] as Array<{ value: string; label: string }>,
+    atm:       [] as Array<{ value: string; label: string }>
   };
+  auto = { vehiculo: [] as Array<{ value: string; label: string }> };
 
-  auto: { vehiculo: any[] } = { vehiculo: [] };
-
-  usuarioActivo?: { usuario: string; rol: string }| null = null;
-
-  registroForm!: FormGroup;
-
-  // Variables para mostrar campos dinámicamente
-  showNivelCentralFields = false;
-  showEducacionFields = false;
-  showAtmFields = false;
-  showSaludFields = false; 
-  showComunalFields = false;
-  showOtroFields = false;
-  horasAgendadas: string[] = [];
+  // visibilidades
   showOtroSalida = false;
-  showOtroDestino = false;
+  showSaludSalida = false;
+  showEducacionSalida = false;
+  showAtmSalida = false;
+  showNivelCentralSalida = false;
 
+  showOtroDestino = false;
+  showSaludDestino = false;
+  showEducacionDestino = false;
+  showAtmDestino = false;
+  showNivelCentralDestino = false;
+
+  // control de ocupantes
+  maxOcupantes = 9;
+
+  // usuario
+  usuarioActivo: { usuario: string; rol: string } | null = null;
+  rolUsuario = '';
 
   constructor(
+    private fb: FormBuilder,
     private router: Router,
-    private fb: FormBuilder, 
-    private toastController: ToastController,
-    private centroServicio: CentroServicio,
-    public agendaServicio: Agenda,
-    private menu: Menu,
-    private auth: AutentificacionUsuario
-  ) { }
-
-  rolUsuario: string = '';
- 
+    private toastCtrl: ToastController,
+    private centroSvc: CentroServicio,
+    private auth: AutentificacionUsuario,
+    public agenda: Agenda
+  ) {}
 
   async ngOnInit() {
+    // 1) FormGroup
     this.registroForm = this.fb.group({
-      puntoSalida: ['', Validators.required],
-      direccionSalida: [''],
-      dentroComuna: [false],             
-      necesitaCarga: [false],
-      centro: ['', Validators.required],
-      direccionDestino: [''], 
-      centroSalud: [''],
-      centroEducacion: [''],
-      centroAtm: [''],
-      fecha: ['', Validators.required],
-      hora: ['', Validators.required],
-      tiempoUso: ['', Validators.required],
-      motivo: ['', Validators.required ],
-      ocupante: ['', Validators.required],
-      tipoVehiculo: ['', Validators.required],
-      ocupantes: ['', Validators.required]
+      // SALIDA
+      puntoSalida:         ['', Validators.required],
+      direccionSalida:     [''],
+      centroSaludSalida:   [''],
+      centroEducacionSalida: [''],
+      centroAtmSalida:     [''],
+      nivelCentralSalida:  [false],
+      // DESTINO
+      puntoDestino:        ['', Validators.required],
+      direccionDestino:    [''],
+      centroSaludDestino:  [''],
+      centroEducacionDestino: [''],
+      centroAtmDestino:    [''],
+      nivelCentralDestino: [false],
+      // COMUNES
+      dentroComuna:        [false],
+      necesitaCarga:       [false],
+      fecha:               ['', Validators.required],
+      hora:                ['', Validators.required],
+      tiempoUso:           ['', Validators.required],
+      tipoVehiculo:        ['', Validators.required],
+      ocupantes:           [
+        '',
+        [Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]
+      ],
+      motivo:              ['', Validators.required],
+      ocupante:            ['', Validators.required]
     });
-    
 
-    this.centros = {
-      
-      salud: this.centroServicio.obtenerCentros('salud'),
-      atm: this.centroServicio.obtenerCentros('atm'),
-      educacion: this.centroServicio.obtenerCentros('educacion'),
-      central: this.centroServicio.obtenerCentros('central')
-    };
+    // 2) cargar listas
+    this.centros.central   = this.centroSvc.obtenerCentros('central');
+    this.centros.salud     = this.centroSvc.obtenerCentros('salud');
+    this.centros.educacion = this.centroSvc.obtenerCentros('educacion');
+    this.centros.atm       = this.centroSvc.obtenerCentros('atm');
+    this.auto.vehiculo     = this.centroSvc.obtenerAuto('vehiculo');
 
-    this.auto = {
-      vehiculo: this.centroServicio.obtenerAuto('vehiculo')
-    };
-    
+    // 3) usuario activo
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
-
+    this.rolUsuario    = this.usuarioActivo?.rol ?? '';
   }
 
- onSalidaChange(ev: any) {
-  const selected = ev.detail.value;
+  /** Punto de SALIDA */
+  onSalidaChange(ev: any) {
+    const v = ev.detail.value;
+    this.showOtroSalida = v === 'otro';
+    this.showSaludSalida = this.showEducacionSalida = this.showAtmSalida = this.showNivelCentralSalida = false;
 
-  // mostramos u ocultamos el input “otro” de salida
-  this.showOtroSalida = (selected === 'otro');
+    // limpiar validaciones
+    ['direccionSalida','centroSaludSalida','centroEducacionSalida','centroAtmSalida']
+      .forEach(k => this.registroForm.get(k)!.clearValidators());
 
-  // si ya no es “otro”, limpiamos su valor
-  if (!this.showOtroSalida) {
-    this.registroForm.get('direccionSalida')!.setValue('');
-  }
-
-  // reutilizamos la lógica de limpiar validadores y ocultar todos
-  this.resetCentroFields();
-
-  // mostramos el resto de campos según el select (si quieres)
-  this.applyCentroLogic(selected);
-
-  // actualizamos validaciones de esos campos
-  this.updateCentroValidators();
-}
-
-/** Cuando cambia el Punto de Destino */
-onDestinoChange(ev: any) {
-  const selected = ev.detail.value;
-
-  // mostramos u ocultamos el input “otro” de destino
-  this.showOtroDestino = (selected === 'otro');
-
-  // si ya no es “otro”, limpiamos su valor
-  if (!this.showOtroDestino) {
-    this.registroForm.get('direccionDestino')!.setValue('');
-  }
-
-  // limpiamos validador de los sub-centros y ocultamos
-  this.resetCentroFields();
-
-  // mostramos dinámicamente tus campos de salud/educación/atm/etc
-  this.applyCentroLogic(selected);
-
-  // actualizamos validador de esos sub-centros
-  this.updateCentroValidators();
-}
-
-/** Tu función original de Centro (educación/salud/atm/nivelCentral/otro) */
-onCentroChange(ev: any) {
-  const selected = ev.detail.value;
-
-  // limpiamos validador y ocultamos todo
-  this.resetCentroFields();
-
-  // mostramos sólo el bloque que corresponda
-  this.applyCentroLogic(selected);
-
-  // actualizamos validaciones
-  this.updateCentroValidators();
-}
-
-/** Helpers para no repetir código */
-private resetCentroFields() {
-  // quitar validadores de los selects + direcciones
-  this.registroForm.get('centroSalud')?.clearValidators();
-  this.registroForm.get('centroEducacion')?.clearValidators();
-  this.registroForm.get('centroAtm')?.clearValidators();
-  this.registroForm.get('direccion')?.clearValidators();
-  this.registroForm.get('direccionSalida')?.clearValidators();
-  this.registroForm.get('direccionDestino')?.clearValidators();
-
-  // ocultar todos los bloques dinámicos
-  this.showSaludFields       = false;
-  this.showEducacionFields   = false;
-  this.showAtmFields         = false;
-  this.showNivelCentralFields= false;
-  this.showOtroFields        = false;
-  this.showComunalFields     = false;
-}
-
-/** Muestra el bloque correcto según el valor del select */
-private applyCentroLogic(value: string) {
-  switch (value) {
-    case 'comunal':
-      this.showComunalFields = true;
-      break;
-    case 'educacion':
-      this.showEducacionFields = true;
-      break;
-    case 'atm':
-      this.showAtmFields = true;
-      break;
-    case 'salud':
-      this.showSaludFields = true;
-      break;
-    case 'nivelCentral':
-      this.showNivelCentralFields = true;
-      break;
-    case 'otro':
-      this.showOtroFields = true;
-      break;
-  }
-}
-
-/** Finalmente, fijamos los validadores según los bloques visibles */
-private updateCentroValidators() {
-  this.registroForm.get('centroSalud')?.updateValueAndValidity();
-  this.registroForm.get('centroEducacion')?.updateValueAndValidity();
-  this.registroForm.get('centroAtm')?.updateValueAndValidity();
-  this.registroForm.get('direccion')?.updateValueAndValidity();
-  this.registroForm.get('direccionSalida')?.updateValueAndValidity();
-  this.registroForm.get('direccionDestino')?.updateValueAndValidity();
-}
-
-  async mostrarToast(mensaje: string, color: string = 'success') {
-    const toast = await this.toastController.create({
-      message: mensaje,
-      duration: 20000,
-      position: 'top',
-      color: color
-    });
-    toast.present();
-  }
-
-  async agendarHora() {
-    const fecha = this.registroForm.get('fecha')?.value;
-    const hora = this.registroForm.get('hora')?.value;
-  
-    if (fecha && hora) {
-      const ok = await this.agendaServicio.agregarHorario(fecha, hora); 
-      if (ok) {
-        this.horasAgendadas = await this.agendaServicio.obtenerHorarios(fecha); 
-        this.mostrarToast('Hora agendada con éxito');
-      } else {
-        this.mostrarToast('Esa hora ya está ocupada', 'warning');
-      }
+    if (this.showOtroSalida) {
+      this.registroForm.get('direccionSalida')!.setValidators([Validators.required]);
     } else {
-      this.mostrarToast('Debes seleccionar fecha y hora para agendar', 'danger');
+      switch (v) {
+        case 'salud':
+          this.showSaludSalida = true;
+          this.registroForm.get('centroSaludSalida')!.setValidators([Validators.required]);
+          break;
+        case 'educacion':
+          this.showEducacionSalida = true;
+          this.registroForm.get('centroEducacionSalida')!.setValidators([Validators.required]);
+          break;
+        case 'atm':
+          this.showAtmSalida = true;
+          this.registroForm.get('centroAtmSalida')!.setValidators([Validators.required]);
+          break;
+        case 'nivelCentral':
+          this.showNivelCentralSalida = true;
+          break;
+      }
     }
+    // actualizar
+    ['direccionSalida','centroSaludSalida','centroEducacionSalida','centroAtmSalida']
+      .forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
   }
-  async reagendarSolicitud(id: string) {
-    const nuevaFecha = prompt('Nueva fecha (YYYY-MM-DD):');
-    const nuevaHora = prompt('Nueva hora (HH:mm):');
-  
-    if (nuevaFecha && nuevaHora) {
-      await this.agendaServicio.reagendarSolicitud(id, nuevaFecha, nuevaHora);
-      this.mostrarToast('Solicitud reagendada.');
+
+  /** Punto de DESTINO */
+  onDestinoChange(ev: any) {
+    const v = ev.detail.value;
+    this.showOtroDestino = v === 'otro';
+    this.showSaludDestino = this.showEducacionDestino = this.showAtmDestino = this.showNivelCentralDestino = false;
+
+    ['direccionDestino','centroSaludDestino','centroEducacionDestino','centroAtmDestino']
+      .forEach(k => this.registroForm.get(k)!.clearValidators());
+
+    if (this.showOtroDestino) {
+      this.registroForm.get('direccionDestino')!.setValidators([Validators.required]);
+    } else {
+      switch (v) {
+        case 'salud':
+          this.showSaludDestino = true;
+          this.registroForm.get('centroSaludDestino')!.setValidators([Validators.required]);
+          break;
+        case 'educacion':
+          this.showEducacionDestino = true;
+          this.registroForm.get('centroEducacionDestino')!.setValidators([Validators.required]);
+          break;
+        case 'atm':
+          this.showAtmDestino = true;
+          this.registroForm.get('centroAtmDestino')!.setValidators([Validators.required]);
+          break;
+        case 'nivelCentral':
+          this.showNivelCentralDestino = true;
+          break;
+      }
     }
+    ['direccionDestino','centroSaludDestino','centroEducacionDestino','centroAtmDestino']
+      .forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
   }
-  
-  async verHorasDelDia() {
-    const fecha = this.registroForm.get('fecha')?.value;
-    this.horasAgendadas = await this.agendaServicio.obtenerHorarios(fecha); 
-  }
-  maxOcupantes: number = 9;
 
   actualizarMaxOcupantes(tipo: string) {
-    switch (tipo) {
-      case 'suv':
-      case 'sedan':
-        this.maxOcupantes = 4;
-        break;
-      case 'minivan':
-        this.maxOcupantes = 6;
-        break;
-      case 'camioneta':
-        this.maxOcupantes = 4;
-        break;
-         case 'camion':
-        this.maxOcupantes = 4;
-        break;
-      default:
-        this.maxOcupantes = 4;
-    }
+    this.maxOcupantes = tipo === 'minivan' ? 6 : 4;
+    // ajustar validador max
+    this.registroForm.get('ocupantes')!.setValidators([
+      Validators.required,
+      Validators.min(1),
+      Validators.max(this.maxOcupantes)
+    ]);
+    this.registroForm.get('ocupantes')!.updateValueAndValidity();
   }
 
-  async onSubmit(){
+  private async showToast(msg: string, color: 'success'|'warning'|'danger'='success') {
+    const t = await this.toastCtrl.create({ message: msg, duration: 2000, color });
+    await t.present();
+  }
+
+  async onSubmit() {
     if (this.registroForm.invalid) {
-      console.log(this.registroForm.value);
-      console.log(this.registroForm.errors);
       this.registroForm.markAllAsTouched();
-      this.mostrarToast('Formulario incompleto. Revisa los errores.', 'danger');
-      return;
+      return this.showToast('Formulario incompleto', 'danger');
     }
-  
+
     const v = this.registroForm.value;
 
-    if (v.puntoSalida === v.centro) {
-      return this.mostrarToast(
-        'Punto de salida y destino no pueden ser iguales',
-        'warning'
-      );
+    if (v.puntoSalida === v.centro && !this.showOtroDestino) {
+      return this.showToast('Salida y destino no pueden coincidir', 'warning');
     }
 
-    const dentroComuna = v.dentroComuna ? 'si' : 'no';
-    const necesitaCarga = v.necesitaCarga ? 'si' : 'no';
-    
-  
+    // arma el objeto a guardar
     const solicitud = {
-      id: Date.now().toString(), 
-      puntoSalida:  v.puntoSalida,
-      centro:       v.centro,
-      dentroComuna,                        // "si" / "no"
-      necesitaCarga,                       // "si" / "no"
-      direccion:    v.direccion || null,
-      fecha:        v.fecha,
-      hora:         v.hora,
-      motivo:       v.motivo,
-      ocupante:     v.ocupante,
+      id: Date.now().toString(),
+      solicitante: this.usuarioActivo?.usuario || 'desconocido',
+      puntoSalida: v.puntoSalida,
+      direccionSalida: v.direccionSalida || null,
+      centro: v.centro,
+      direccionDestino: v.direccionDestino || null,
+      dentroComuna: v.dentroComuna ? 'si' : 'no',
+      necesitaCarga: v.necesitaCarga ? 'si' : 'no',
+      fecha: v.fecha,
+      hora: v.hora,
+      tiempoUso: v.tiempoUso,
       tipoVehiculo: v.tipoVehiculo,
-      ocupantes:    v.ocupantes,
-      estado:       'pendiente',
-      fechaRegistro: new Date().toISOString(),
-      solicitante: this.usuarioActivo?.usuario || 'desconocido'
+      ocupantes: v.ocupantes,
+      motivo: v.motivo,
+      ocupante: v.ocupante,
+      estado: 'pendiente',
+      fechaRegistro: new Date().toISOString()
     };
-  
+
     try {
-      await this.agendaServicio.agregarHorario(v.fecha, v.hora);
-      await Memorialocal.guardar('viajesSolicitados', solicitud); 
+      await this.agenda.agregarHorario(v.fecha, v.hora);
+      await Memorialocal.guardar('viajesSolicitados', solicitud);
       this.registroForm.reset();
-      this.mostrarToast('Solicitud de viaje registrada con éxito');
-    } catch (error) {
-      this.mostrarToast('Error al guardar la solicitud', 'danger');
-    };
-
-
+      this.showToast('Solicitud creada', 'success');
+    } catch {
+      this.showToast('Error al guardar', 'danger');
+    }
   }
+
 
   
 
