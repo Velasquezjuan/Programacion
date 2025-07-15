@@ -12,7 +12,7 @@ import { IonContent, IonApp, IonMenu, IonMenuButton, IonHeader, IonTitle, IonToo
   styleUrls: ['./solicitud-viaje-emergencia.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [IonContent, IonApp, IonMenu, IonMenuButton, IonHeader, IonTitle, IonToolbar, IonInput, IonDatetime,
+  imports: [IonContent, IonMenuButton, IonHeader, IonTitle, IonToolbar, IonInput, IonDatetime,
     IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect, 
     IonSelectOption, CommonModule, FormsModule ]
 })

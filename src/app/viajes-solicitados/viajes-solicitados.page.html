@@ -2,8 +2,8 @@
   <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
 
   <div class="ion-page" id="main-content">
-    <ion-header>
-      <ion-toolbar>
+    <ion-header [translucent]="true">
+      <ion-toolbar color="primary">
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
@@ -34,8 +34,9 @@
 
             <p>
               <strong>Punto de destino:</strong>
-              {{ getDestinoLabel(sol) }}
+              {{ getDestinoLabel(sol) }} 
             </p> 
+
             <p><strong>Vehículo Esperado:</strong> {{ sol.tipoVehiculo }}</p>
             <p><strong>Motivo:</strong> {{ sol.motivo }}</p>
             <p><strong>necesita Carga:</strong> {{ sol.necesitaCarga }}</p>

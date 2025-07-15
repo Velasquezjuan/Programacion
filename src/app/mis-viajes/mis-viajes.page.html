@@ -1,0 +1,53 @@
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+    <ion-title>Mis Viajes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Select de filtro -->
+  <ion-item>
+    <ion-label>Estado:</ion-label>
+    <ion-select [value]="filtro" (ionChange)="onFiltroChange($event)">
+      <ion-select-option *ngFor="let e of estados" [value]="e.value">
+        {{e.label}}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ng-container *ngIf="viajes.length; else noHay">
+    <ion-card *ngFor="let v of viajes"
+              class="card-wrapper"
+              [ngClass]="getBorderClass(v.estado)">
+      <ion-card-header>
+        <ion-card-title>Solicitud Nº {{v.id}} – {{v.estado | titlecase}}</ion-card-title>
+        <ion-card-subtitle>Fecha: {{v.fecha}} – Hora: {{v.hora}}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Solicitante:</strong> {{v.solicitante}}</p>
+        <p><strong>Punto Salida:</strong> {{v.puntoSalida}}
+           <span *ngIf="v.direccionSalida">– {{v.direccionSalida}}</span>
+        </p>
+        <p><strong>Punto Destino:</strong> {{v.centro}}
+           <span *ngIf="v.direccionDestino">– {{v.direccionDestino}}</span>
+        </p>
+        <p><strong>Vehículo:</strong> {{v.tipoVehiculo}}</p>
+        <p><strong>Ocupantes:</strong> {{v.ocupantes}}</p>
+        <p><strong>Motivo:</strong> {{v.motivo}}</p>
+        <p *ngIf="v.estado==='rechazado'">
+          <strong>Razón Rechazo:</strong> {{v.motivoRechazo}}
+        </p>
+        <p><strong>¿Carga?</strong> {{v.necesitaCarga}}</p>
+        <p><strong>Responsable:</strong> {{v.ocupante}}</p>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-template #noHay>
+    <h2 class="ion-text-center ion-margin-top">No tienes viajes registrados.</h2>
+    <p class="ion-text-center">Puedes solicitar un viaje desde la sección "Solicitar Viaje".</p>
+  </ng-template>
+
+</ion-content>

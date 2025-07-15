@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } 
 import { Router } from '@angular/router';
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonInput, 
+import { IonContent, IonHeader, IonToolbar, IonInput, 
          IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect, 
          IonSelectOption,  } from '@ionic/angular/standalone';
 import { Validadores } from '../validador/validadores';

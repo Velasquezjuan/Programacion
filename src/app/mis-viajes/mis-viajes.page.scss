@@ -1,0 +1,20 @@
+.card-wrapper {
+  max-width: 600px;
+  margin: 1rem auto;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 8px;
+}
+
+.border-success {
+  border-color: var(--ion-color-success);
+}
+.border-warning {
+  border-color: var(--ion-color-warning);
+}
+.border-danger {
+  border-color: var(--ion-color-danger);
+}
+.border-primary {
+  border-color: var(--ion-color-primary);
+}

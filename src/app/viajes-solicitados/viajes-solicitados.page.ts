@@ -23,7 +23,6 @@ interface Solicitud {
   centroAtmSalida?: string
   nivelCentralSalida?: string; 
   puntoDestino?: string;  
-  centro?: string; 
   direccionDestino?: string;   
   centroSaludDestino?:  string;
   centroEducacionDestino?: string;
@@ -260,12 +259,11 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   /** etiqueta para punto de salida */
- private formatLabelWithAddress(
+ private formatLabelWithAddress( 
   list: Array<{ value: string; label: string }>,
-  code?: string,
-  address?: string
+  code: string,
+  address: string
 ): string {
-  if (!code) return '';
   const found = list.find(i => i.value === code);
   const label = found ? found.label : code;
   return address ? `${label} – ${address}` : label;
@@ -276,6 +274,7 @@ getSalidaLabel(sol: Solicitud): string {
   let list = this.centros.central;
   let code = sol.puntoSalida;
   let subCode = sol.direccionSalida;
+
   switch (sol.puntoSalida) {
     case 'salud':
       list = this.centros.salud;
@@ -289,33 +288,34 @@ getSalidaLabel(sol: Solicitud): string {
       list = this.centros.atm;
       subCode = sol.centroAtmSalida || '';
       break;
-    case 'nivelCentral':
   }
-  return this.formatLabelWithAddress(list, code, subCode);
+
+  // Aquí forzamos string (nunca undefined)
+  return this.formatLabelWithAddress(list, code, subCode ?? '');
 }
 
 /** etiqueta para punto de destino */
 getDestinoLabel(sol: Solicitud): string {
-  let list = this.centros.central;       // fallback
-  let code = sol.puntoDestino;           // el valor del select principal
-  let subCode = sol.direccionDestino;    // aquí guardamos el id del sub-centro
-  switch (sol.puntoDestino) {
+  let list = this.centros.central;
+  let code = sol.puntoDestino   || '';
+  let sub  = sol.direccionDestino || '';
+
+  switch (code) {
     case 'salud':
       list = this.centros.salud;
-      subCode = sol.centroSaludDestino;
+      sub  = sol.centroSaludDestino   || sub;
       break;
     case 'educacion':
       list = this.centros.educacion;
-      subCode = sol.centroEducacionDestino;
+      sub  = sol.centroEducacionDestino || sub;
       break;
     case 'atm':
       list = this.centros.atm;
-      subCode = sol.centroAtmDestino;
+      sub  = sol.centroAtmDestino     || sub;
       break;
-    case 'nivelCentral':
   }
-  // Si es “otro”, el método formatLabelWithAddress ya muestra solo la dirección libre
-  return this.formatLabelWithAddress(list, code, subCode);
-}
 
+  // Y aquí igual, garantizamos un string
+  return this.formatLabelWithAddress(list, code, sub ?? '');
+}
 }

@@ -55,7 +55,8 @@ export class MenuLateralComponent {
     { label: 'Registro Vehículo',   path: '/registro-vehiculo',   roles: ['adminSistema','its'] },
     { label: 'Bitácora',            path: '/bitacora',            roles: ['adminSistema','its','conductor'] },
     { label: 'Gestión',             path: '/gestion',             roles: ['adminSistema','coordinador'] },
-    { label: 'calendario',          path: 'calendario',        roles: ['adminSistema','coordinador','its',] },
+    { label: 'Calendario',          path: '/calendario',        roles: ['adminSistema','conductor','its','solicitante','coordinador'] },
+    { label: 'Mis Viajes',          path: '/mis-viajes',        roles: ['adminSistema','conductor','its','solicitante','coordinador'] },
   ];
 
   constructor(

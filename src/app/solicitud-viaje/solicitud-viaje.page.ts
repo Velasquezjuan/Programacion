@@ -29,161 +29,148 @@ import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 })
 export class SolicitudViajePage implements OnInit {
  registroForm!: FormGroup;
-
-  // listas de centros
   centros = {
-    central:   [] as Array<{ value: string; label: string }>,
-    salud:     [] as Array<{ value: string; label: string }>,
-    educacion: [] as Array<{ value: string; label: string }>,
-    atm:       [] as Array<{ value: string; label: string }>
+    central:     [] as { value:string; label:string }[],
+    salud:       [] as { value:string; label:string }[],
+    educacion:   [] as { value:string; label:string }[],
+    atm:         [] as { value:string; label:string }[]
   };
-  auto = { vehiculo: [] as Array<{ value: string; label: string }> };
+  auto = {
+    vehiculo: [] as { value:string; label:string }[]
+  };
 
-  // visibilidades
-  showOtroSalida = false;
-  showSaludSalida = false;
-  showEducacionSalida = false;
-  showAtmSalida = false;
-  showNivelCentralSalida = false;
+  showOtroSalida     = false;
+  showSaludSalida    = false;
+  showEducacionSalida= false;
+  showAtmSalida      = false;
+  // nivelCentralSalida no necesita input adicional
 
-  showOtroDestino = false;
-  showSaludDestino = false;
-  showEducacionDestino = false;
-  showAtmDestino = false;
-  showNivelCentralDestino = false;
+  showOtroDestino     = false;
+  showSaludDestino    = false;
+  showEducacionDestino= false;
+  showAtmDestino      = false;
+  // nivelCentralDestino no necesita input adicional
 
-  // control de ocupantes
-  maxOcupantes = 9;
-
-  // usuario
-  usuarioActivo: { usuario: string; rol: string } | null = null;
   rolUsuario = '';
+  usuarioActivo: { usuario:string; rol:string } | null = null;
+   maxOcupantes = 9;
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private toastCtrl: ToastController,
+    private fb:      FormBuilder,
+    private router:  Router,
+    private toast:   ToastController,
     private centroSvc: CentroServicio,
-    private auth: AutentificacionUsuario,
-    public agenda: Agenda
+    private auth:    AutentificacionUsuario,
+    public agenda:   Agenda
   ) {}
 
   async ngOnInit() {
-    // 1) FormGroup
+    // 1) Formulario
     this.registroForm = this.fb.group({
       // SALIDA
-      puntoSalida:         ['', Validators.required],
-      direccionSalida:     [''],
-      centroSaludSalida:   [''],
+      puntoSalida:        ['', Validators.required],
+      direccionSalida:    [''],
+      centroSaludSalida:     [''],
       centroEducacionSalida: [''],
-      centroAtmSalida:     [''],
-      nivelCentralSalida:  [false],
+      centroAtmSalida:       [''],
+      nivelCentralSalida:    [false],
       // DESTINO
-      puntoDestino:        ['', Validators.required],
-      direccionDestino:    [''],
-      centroSaludDestino:  [''],
+      puntoDestino:       ['', Validators.required],
+      direccionDestino:   [''],
+      centroSaludDestino:     [''],
       centroEducacionDestino: [''],
-      centroAtmDestino:    [''],
-      nivelCentralDestino: [false],
-      // COMUNES
-      dentroComuna:        [false],
-      necesitaCarga:       [false],
-      fecha:               ['', Validators.required],
-      hora:                ['', Validators.required],
-      tiempoUso:           ['', Validators.required],
-      tipoVehiculo:        ['', Validators.required],
-      ocupantes:           [
-        '',
-        [Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]
-      ],
-      motivo:              ['', Validators.required],
-      ocupante:            ['', Validators.required]
+      centroAtmDestino:       [''],
+      nivelCentralDestino:    [false],
+      // RESTO
+      dentroComuna: [false],
+      necesitaCarga:[false],
+      fecha:        ['', Validators.required],
+      hora:         ['', Validators.required],
+      tiempoUso:    ['', Validators.required],
+      tipoVehiculo: ['', Validators.required],
+      ocupantes:    ['', [Validators.required, Validators.min(1)]],
+      motivo:       ['', Validators.required],
+      ocupante:     ['', Validators.required]
     });
 
-    // 2) cargar listas
+    // 2) Carga catálogos
     this.centros.central   = this.centroSvc.obtenerCentros('central');
     this.centros.salud     = this.centroSvc.obtenerCentros('salud');
     this.centros.educacion = this.centroSvc.obtenerCentros('educacion');
     this.centros.atm       = this.centroSvc.obtenerCentros('atm');
     this.auto.vehiculo     = this.centroSvc.obtenerAuto('vehiculo');
 
-    // 3) usuario activo
+    // 3) Usuario activo
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
     this.rolUsuario    = this.usuarioActivo?.rol ?? '';
   }
 
-  /** Punto de SALIDA */
+  // ─── CAMBIOS DINÁMICOS ─────────────────────────────────────────────────────
+
   onSalidaChange(ev: any) {
-    const v = ev.detail.value;
-    this.showOtroSalida = v === 'otro';
-    this.showSaludSalida = this.showEducacionSalida = this.showAtmSalida = this.showNivelCentralSalida = false;
+    const val = ev.detail.value;
+    this.showOtroSalida      = val === 'otro';
+    this.showSaludSalida     = val === 'salud';
+    this.showEducacionSalida = val === 'educacion';
+    this.showAtmSalida       = val === 'atm';
+    // nivelCentralSalida: no necesita ningún otro input
 
     // limpiar validaciones
-    ['direccionSalida','centroSaludSalida','centroEducacionSalida','centroAtmSalida']
+    ['direccionSalida',
+     'centroSaludSalida','centroEducacionSalida','centroAtmSalida']
       .forEach(k => this.registroForm.get(k)!.clearValidators());
 
     if (this.showOtroSalida) {
       this.registroForm.get('direccionSalida')!.setValidators([Validators.required]);
-    } else {
-      switch (v) {
-        case 'salud':
-          this.showSaludSalida = true;
-          this.registroForm.get('centroSaludSalida')!.setValidators([Validators.required]);
-          break;
-        case 'educacion':
-          this.showEducacionSalida = true;
-          this.registroForm.get('centroEducacionSalida')!.setValidators([Validators.required]);
-          break;
-        case 'atm':
-          this.showAtmSalida = true;
-          this.registroForm.get('centroAtmSalida')!.setValidators([Validators.required]);
-          break;
-        case 'nivelCentral':
-          this.showNivelCentralSalida = true;
-          break;
-      }
     }
+    if (this.showSaludSalida) {
+      this.registroForm.get('centroSaludSalida')!.setValidators([Validators.required]);
+    }
+    if (this.showEducacionSalida) {
+      this.registroForm.get('centroEducacionSalida')!.setValidators([Validators.required]);
+    }
+    if (this.showAtmSalida) {
+      this.registroForm.get('centroAtmSalida')!.setValidators([Validators.required]);
+    }
+
     // actualizar
-    ['direccionSalida','centroSaludSalida','centroEducacionSalida','centroAtmSalida']
+    ['direccionSalida',
+     'centroSaludSalida','centroEducacionSalida','centroAtmSalida']
       .forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
   }
 
-  /** Punto de DESTINO */
   onDestinoChange(ev: any) {
-    const v = ev.detail.value;
-    this.showOtroDestino = v === 'otro';
-    this.showSaludDestino = this.showEducacionDestino = this.showAtmDestino = this.showNivelCentralDestino = false;
+    const val = ev.detail.value;
+    this.showOtroDestino      = val === 'otro';
+    this.showSaludDestino     = val === 'salud';
+    this.showEducacionDestino = val === 'educacion';
+    this.showAtmDestino       = val === 'atm';
+    // nivelCentralDestino: no necesita más input
 
-    ['direccionDestino','centroSaludDestino','centroEducacionDestino','centroAtmDestino']
+    ['direccionDestino',
+     'centroSaludDestino','centroEducacionDestino','centroAtmDestino']
       .forEach(k => this.registroForm.get(k)!.clearValidators());
 
     if (this.showOtroDestino) {
       this.registroForm.get('direccionDestino')!.setValidators([Validators.required]);
-    } else {
-      switch (v) {
-        case 'salud':
-          this.showSaludDestino = true;
-          this.registroForm.get('centroSaludDestino')!.setValidators([Validators.required]);
-          break;
-        case 'educacion':
-          this.showEducacionDestino = true;
-          this.registroForm.get('centroEducacionDestino')!.setValidators([Validators.required]);
-          break;
-        case 'atm':
-          this.showAtmDestino = true;
-          this.registroForm.get('centroAtmDestino')!.setValidators([Validators.required]);
-          break;
-        case 'nivelCentral':
-          this.showNivelCentralDestino = true;
-          break;
-      }
     }
-    ['direccionDestino','centroSaludDestino','centroEducacionDestino','centroAtmDestino']
+    if (this.showSaludDestino) {
+      this.registroForm.get('centroSaludDestino')!.setValidators([Validators.required]);
+    }
+    if (this.showEducacionDestino) {
+      this.registroForm.get('centroEducacionDestino')!.setValidators([Validators.required]);
+    }
+    if (this.showAtmDestino) {
+      this.registroForm.get('centroAtmDestino')!.setValidators([Validators.required]);
+    }
+
+    ['direccionDestino',
+     'centroSaludDestino','centroEducacionDestino','centroAtmDestino']
       .forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
   }
 
   actualizarMaxOcupantes(tipo: string) {
-    this.maxOcupantes = tipo === 'minivan' ? 6 : 4;
+    this.maxOcupantes = tipo === 'minivan' ? 9 : 4;
     // ajustar validador max
     this.registroForm.get('ocupantes')!.setValidators([
       Validators.required,
@@ -192,42 +179,51 @@ export class SolicitudViajePage implements OnInit {
     ]);
     this.registroForm.get('ocupantes')!.updateValueAndValidity();
   }
-
   private async showToast(msg: string, color: 'success'|'warning'|'danger'='success') {
-    const t = await this.toastCtrl.create({ message: msg, duration: 2000, color });
+    const t = await this.toast.create({ message: msg, color, duration: 2000 });
     await t.present();
   }
+
+  // ─── ENVÍO ──────────────────────────────────────────────────────────────────
 
   async onSubmit() {
     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
-      return this.showToast('Formulario incompleto', 'danger');
+      return this.showToast('Formulario incompleto','danger');
     }
-
     const v = this.registroForm.value;
 
-    if (v.puntoSalida === v.centro && !this.showOtroDestino) {
-      return this.showToast('Salida y destino no pueden coincidir', 'warning');
-    }
-
-    // arma el objeto a guardar
+    // arma el objeto
     const solicitud = {
       id: Date.now().toString(),
-      solicitante: this.usuarioActivo?.usuario || 'desconocido',
-      puntoSalida: v.puntoSalida,
-      direccionSalida: v.direccionSalida || null,
-      centro: v.centro,
-      direccionDestino: v.direccionDestino || null,
-      dentroComuna: v.dentroComuna ? 'si' : 'no',
-      necesitaCarga: v.necesitaCarga ? 'si' : 'no',
+      solicitante: this.usuarioActivo?.usuario||'desconocido',
       fecha: v.fecha,
-      hora: v.hora,
-      tiempoUso: v.tiempoUso,
-      tipoVehiculo: v.tipoVehiculo,
-      ocupantes: v.ocupantes,
-      motivo: v.motivo,
-      ocupante: v.ocupante,
-      estado: 'pendiente',
+      hora:  v.hora,
+
+      // SALIDA
+      puntoSalida: v.puntoSalida,
+      direccionSalida:      this.showOtroSalida      ? v.direccionSalida      : undefined,
+      centroSaludSalida:    this.showSaludSalida     ? v.centroSaludSalida     : undefined,
+      centroEducacionSalida:this.showEducacionSalida ? v.centroEducacionSalida : undefined,
+      centroAtmSalida:      this.showAtmSalida       ? v.centroAtmSalida       : undefined,
+      nivelCentralSalida:   v.puntoSalida==='nivelCentral',
+
+      // DESTINO
+      puntoDestino: v.puntoDestino,
+      direccionDestino:      this.showOtroDestino      ? v.direccionDestino      : undefined,
+      centroSaludDestino:    this.showSaludDestino     ? v.centroSaludDestino     : undefined,
+      centroEducacionDestino:this.showEducacionDestino ? v.centroEducacionDestino : undefined,
+      centroAtmDestino:      this.showAtmDestino       ? v.centroAtmDestino       : undefined,
+      nivelCentralDestino:   v.puntoDestino==='nivelCentral',
+
+      dentroComuna:  v.dentroComuna ? 'si':'no',
+      necesitaCarga: v.necesitaCarga? 'si':'no',
+      tiempoUso:     v.tiempoUso,
+      tipoVehiculo:  v.tipoVehiculo,
+      ocupantes:     v.ocupantes,
+      motivo:        v.motivo,
+      ocupante:      v.ocupante,
+      estado:        'pendiente',
       fechaRegistro: new Date().toISOString()
     };
 
@@ -235,9 +231,9 @@ export class SolicitudViajePage implements OnInit {
       await this.agenda.agregarHorario(v.fecha, v.hora);
       await Memorialocal.guardar('viajesSolicitados', solicitud);
       this.registroForm.reset();
-      this.showToast('Solicitud creada', 'success');
+      this.showToast('Solicitud creada','success');
     } catch {
-      this.showToast('Error al guardar', 'danger');
+      this.showToast('Error al guardar','danger');
     }
   }
 
