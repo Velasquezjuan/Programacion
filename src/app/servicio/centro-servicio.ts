@@ -134,7 +134,7 @@ export class CentroServicio {
         
     }
 
-    obtenerCentros(tipo: 'salud' | 'educacion' | 'atm' | 'central'): any[] {
+    obtenerCentros(tipo: 'salud' | 'educacion' | 'atm' | 'central' ): any[] {
         return this.centros[tipo] || [];
       }
 
