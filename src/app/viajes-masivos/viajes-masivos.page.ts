@@ -121,11 +121,14 @@ export class ViajesMasivosPage implements OnInit {
     return this.planificacionForm.get('horarios') as FormArray;
   }
 
+  // SOLUCIÓN: Se añaden los campos de origen y destino a cada nuevo horario.
   nuevoHorario(): FormGroup {
     return this.fb.group({
       inicio: ['08:00', Validators.required],
       fin: ['17:00', Validators.required],
-      programa: ['', Validators.required] 
+      programa: ['', Validators.required],
+      origen: ['', Validators.required],
+      destino: ['', Validators.required]
     });
   }
 
@@ -166,10 +169,6 @@ export class ViajesMasivosPage implements OnInit {
       return;
     }
 
-    // ==================================================================
-    // ||           SOLUCIÓN: AQUÍ ESTÁ LA MAGIA                     ||
-    // ==================================================================
-    // 1. Buscamos el objeto COMPLETO del vehículo seleccionado.
     const vehiculoSeleccionado = this.vehiculos.find(v => v.id === formValue.vehiculo);
     if (!vehiculoSeleccionado) {
       this.mostrarToast('Error: Vehículo no encontrado.', 'danger');
@@ -179,13 +178,12 @@ export class ViajesMasivosPage implements OnInit {
     const nuevosViajes = [];
     for (const fechaStr of diasSeleccionados) {
       for (const horario of formValue.horarios) {
-        // 2. Buscamos el objeto COMPLETO del programa seleccionado.
         const programaSeleccionado = this.programa.prog.find(p => p.value === horario.programa);
 
         const nuevoViaje = {
           id: `viaje-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          origen: 'Por definir',
-          destino: 'Por definir',
+          origen: horario.origen,
+          destino: horario.destino,
           fecha: new Date(fechaStr).toISOString().split('T')[0],
           hora_inicio: horario.inicio,
           hora_fin: horario.fin,
@@ -193,13 +191,11 @@ export class ViajesMasivosPage implements OnInit {
           motivo: formValue.motivo,
           responsable: formValue.responsable,
           estado: 'Agendado',
-          
-          // 3. Añadimos los DATOS ENRIQUECIDOS que el calendario necesita.
           idVehiculo: vehiculoSeleccionado.id,
-          vehiculo: `${vehiculoSeleccionado.patente}`, // Guardamos la patente para mostrar
-          conductor: vehiculoSeleccionado.conductor, // Guardamos el nombre del conductor
+          vehiculo: `${vehiculoSeleccionado.tipo || 'Vehículo'}: ${vehiculoSeleccionado.patente}`,
+          conductor: vehiculoSeleccionado.conductor,
           idPrograma: programaSeleccionado ? programaSeleccionado.value : 'N/A',
-          programa: programaSeleccionado ? programaSeleccionado.label : 'No especificado' // Guardamos el nombre del programa
+          programa: programaSeleccionado ? programaSeleccionado.label : 'No especificado'
         };
         nuevosViajes.push(nuevoViaje);
       }
@@ -224,7 +220,6 @@ export class ViajesMasivosPage implements OnInit {
     });
     toast.present();
   }
-
   goToHomePage() {
     this.router.navigate(['/home']);
   }
