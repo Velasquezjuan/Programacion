@@ -10,12 +10,11 @@
 
 /* Estilo del logo */
 .logo-image {
+  display: block;
+  margin: 16px auto;
   max-height: 120px;
   width: auto;
-  margin: 16px auto;
-  display: block;
 }
-
 /* Alineación centrada del título */
 .text-center {
   text-align: center;

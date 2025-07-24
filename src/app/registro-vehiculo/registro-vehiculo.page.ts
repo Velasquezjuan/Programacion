@@ -1,4 +1,4 @@
-import { Component, OnInit,CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit,CUSTOM_ELEMENTS_SCHEMA, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CentroServicio } from '../servicio/centro-servicio';
@@ -25,6 +25,10 @@ import { Memorialocal } from '../almacen/memorialocal';
 })
 export class RegistroVehiculoPage implements OnInit {
 
+   @ViewChild('yearPicker', { static: false }) yearPicker!: ElementRef;
+  @ViewChild('revPicker',  { static: false }) revPicker!:  ElementRef;
+
+
   centros: {
     salud: any[];
     atm: any[];
@@ -42,7 +46,9 @@ export class RegistroVehiculoPage implements OnInit {
   programa: { prog: any[] } = { prog: [] };
   
   registroForm!: FormGroup; //Dar la valides del formulario
-
+  startYear = 2015;
+  endYear   = new Date().getFullYear();
+  today     = new Date().toISOString();
   
 
   showNivelCentralFields = false;
@@ -111,10 +117,11 @@ export class RegistroVehiculoPage implements OnInit {
       marca: ['',Validators.compose([ Validators.required, Validadores.soloTexto])],
       modelo: ['',Validators.compose([ Validators.required, Validadores.soloTexto])],
       centro: ['', Validators.required],
-      centroSalud: ['',],
+      centroSalud1: ['',],
+      centroSalud2: ['',],
       tieneCarga: [''],
       tipoVehiculo: ['',Validators.compose([ Validators.required, Validadores.soloTexto])],
-      añoVehiculo: ['',Validators.required],
+      anoVehiculo: ['',Validators.required],
       conductorTitular: ['',Validators.compose( [Validators.required, Validadores.soloTexto])],
       conductorReemplazo: ['',Validators.compose( [Validators.required, Validadores.soloTexto])],
       programa: ['',Validators.required],
@@ -139,25 +146,25 @@ export class RegistroVehiculoPage implements OnInit {
     };
 
   }
-   // Método para abrir la selección del año
-   openYearPicker() {
-    this.showYearPicker = true;
+   // Abre el picker de años
+   // Abrir selector de año (llama a open() del web‑component)
+  openYearPicker() {
+    (this.yearPicker.nativeElement as any).open();
   }
 
-  // Método para cerrar la selección del año
-  closeYearPicker() {
-    this.registroForm.patchValue({ añoVehiculo: this.selectedYear });
-    this.showYearPicker = false;
-  }
-  onYearSelected(event: any) {
-    const fullDate = event.detail.value; 
-    const year = new Date(fullDate).getFullYear().toString(); 
-
-    this.selectedYear = year;
-    this.registroForm.patchValue({ añoVehiculo: year });
-    this.showYearPicker = false;
+  onYearSelected(ev: any) {
+    const year = new Date(ev.detail.value).getFullYear().toString();
+    this.registroForm.patchValue({ anoVehiculo: year });
   }
 
+  // Abrir selector de revisión técnica
+  openRevPicker() {
+    (this.revPicker.nativeElement as any).open();
+  }
+
+  onRevSelected(ev: any) {
+    this.registroForm.patchValue({ fechaRevision: ev.detail.value });
+  }
   //Método para rutear las paginas en el menú
   
   onCentroChange(event: any) {

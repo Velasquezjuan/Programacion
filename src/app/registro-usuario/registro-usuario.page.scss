@@ -15,11 +15,11 @@ ion-col[size="12"] {
 
 
 .logo-image {
-    max-height: 150px;
-    width: auto;
-    object-fit: contain;
-    margin: 0 auto;
-  }
+  display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
+}
   
   .large-icon {
     width: 40px;

@@ -12,6 +12,9 @@
     </ion-header>
 
     <ion-content [fullscreen]="true" class="ion-padding">
+      <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
+          </ion-col>
       <ng-container *ngIf="solicitudes.length; else noHay">
         <ion-card
           *ngFor="let sol of solicitudes; trackBy: trackByFn"

@@ -13,11 +13,10 @@ ion-col[size="12"] {
 }
 
 .logo-image {
-  max-width: 100%;
-  width: 180px;
-  height: auto;
-  margin: 0 auto;
   display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
 }
 
 @media (min-width: 576px) {

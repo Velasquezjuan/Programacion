@@ -88,4 +88,8 @@ export const routes: Routes = [
     path: 'mis-viajes',
     loadComponent: () => import('./mis-viajes/mis-viajes.page').then( m => m.MisViajesPage)
   },
+  {
+    path: 'viajes-masivos',
+    loadComponent: () => import('./viajes-masivos/viajes-masivos.page').then( m => m.ViajesMasivosPage)
+  },
 ];

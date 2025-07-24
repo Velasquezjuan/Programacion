@@ -6,6 +6,9 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
+          </ion-col>
 
   <!-- Select de filtro -->
   <ion-item>
@@ -27,11 +30,10 @@
       </ion-card-header>
       <ion-card-content>
         <p><strong>Solicitante:</strong> {{v.solicitante}}</p>
-        <p><strong>Punto Salida:</strong> {{v.puntoSalida}}
-           <span *ngIf="v.direccionSalida">– {{v.direccionSalida}}</span>
+        <p><strong>Punto Salida:</strong> {{ getSalidaLabel(v) }}
         </p>
-        <p><strong>Punto Destino:</strong> {{v.centro}}
-           <span *ngIf="v.direccionDestino">– {{v.direccionDestino}}</span>
+        <p><strong>Punto Destino:</strong> 
+         {{ getDestinoLabel(v) }} 
         </p>
         <p><strong>Vehículo:</strong> {{v.tipoVehiculo}}</p>
         <p><strong>Ocupantes:</strong> {{v.ocupantes}}</p>

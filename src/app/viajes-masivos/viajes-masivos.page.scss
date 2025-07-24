@@ -1,0 +1,56 @@
+:host {
+  ion-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-bottom: 16px;
+  }
+}
+
+// Separación entre las tarjetas para un look más limpio
+ion-card {
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 20px;
+}
+
+// Estilo para el calendario, para que se vea integrado
+.calendar-embedded {
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  border-radius: 8px;
+}
+
+// Contenedor de la fila de horarios, usa Flexbox para la magia responsiva
+.schedule-row {
+  display: flex;
+  flex-wrap: wrap; // Permite que los elementos se muevan a la siguiente línea en pantallas pequeñas
+  align-items: flex-end; // Alinea todo en la parte inferior
+  gap: 8px; // Espacio entre elementos
+  border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+
+  // Contenedor de los 3 inputs
+  .schedule-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1; // Hace que este contenedor ocupe todo el espacio posible
+    gap: 8px;
+
+    ion-item {
+      flex: 1; // Cada input crece para ocupar el espacio disponible
+      min-width: 180px; // Ancho mínimo para que no se aplasten demasiado
+    }
+  }
+
+  // Botón de eliminar
+  .remove-btn {
+    flex-shrink: 0; // Evita que el botón se encoja
+  }
+}
+
+// Botón de envío más grande y vistoso
+.submit-button {
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}

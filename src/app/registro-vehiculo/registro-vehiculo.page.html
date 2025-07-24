@@ -29,7 +29,7 @@
         <ion-grid>
           <ion-row class="ion-justify-content-center">
             <ion-title class="text-center">
-              <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+              <img src="assets/img/Logo cmpa.png" alt="Logo" class="logo-image">
             </ion-title>
           </ion-row>
           
@@ -126,32 +126,39 @@
                 <ion-item>
                   <ion-label>Año Vehículo</ion-label>
                   <ion-button expand="block" fill="outline" (click)="openYearPicker()">
-                    Seleccionar Año
+                    {{ registroForm.value.anoVehiculo || 'Seleccionar Año' }}
                   </ion-button>
                 </ion-item>
-                <ion-text color="danger" *ngIf="registroForm.get('añoVehiculo')?.invalid && registroForm.get('añoVehiculo')?.touched">
+
+                <!-- Muestra el año ya elegido -->
+                <ion-item lines="none" *ngIf="registroForm.get('anoVehiculo')?.value">
+                  <ion-label color="medium">
+                    Año: {{ registroForm.get('anoVehiculo')?.value }}
+                  </ion-label>
+                </ion-item>
+
+                <!-- Mensaje de error si no se selecciona -->
+                <ion-text
+                  color="danger"
+                  *ngIf="registroForm.get('anoVehiculo')?.touched && registroForm.get('anoVehiculo')?.invalid"
+                >
                   <small>Selecciona el año del vehículo.</small>
                 </ion-text>
-              
-              <ion-item lines="none" *ngIf="registroForm.get('añoVehiculo')?.value">
-                <ion-label color="medium">
-                  Año: {{ registroForm.get('añoVehiculo')?.value }}
-                </ion-label>
-              </ion-item>
-              <ion-text color="danger" *ngIf="registroForm.get('añoVehiculo')?.invalid && registroForm.get('añoVehiculo')?.touched">
-                <small>Selecciona el año del vehículo.</small>
-              </ion-text>
-            </ion-col>
-              
-              <!-- Selector de año -->
-              <ion-col size="12" *ngIf="showYearPicker">
-                <ion-item>
-                  <ion-datetime
-                    presentation="year"
-                    (ionChange)="onYearSelected($event)"
-                  ></ion-datetime>
-                </ion-item>
+
+                <!-- ion-datetime oculto, sólo abre con open() desde el botón -->
+                <ion-datetime
+                  #yearPicker
+                  hidden
+                  presentation="year"
+                  displayFormat="YYYY"
+                  pickerFormat="YYYY"
+                  [min]="startYear + '-01-01'"
+                  [max]="endYear   + '-12-31'"
+                  interface="popover"
+                  (ionChange)="onYearSelected($event)"
+                ></ion-datetime>
               </ion-col>
+
 
           <ion-col size="12">
             <ion-item>
@@ -203,7 +210,13 @@
         <ion-col size="12" *ngIf="showSaludFields">
           <ion-item>
             <ion-label>Centro de salud</ion-label>
-              <ion-select formControlName="centroSalud"  >
+              <ion-select formControlName="centroSalud1"  >
+                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
+              </ion-select>                          
+          </ion-item>
+          <ion-item>
+            <ion-label>Centro de salud</ion-label>
+              <ion-select formControlName="centroSalud2"  >
                 <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
               </ion-select>                          
           </ion-item>

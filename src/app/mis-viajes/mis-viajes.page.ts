@@ -89,7 +89,8 @@ export class MisViajesPage implements OnInit {
   this.centros.salud     = this.centroService.obtenerCentros('salud');
   this.centros.atm       = this.centroService.obtenerCentros('atm');
   this.centros.educacion = this.centroService.obtenerCentros('educacion');
- 
+  this.centros.comunal    = this.centroService.obtenerCentros('comunal' as any);
+  this.centros.otro       = this.centroService.obtenerCentros('otro' as any);
   
   const usr = await this.auth.obtenerUsuarioActivo();
     this.usuarioActivo = usr?.usuario ?? '';

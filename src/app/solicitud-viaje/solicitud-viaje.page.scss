@@ -45,12 +45,12 @@ ion-checkbox {
     border: 2px solid #6815ec;
   }
 
-  .logo-image {
-    max-height: 150px;
-    width: auto;
-    object-fit: contain;
-    margin: 0 auto;
-  }
+.logo-image {
+  display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
+}
   
   .large-icon {
     width: 40px;

@@ -10,14 +10,15 @@ export class Memorialocal {
   private static initDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
       // Usamos versión alta para asegurarnos de que siempre sea >= la existente
-      this.dbPromise = openDB('AppDB', 10, {
+      this.dbPromise = openDB('AppDB', 11, {
         upgrade(db) {
           const stores = [
             'usuarios',
             'usuarioActivo',
             'usuarioDesactivado',
             'vehiculos',
-            'viajesSolicitados'
+            'viajesSolicitados',
+            'programas',
           ];
           for (const storeName of stores) {
             if (!db.objectStoreNames.contains(storeName)) {
@@ -166,5 +167,21 @@ export class Memorialocal {
       await os.put(nuevo);
     }
     await tx.done;
+  }
+static async getVehiculosConConductor(): Promise<any[]> {
+    const vehiculos = await this.obtener('vehiculos') || [];
+    const usuarios = await this.obtener('usuarios') || [];
+    const conductores = usuarios.filter(u => (u as any).rol === 'conductor') as Array<{ id: string; nombre: string; rol: string }>;
+    const vehiculosCombinados = vehiculos.map(vehiculo => {
+      const v = vehiculo as { id: string; patente: string; capacidad: number; idConductor: string };
+      const conductorAsignado = conductores.find((c: { id: string }) => c.id === v.idConductor);
+      return {
+        id: v.id,
+        patente: v.patente,
+        capacidad: v.capacidad,
+        conductor: conductorAsignado ? conductorAsignado.nombre : 'Sin conductor'
+      };
+    });
+    return vehiculosCombinados;
   }
 }

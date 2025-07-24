@@ -1,98 +1,76 @@
+  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
 
   <!-- encabezado-->
   <div class="ion-page" id="main-content">
-    <ion-header >
+    <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
-        <ion-title>Solicitud de Viajes</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="ion-page" id="main-content">
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Solicitud de viajes de emergencia</ion-title>
+        <ion-title>Carga de Viajes</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content [fullscreen]="true">
+      <div class="form-wrapper">
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
       <ion-grid>
         <ion-row>
           <ion-col size="12" class="text-center">
-            <img src="assets/img/Logo 2024 - Firma_azul 1.PNG" alt="Logo" class="logo-image">
+            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
           </ion-col>
         </ion-row>
-
-        <ion-item>
-          <ion-input label="Lugar" type="text" label-placement="floating"
-           fill="outline" placeholder="Ingrese direccion"></ion-input>
-        </ion-item>
-
-
-        <ion-item>
-        <ion-input label="Lugar de salida" type="text" label-placement="floating"
-           fill="outline" placeholder="Ingrese direccion de salida"></ion-input>
-        </ion-item>
+        <ion-col size="12" class="text-center">
+          <h3>Bienvenido a la Planificacion de viajes masivos, 
+            en esta seccion realizaremos nuestra cargar de viajes
+            de forma semanal, por favor complete los campos requeridos.
+            </h3> 
+        </ion-col>
         
-        <ion-datetime-button datetime="datetime"></ion-datetime-button>
 
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-             <ion-datetime
-                id="datetime"
-                presentation="date-time"
-                value="2023-11-02T01:22:00"
-                [formatOptions]="{
-                  date: {
-                    weekday: 'short',
-                    month: 'long',            
-                 },
-                  time: {
-                     hour: '2-digit',
-                     minute: '2-digit',
-                  },
-                }"
-            ></ion-datetime>
-           </ng-template>
-          </ion-modal>
-
-          <ion-item>
-            <ion-label>Tipo de Vehículo</ion-label>
-            <ion-select formControlName="tipoVehiculo">
-              <ion-select-option value="camioneta">Camioneta</ion-select-option>
-              <ion-select-option value="suv">SUV</ion-select-option>
-              <ion-select-option value="minivan">Minivan</ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-input label="Motivo" type="text" label-placement="floating"
-             fill="outline" placeholder="Indique el motivo del uso del movil"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-input label="Cantidad de ocupantes" type="number" label-placement="floating"
-             fill="outline" placeholder="5"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-input label="Ocupante a cargo" type="text" label-placement="floating"
-             fill="outline" placeholder="Indique el ocupante del movil"></ion-input>
-          </ion-item>
-
-          <div class="button-container">
-            <ion-button fill="outline" (click)="goToHomePage()" >Volver</ion-button>
-             
-            <ion-button fill="outline"  >Solicitar viaje</ion-button>
+        
+        <!-- DEMÁS CAMPOS -->
+        <ion-row>
+          <ion-col size="12">
     
-          </div>
+          </ion-col>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="floating">Fecha</ion-label>
+              <ion-input type="date" formControlName="fecha"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="floating">Rango Horario </ion-label>
+              <ion-input type="time" formControlName="hora"></ion-input>
+            </ion-item>
+          </ion-col>
+       
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Cantida de Ocupantes</ion-label>
+              <ion-input type="number" formControlName="ocupantes" [max]="maxOcupantes"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Motivo</ion-label>
+              <ion-input formControlName="motivo"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="floating">Responsable</ion-label>
+              <ion-input formControlName="ocupante"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12">
+            <ion-button expand="block" color="primary" type="submit">Solicitar Viaje</ion-button>
+          </ion-col>
+        </ion-row>
+      
       </ion-grid>
-    </ion-content>
-  </div>
+    </form>
+    </div>
+  </ion-content>
