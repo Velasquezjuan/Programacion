@@ -61,7 +61,7 @@ export class CalendarioPage implements OnInit {
       `;
       return { domNodes: [div] };
     },
-    // manejador por defecto de click (lo sobreescribimos en init)
+    
     eventClick: undefined
   };
 
@@ -71,47 +71,41 @@ export class CalendarioPage implements OnInit {
     private centroSvc: CentroServicio
   ) {}
 
-  async ngOnInit() {
-    // 1) Obtengo usuario y rol
+    async ngOnInit() {
     const usr = await this.auth.obtenerUsuarioActivo();
     this.rolUsuario = usr?.rol ?? null;
     const isAdmin = ['adminSistema', 'its'].includes(this.rolUsuario!);
 
-    // 2) Cargo y filtro solicitudes aceptadas solo para admin o propias
     const todas = await Memorialocal.obtenerSolicitudes();
     const visibles = todas.filter(s =>
-      s.estado === 'aceptado' &&
+      ['aceptado', 'agendado'].includes(s.estado) &&
       (isAdmin || s.solicitante === usr!.usuario)
     );
 
-    // 3) Mapeo a eventos
     this.calendarOptions.events = visibles.map(s => ({
       id: s.id,
       title: s.solicitante,
-      start: `${s.fecha}T${s.hora}`,
-      end: `${s.fecha}T${s.hora}`,
+      start: `${s.fecha}T${s.hora_inicio || s.hora}`,
+      end: `${s.fecha}T${s.hora_fin || s.hora_inicio || s.hora}`,
       allDay: false,
       extendedProps: {
-        puntoSalida: this.getSalidaLabel(s),
-        puntoDestino: this.getDestinoLabel(s),
-        vehiculo: s.tipoVehiculo,
+        puntoSalida: s.puntoSalida ? this.getSalidaLabel(s) : s.origen,
+        puntoDestino: s.puntoDestino ? this.getDestinoLabel(s) : s.destino,
+        vehiculo: s.vehiculo, 
         ocupantes: s.ocupantes,
-        responsable: s.ocupante,
+        responsable: s.responsable || s.ocupante,
         motivo: s.motivo,
-        // mantenemos la fecha/hora originales
         fecha: s.fecha,
-        hora: s.hora
+        hora: s.hora_inicio || s.hora
       }
     }));
 
-    // 4) Si es admin, habilito drag/resize y reagendar con doble click
     if (isAdmin) {
       this.calendarOptions.editable = true;
       this.calendarOptions.eventDurationEditable = true;
       this.calendarOptions.eventResizableFromStart = true;
       this.calendarOptions.eventDrop = this.handleEventDrop.bind(this);
       this.calendarOptions.eventResize = this.handleEventResize.bind(this);
-      // Doble clic para reagendar
       this.calendarOptions.eventClick = async (info) => {
         if (info.jsEvent.detail === 2) {
           await this.abrirReagendar(info.event.id);
@@ -120,12 +114,11 @@ export class CalendarioPage implements OnInit {
         }
       };
     } else {
-      // usuarios normales solo ven detalles
       this.calendarOptions.eventClick = this.handleEventClick.bind(this);
     }
   }
 
-  /** 1) Abre diálogo para reagendar fecha+hora */
+
   async abrirReagendar(solicitudId: string) {
     const todas = await Memorialocal.obtenerSolicitudes();
     const sol = todas.find(s => s.id === solicitudId);
@@ -137,7 +130,7 @@ export class CalendarioPage implements OnInit {
       inputs: [{
         name: 'nuevoDateTime',
         type: 'datetime-local',
-        value: `${sol.fecha}T${sol.hora}`
+        value: `${sol.fecha}T${sol.hora_inicio || sol.hora}`
       }],
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
@@ -158,9 +151,7 @@ export class CalendarioPage implements OnInit {
     await alert.present();
   }
 
-  /** 2) Valida choques y guarda nueva fecha/hora + estado = 'reagendado' */
   private async procesarReagendar(sol: any, nuevaFecha: string, nuevaHora: string) {
-    // evita choque de vehículo
     if (sol.patenteVehiculo) {
       const todas = await Memorialocal.obtenerSolicitudes();
       const choque = todas.find(s =>
@@ -168,32 +159,30 @@ export class CalendarioPage implements OnInit {
         s.estado === 'aceptado' &&
         s.patenteVehiculo === sol.patenteVehiculo &&
         s.fecha === nuevaFecha &&
-        s.hora === nuevaHora
+        (s.hora_inicio || s.hora) === nuevaHora
       );
       if (choque) {
         return this.showToast('Ese vehículo ya está ocupado en ese horario', 'warning');
       }
     }
-    // actualizo
     sol.fecha = nuevaFecha;
-    sol.hora = nuevaHora;
+    sol.hora = nuevaHora; 
+    sol.hora_inicio = nuevaHora;
     sol.estado = 'reagendado';
     await Memorialocal.reemplazarPorCampo('viajesSolicitados', 'id', sol.id, sol);
     this.showToast('Viaje reagendado correctamente.', 'success');
-    // refresco calendario
     this.ngOnInit();
   }
 
-  /** Lookup de etiquetas */
   private lookup(list: { value: string; label: string }[], code?: string): string {
     if (!code) return '';
     const found = list.find(x => x.value === code);
     return found ? found.label : code;
   }
 
-  /** Genera etiqueta salida */
   private getSalidaLabel(s: any): string {
     const code = s.puntoSalida;
+    if (!code) return s.origen || ''; 
     let label = this.lookup(this.centroSvc.obtenerCentros('central'), code);
     const addr = s.direccionSalida || '';
     if (code === 'salud')      label = this.lookup(this.centroSvc.obtenerCentros('salud'), s.centroSaludSalida);
@@ -202,9 +191,9 @@ export class CalendarioPage implements OnInit {
     return addr ? `${label} – ${addr}` : label;
   }
 
-  /** Genera etiqueta destino */
   private getDestinoLabel(s: any): string {
     const code = s.puntoDestino;
+    if (!code) return s.destino || ''; 
     let label = this.lookup(this.centroSvc.obtenerCentros('central'), code);
     const addr = s.direccionDestino || '';
     if (code === 'salud')      label = this.lookup(this.centroSvc.obtenerCentros('salud'), s.centroSaludDestino);
@@ -213,13 +202,11 @@ export class CalendarioPage implements OnInit {
     return addr ? `${label} – ${addr}` : label;
   }
 
-  /** Shows a toast */
   private async showToast(msg: string, color: 'success' | 'warning' | 'danger' = 'success') {
     const t = await this.alertCtrl.create({ message: msg, buttons: ['Cerrar'], cssClass: color });
     await t.present();
   }
 
-  /** Drag & drop */
   async handleEventDrop(dropInfo: any) {
     const ev = dropInfo.event;
     const id = ev.id;
@@ -229,14 +216,13 @@ export class CalendarioPage implements OnInit {
     if (datos) {
       (datos as any).fecha = fecha;
       (datos as any).hora = hora;
+      (datos as any).hora_inicio = hora;
       await Memorialocal.reemplazarPorCampo('viajesSolicitados', 'id', id, datos);
     }
   }
 
-  /** Resize */
-  async handleEventResize(resizeInfo: any) { /* nada extra */ }
+  async handleEventResize(resizeInfo: any) {}
 
-  /** Click normal (detalle) */
   async handleEventClick(clickInfo: EventClickArg) {
     const ev = clickInfo.event;
     const p = ev.extendedProps as any;

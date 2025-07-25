@@ -44,6 +44,16 @@
         <p><strong>¿Carga?</strong> {{v.necesitaCarga}}</p>
         <p><strong>Responsable:</strong> {{v.ocupante}}</p>
       </ion-card-content>
+      <ion-footer *ngIf="v.estado === 'aceptado' || v.estado === 'agendado'">
+      <ion-toolbar>
+        <ion-buttons slot="end">
+          <ion-button fill="outline" color="tertiary" (click)="marcarViajeRealizado(v)">
+            <ion-icon slot="start" name="checkmark-done-circle"></ion-icon>
+            Viaje Realizado
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
     </ion-card>
   </ng-container>
 

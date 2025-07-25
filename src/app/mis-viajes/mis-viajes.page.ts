@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { Memorialocal }            from '../almacen/memorialocal';
 import { AutentificacionUsuario }  from '../servicio/autentificacion-usuario';
 import { CentroServicio }         from '../servicio/centro-servicio';
-
+import { AlertController, ToastController } from '@ionic/angular';
 
 interface Solicitud {
   id: string;
@@ -38,8 +38,10 @@ interface Solicitud {
   motivoRechazo?: string;
   necesitaCarga?: 'si'|'no';
   ocupante: string;
-  estado: 'pendiente'|'aceptado'|'rechazado'|'reagendado';
+  estado: 'pendiente'|'aceptado'|'rechazado'|'reagendado'|'finalizado'|'no realizado'|'agendado';
   fechaRegistro?: string;
+  justificativo?: string; 
+
 }
 
 @Component({
@@ -69,18 +71,22 @@ export class MisViajesPage implements OnInit {
     otro: [] as { value: string; label: string }[]
   };
 
-  estados = [
-    { value: 'todos',     label: 'Todos'      },
-    { value: 'pendiente', label: 'Pendientes' },
-    { value: 'aceptado',  label: 'Aceptados'  },
-    { value: 'rechazado', label: 'Rechazados' },
-    { value: 'reagendado',label: 'Reagendados'}
-  ];
+ estados = [
+  { value: 'todos',      label: 'Todos'       },
+  { value: 'pendiente',  label: 'Pendientes'  },
+  { value: 'aceptado',   label: 'Aceptados'   },
+  { value: 'finalizado', label: 'Finalizados' }, 
+  { value: 'no realizado', label: 'No Realizados' }, 
+  { value: 'rechazado',  label: 'Rechazados'  },
+  { value: 'reagendado', label: 'Reagendados' }
+];
 
   constructor(
     private router: Router,
     private auth: AutentificacionUsuario,
-    private centroService: CentroServicio
+    private centroService: CentroServicio,
+    private alertController: AlertController, 
+    private toastController: ToastController 
   ) {}
 
   async ngOnInit() {
@@ -120,16 +126,18 @@ export class MisViajesPage implements OnInit {
   }
 
   getBorderClass(e: string){
-    switch(e){
-      case 'aceptado':    return 'border-success';
-      case 'rechazado':   return 'border-danger';
-      case 'reagendado':  return 'border-primary';
-      default:            return 'border-warning';
-    }
+  switch(e){
+    case 'aceptado':    return 'border-success';
+    case 'finalizado':  return 'border-tertiary'; 
+    case 'rechazado':   return 'border-danger';
+    case 'no realizado':return 'border-dark'; 
+    case 'reagendado':  return 'border-primary';
+    default:            return 'border-warning';
   }
+}
+
   async cargarViajes() {
     const all = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
-    // sólo los del usuario y que cumplan filtro
     this.todas = all.filter(v =>
       v.solicitante === this.usuarioActivo &&
       (this.filtro === 'todos' || v.estado === this.filtro)
@@ -171,11 +179,11 @@ export class MisViajesPage implements OnInit {
       break;
   }
 
-  // Aquí forzamos string (nunca undefined)
+
   return this.formatLabelWithAddress(list, code, subCode ?? '');
 }
 
-/** etiqueta para punto de destino */
+
 getDestinoLabel(sol: Solicitud): string {
   let list = this.centros.central;
   let code = sol.puntoDestino || '';
@@ -196,9 +204,87 @@ getDestinoLabel(sol: Solicitud): string {
       break;
   }
 
-  // Y aquí igual, garantizamos un string
+ 
   return this.formatLabelWithAddress(list, code, sub ?? '');
 }
+
+async marcarViajeRealizado(viaje: Solicitud) {
+    const alert = await this.alertController.create({
+      header: 'Confirmación de Viaje',
+      message: `¿Se realizó el viaje para "${viaje.motivo}"?`,
+      buttons: [
+        {
+          text: 'No se realizó',
+          role: 'cancel',
+          handler: () => {
+    
+            this.solicitarJustificativo(viaje);
+          },
+        },
+        {
+          text: 'Sí, se realizó',
+          handler: async () => {
+            
+            viaje.estado = 'finalizado';
+            await Memorialocal.guardar('viajesSolicitados', viaje);
+            this.mostrarToast('Viaje marcado como finalizado.', 'success');
+            this.ngOnInit(); 
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private async solicitarJustificativo(viaje: Solicitud) {
+    const alert = await this.alertController.create({
+      header: 'Viaje No Realizado',
+      message: 'Por favor, ingrese un breve justificativo.',
+      inputs: [
+        {
+          name: 'justificativo',
+          type: 'textarea',
+          placeholder: 'Ej: El ocupante no se pudo presentó, el vehículo tuvo un problema, etc.',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            if (!data.justificativo || data.justificativo.trim() === '') {
+              this.mostrarToast('El justificativo no puede estar vacío.', 'danger');
+              return false;
+            }
+            
+           
+            viaje.estado = 'no realizado';
+            viaje.justificativo = data.justificativo;
+            await Memorialocal.guardar('viajesSolicitados', viaje);
+            this.mostrarToast('El viaje ha sido marcado como no realizado.', 'tertiary');
+            this.ngOnInit(); 
+            return true;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+    async mostrarToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      color: color,
+      position: 'top',
+    });
+    toast.present();
+  }
 
    // Navegaciones
    goToHomePage() {
