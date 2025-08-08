@@ -11,6 +11,8 @@ import { Validadores } from '../validador/validadores';
 import { ToastController } from '@ionic/angular';
 import { CentroServicio } from '../servicio/centro-servicio';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+import { Memorialocal } from '../almacen/memorialocal';
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 
 
 interface NuevoUsuario {
@@ -79,7 +81,8 @@ export class RegistroUsuarioPage implements OnInit {
     private router: Router,
     private toastController: ToastController,
     private centroServicio: CentroServicio,
-    private auth: AutentificacionUsuario
+    private auth: AutentificacionUsuario,
+    private notificaciones: NotificacionesCorreo,
   ) {}
 
   rolUsuario: string = '';
@@ -136,14 +139,26 @@ export class RegistroUsuarioPage implements OnInit {
       nombre:        f.nombre,
       rol:           f.cargo,
       correo:        f.correo
-    };
 
-    const ok = await this.auth.registrarUsuarioLocal(nuevo);
-    if (ok) {
-      this.mostrarToast('Usuario registrado localmente', 'success');
-      this.router.navigate(['/login']);
-    } else {
-      this.mostrarToast('El RUT o correo ya existe', 'warning');
+      
+    };
+     try {
+      console.log('Intentando registrar usuario...');
+      const ok = await this.auth.registrarUsuarioLocal(nuevo);
+      console.log('Resultado de registrarUsuarioLocal:', ok); // <-- Cámara de seguridad 1
+
+      if (ok) {
+        console.log('Registro exitoso. Intentando enviar correo...'); // <-- Cámara de seguridad 2
+        this.notificaciones.enviarCorreoBienvenida(nuevo.correo, nuevo.nombre);
+        await this.mostrarToast('¡Usuario registrado con éxito!', 'success');
+        this.router.navigate(['/login']);
+      } else {
+        console.log('El usuario ya existe. No se enviará correo.'); // <-- Cámara de seguridad 3
+        this.mostrarToast('El RUT o correo ya existe', 'warning');
+      }
+    } catch (error) {
+      console.error('Error CATCH al registrar usuario:', error); // <-- Cámara de seguridad 4
+      this.mostrarToast('Ocurrió un error al registrar el usuario.', 'danger');
     }
   }
 
