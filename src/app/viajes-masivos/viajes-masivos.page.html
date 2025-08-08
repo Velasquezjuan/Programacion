@@ -23,7 +23,7 @@
         <ion-row>
           <ion-col size="12">
             <ion-card>
-              <ion-card-header><ion-card-title>Paso 1: Seleccione Vehículo y Días</ion-card-title></ion-card-header>
+              <ion-card-header><ion-card-title> Seleccione Vehículo y Días</ion-card-title></ion-card-header>
               <ion-card-content>
                 <ion-item>
                   <ion-select formControlName="vehiculo" interface="popover" label="Vehículo y Conductor" label-placement="stacked">
@@ -36,12 +36,10 @@
             </ion-card>
 
             <ion-card>
-              <ion-card-header><ion-card-title>Paso 2: Defina los Horarios y Rutas</ion-card-title></ion-card-header>
+              <ion-card-header><ion-card-title> Defina los Horarios y Rutas</ion-card-title></ion-card-header>
               <ion-card-content formArrayName="horarios">
-                <!-- SOLUCIÓN: Toda la lógica de ruta ahora está dentro del *ngFor -->
                 <div *ngFor="let horario of horarios.controls; let i = index" class="schedule-row">
                   <div [formGroupName]="i" class="schedule-inputs">
-                    <!-- Horarios y Programa -->
                     <ion-item><ion-input label="Hora Inicio (08-17h)" label-placement="stacked" type="time" formControlName="inicio" min="08:00" max="17:00"></ion-input></ion-item>
                     <ion-item><ion-input label="Hora Fin (08-17h)" label-placement="stacked" type="time" formControlName="fin" min="08:00" max="17:00"></ion-input></ion-item>
                     <ion-item>
@@ -93,7 +91,7 @@
             </ion-card>
 
             <ion-card>
-              <ion-card-header><ion-card-title>Paso 3: Detalles Generales</ion-card-title></ion-card-header>
+              <ion-card-header><ion-card-title> Detalles Generales</ion-card-title></ion-card-header>
               <ion-card-content>
                 <ion-item><ion-input label="Cantidad de Ocupantes" label-placement="stacked" type="number" formControlName="ocupantes" [max]="maxOcupantes"></ion-input></ion-item>
                 <ion-item><ion-input label="Motivo del viaje" label-placement="stacked" formControlName="motivo"></ion-input></ion-item>

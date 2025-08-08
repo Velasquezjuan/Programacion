@@ -40,6 +40,7 @@ export interface NuevoUsuario {
       if (u.contraseña !== contraseña) {
         throw new Error('Contraseña incorrecta (offline)');
       }
+        console.log('Usuario encontrado para iniciar sesión:', u);
       // marcamos usuario activo
       await Memorialocal.guardar('usuarioActivo', u);
       return u;

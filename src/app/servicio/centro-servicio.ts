@@ -112,21 +112,18 @@ export class CentroServicio {
 
     private programa = {
         prog: [
-        {value: 'programa1', label: 'Programa1' },
-        {value: 'programa2', label: 'Programa2' },
-        {value: 'programa3', label: 'Programa3' },
-        {value: 'programa4', label: 'Programa4' },
-        {value: 'programa5', label: 'Programa5' },
-        {value: 'programa6', label: 'Programa6' },
-        {value: 'programa7', label: 'Programa7' },
-        {value: 'programa8', label: 'Programa8' },
-        {value: 'programa9', label: 'Programa9' },
-        {value: 'programaA', label: 'ProgramaA' },
-        {value: 'programaB', label: 'ProgramaB' },
-        {value: 'programaC', label: 'ProgramaC' },
-        {value: 'programaD', label: 'ProgramaD' },
-        {value: 'programaE', label: 'ProgramaE' },
-        {value: 'ProgramaF', label: 'ProgramaF' }
+        {value: 'operacional', label: 'Operacional' },
+        {value: 'chile crece contigo', label: 'Chile Crece Contigo' },
+        {value: 'fofar', label: 'FOFAR' },
+        {value: 'acompañamiento', label: 'Acompañamiento' },
+        {value: 'odontologia a domicilio', label: 'Odontologia A Domicilio' },
+        {value: 'sembrando sonrisas', label: 'Sembrando Sonrisas' },
+        {value: 'junaeb', label: 'JUNAEB' },
+        {value: 'pama', label: 'PAMA' },
+        {value: 'cuidados paleativos', label: 'Cuidados Paleativos' },
+        {value: 'transferencia municipal (vacunas)', label: 'Transferencia Municipal Vacunas' },
+        {value: 'transferencia municiapl(farmacia domicilio)', label: 'Transferencia Municipal Farmacia a Domicilio' },
+        {value: 'cuidados paleativos', label: 'Cuidados Paleativos' },
         ]
     };
   

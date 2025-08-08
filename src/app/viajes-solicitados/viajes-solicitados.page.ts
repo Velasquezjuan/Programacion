@@ -9,39 +9,38 @@ import { Memorialocal } from '../almacen/memorialocal';
 import { addIcons } from 'ionicons';
 import { calendarOutline, carOutline, personOutline, closeCircleOutline } from 'ionicons/icons';
 import { CentroServicio } from '../servicio/centro-servicio';
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
+import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 
-interface UsuarioActivo { id: string; usuario: string; rol: string; }
+
 interface Solicitud {
   id: string;
   solicitante: string;
-  fecha: string;    // 'YYYY-MM-DD'
-  hora: string;     // 'HH:mm'
-  puntoSalida:string;
-  direccionSalida: string;
-  centroSaludSalida?: string; 
-  centroEducacionSalida?: string; 
-  centroAtmSalida?: string
-  nivelCentralSalida?: string; 
-  puntoDestino?: string;  
-  direccionDestino?: string;   
-  centroSaludDestino?:  string;
+  fecha: string;
+  hora: string;
+  puntoSalida: string;
+  direccionSalida?: string;
+  centroSaludSalida?: string;
+  centroEducacionSalida?: string;
+  centroAtmSalida?: string;
+  puntoDestino?: string;
+  direccionDestino?: string;
+  centroSaludDestino?: string;
   centroEducacionDestino?: string;
-  centroAtmDestino?:    string;
-  nivelCentralDestino?: string;
-  tiempoUso: number;
-  fechaCreacion: string; // 'YYYY-MM-DD'
-  dentroComuna?: 'si'|'no';
-  necesitaCarga?: 'si'|'no';
+  centroAtmDestino?: string;
   motivo: string;
+  necesitaCarga?: 'si' | 'no';
   ocupante: string;
   ocupantes: number;
-  estado: string;   // 'pendiente' | 'aceptado' | 'rechazado'
+  estado: string;
   patenteVehiculo?: string;
   tipoVehiculo?: string;
-
+  motivoRechazo?: string;
+  motivoReagendamiento?: string;
 }
 
 interface Vehiculo { id: string; patente: string; tipoVehiculo: string; }
+interface Usuario { id: string; usuario: string; rol: string; correo: string; }
 
 @Component({
   selector: 'app-viajes-solicitados',
@@ -59,19 +58,20 @@ export class ViajesSolicitadosPage implements OnInit {
   rolUsuario = '';
   rechazandoId: string | null = null;
   motivoRechazo = '';
- 
-   centros = {
+  
+  centros = {
     central: [] as { value: string; label: string }[],
     salud: [] as { value: string; label: string }[],
     atm: [] as { value: string; label: string }[],
     educacion: [] as { value: string; label: string }[],
-    comunal: [] as { value: string; label: string }[],
-    otro: [] as { value: string; label: string }[]
   };
+
   constructor(
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private centroService: CentroServicio
+    private centroService: CentroServicio,
+    private notificaciones: NotificacionesCorreo,
+    private auth: AutentificacionUsuario,
   ) {
     addIcons({
       calendarOutline,carOutline, personOutline, closeCircleOutline });
@@ -86,32 +86,28 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   async ngOnInit() {
-    
     this.centros.central = this.centroService.obtenerCentros('central');
-    // Carga usuario activo
-    const activos = await Memorialocal.obtener<UsuarioActivo>('usuarioActivo');
-    this.rolUsuario = activos[0]?.rol ?? '';
-    // Luego datos
+    this.centros.salud = this.centroService.obtenerCentros('salud');
+    this.centros.atm = this.centroService.obtenerCentros('atm');
+    this.centros.educacion = this.centroService.obtenerCentros('educacion');
+    
+    const activo = await this.auth.obtenerUsuarioActivo();
+    this.rolUsuario = activo?.rol ?? '';
     await this.reloadData();
   }
 
   private async reloadData() {
     const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
     this.solicitudes = todas.filter(s => s.estado === 'pendiente');
-    this.vehiculos    = await Memorialocal.obtener<Vehiculo>('vehiculos');
+    this.vehiculos = await Memorialocal.obtener<Vehiculo>('vehiculos');
   }
 
-  trackByFn(_: number, item: Solicitud) {
-    return item.id;
-  }
+  trackByFn(_: number, item: Solicitud) { return item.id; }
 
-  /** 1) Selección de vehículo al agendar */
   async abrirAgendar(solicitudId: string) {
-    // buscamos la solicitud (solo para chequear que exista)
     const sol = this.solicitudes.find(s => s.id === solicitudId);
     if (!sol) return this.showToast('Solicitud no encontrada', 'danger');
 
-    // inputs radio de vehículos
     const inputs = this.vehiculos.map(v => ({
       type: 'radio' as const,
       label: `${v.tipoVehiculo} – ${v.patente}`,
@@ -128,10 +124,10 @@ export class ViajesSolicitadosPage implements OnInit {
           handler: (vehId: string) => {
             if (!vehId) {
               this.showToast('Debe elegir un vehículo.', 'warning');
-              return false; // no cierra
+              return false;
             }
             this.procesarAgendar(solicitudId, vehId);
-            return true; // cierra
+            return true;
           }
         }
       ]
@@ -139,63 +135,68 @@ export class ViajesSolicitadosPage implements OnInit {
     await alert.present();
   }
 
-  /** 2) Guarda el vehículo elegido y marca como aceptado */
   private async procesarAgendar(solicitudId: string, vehiculoId: string) {
     const veh = this.vehiculos.find(v => v.id === vehiculoId)!;
-    const sol = await Memorialocal.buscarPorCampo<Solicitud>(
-      'viajesSolicitados','id', solicitudId
-    );
+    const sol = await Memorialocal.buscarPorCampo<Solicitud>('viajesSolicitados', 'id', solicitudId);
     if (!sol) return;
 
-    // Evita choque: mismo vehículo, misma fecha/hora ya aceptado
-    if (sol.patenteVehiculo) {
-      const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
-      const choque = todas.find(s =>
-        s.id !== sol.id &&
-        s.estado === 'aceptado' &&
-        s.patenteVehiculo === veh.patente &&
-        s.fecha === sol.fecha &&
-        s.hora === sol.hora
-      );
-      if (choque) {
-        return this.showToast(
-          'Ese vehículo ya está ocupado en ese horario',
-          'warning'
-        );
-      }
+    
+    const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
+    const choque = todas.find(s =>
+      s.id !== sol.id && s.estado === 'aceptado' && s.patenteVehiculo === veh.patente &&
+      s.fecha === sol.fecha && s.hora === sol.hora
+    );
+    if (choque) {
+      return this.showToast('Ese vehículo ya está ocupado en ese horario', 'warning');
     }
 
     sol.estado = 'aceptado';
     sol.patenteVehiculo = veh.patente;
-    sol.tipoVehiculo   = veh.tipoVehiculo;
-    await Memorialocal.reemplazarPorCampo(
-      'viajesSolicitados','id', sol.id, sol
-    );
+    sol.tipoVehiculo = veh.tipoVehiculo;
+    await Memorialocal.reemplazarPorCampo('viajesSolicitados', 'id', sol.id, sol);
+
+    
+    const usuarioSolicitante = await Memorialocal.buscarPorCampo<Usuario>('usuarios', 'usuario', sol.solicitante);
+    if (usuarioSolicitante?.correo) {
+      this.notificaciones.enviarCorreoAceptacion(usuarioSolicitante.correo, sol);
+    } else {
+      console.warn(`No se pudo notificar a "${sol.solicitante}", correo no encontrado.`);
+    }
 
     this.showToast('Viaje agendado correctamente.', 'success');
     await this.reloadData();
   }
 
-  /** 3) Rechazo con motivo */
   mostrarCampoMotivo(id: string) {
     this.rechazandoId = id;
     this.motivoRechazo = '';
   }
 
   async rechazarConMotivo() {
-    if (!this.rechazandoId) return;
-    if (!this.motivoRechazo.trim()) {
+    if (!this.rechazandoId || !this.motivoRechazo.trim()) {
       return this.showToast('Debe ingresar un motivo.', 'warning');
     }
-    await Memorialocal.actualizarEstadoSolicitudConMotivo(
-      this.rechazandoId,'rechazado', this.motivoRechazo
-    );
+
+    const solicitud = await Memorialocal.buscarPorCampo<Solicitud>('viajesSolicitados', 'id', this.rechazandoId);
+    if (!solicitud) return;
+
+    await Memorialocal.actualizarEstadoSolicitudConMotivo(this.rechazandoId, 'rechazado', this.motivoRechazo);
+
+    
+    const usuarioSolicitante = await Memorialocal.buscarPorCampo<Usuario>('usuarios', 'usuario', solicitud.solicitante);
+    if (usuarioSolicitante?.correo) {
+      const infoRechazo = { ...solicitud, motivoRechazo: this.motivoRechazo };
+      this.notificaciones.enviarCorreoRechazo(usuarioSolicitante.correo, infoRechazo);
+    } else {
+      console.warn(`No se pudo notificar a "${solicitud.solicitante}", correo no encontrado.`);
+    }
+
     this.showToast('Solicitud rechazada con motivo.', 'danger');
     this.rechazandoId = null;
     await this.reloadData();
   }
 
-  /** 4) Reagendar (cambia fecha+hora) */
+  
   async abrirReagendar(solicitudId: string) {
     const sol = this.solicitudes.find(s => s.id === solicitudId);
     if (!sol) {
@@ -204,11 +205,18 @@ export class ViajesSolicitadosPage implements OnInit {
 
     const alert = await this.alertCtrl.create({
       header: 'Reagendar viaje',
-      inputs: [{
-        name: 'nuevoDateTime',
-        type: 'datetime-local',
-        value: `${sol.fecha}T${sol.hora}`
-      }],
+      inputs: [
+        {
+          name: 'nuevoDateTime',
+          type: 'datetime-local',
+          value: `${sol.fecha}T${sol.hora}`
+        },
+        {
+          name: 'motivo',
+          type: 'text',
+          placeholder: 'Motivo del reagendamiento'
+        }
+      ],
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
@@ -218,8 +226,12 @@ export class ViajesSolicitadosPage implements OnInit {
               this.showToast('Debes seleccionar fecha y hora', 'warning');
               return false;
             }
+            if (!data.motivo || !data.motivo.trim()) {
+              this.showToast('Debes ingresar un motivo', 'warning');
+              return false;
+            }
             const [nuevaFecha, nuevaHora] = data.nuevoDateTime.split('T');
-            await this.procesarReagendar(sol, nuevaFecha, nuevaHora);
+            await this.procesarReagendar(sol, nuevaFecha, nuevaHora, data.motivo);
             return true;
           }
         }
@@ -231,9 +243,10 @@ export class ViajesSolicitadosPage implements OnInit {
   private async procesarReagendar(
     sol: Solicitud,
     nuevaFecha: string,
-    nuevaHora: string
+    nuevaHora: string,
+    motivo: string
   ) {
-    // idem choque de vehículo
+ 
     if (sol.patenteVehiculo) {
       const todas = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
       const choque = todas.find(s =>
@@ -252,13 +265,24 @@ export class ViajesSolicitadosPage implements OnInit {
     }
 
     sol.fecha = nuevaFecha;
-    sol.hora  = nuevaHora;
-    await Memorialocal.reemplazarPorCampo('viajesSolicitados','id', sol.id, sol);
+    sol.hora = nuevaHora;
+    sol.estado = 'reagendado';
+    sol.motivoReagendamiento = motivo; 
+    await Memorialocal.reemplazarPorCampo('viajesSolicitados', 'id', sol.id, sol);
+
+    
+    const usuarioSolicitante = await Memorialocal.buscarPorCampo<Usuario>('usuarios', 'usuario', sol.solicitante);
+    if (usuarioSolicitante?.correo) {
+      this.notificaciones.enviarCorreoReagendamiento(usuarioSolicitante.correo, sol);
+    } else {
+      console.warn(`No se pudo notificar a "${sol.solicitante}", correo no encontrado.`);
+    }
+
     this.showToast('Viaje reagendado correctamente.', 'success');
     await this.reloadData();
   }
 
-  /** etiqueta para punto de salida */
+
  private formatLabelWithAddress( 
   list: Array<{ value: string; label: string }>,
   code: string,
@@ -269,7 +293,7 @@ export class ViajesSolicitadosPage implements OnInit {
   return address ? `${label} – ${address}` : label;
 }
 
-/** etiqueta para punto de salida */
+
 getSalidaLabel(sol: Solicitud): string {
   let list = this.centros.central;
   let code = sol.puntoSalida;
@@ -290,11 +314,9 @@ getSalidaLabel(sol: Solicitud): string {
       break;
   }
 
-  // Aquí forzamos string (nunca undefined)
   return this.formatLabelWithAddress(list, code, subCode ?? '');
 }
 
-/** etiqueta para punto de destino */
 getDestinoLabel(sol: Solicitud): string {
   let list = this.centros.central;
   let code = sol.puntoDestino   || '';
@@ -315,7 +337,7 @@ getDestinoLabel(sol: Solicitud): string {
       break;
   }
 
-  // Y aquí igual, garantizamos un string
+
   return this.formatLabelWithAddress(list, code, sub ?? '');
 }
 }

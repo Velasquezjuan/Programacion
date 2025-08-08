@@ -15,7 +15,6 @@ import { Agenda } from '../servicio/agenda';
 import { ToastController } from '@ionic/angular';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 
-import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-solicitud-viaje',
@@ -27,7 +26,7 @@ import { HttpClientModule } from '@angular/common/http';
     IonContent, IonMenuButton, IonHeader, IonTitle,
     IonToolbar, IonInput, IonToggle ,ReactiveFormsModule, MenuLateralComponent,
     IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect,
-    IonSelectOption, CommonModule, FormsModule, HttpClientModule
+    IonSelectOption, CommonModule, FormsModule,
   ]
 })
 export class SolicitudViajePage implements OnInit {
@@ -53,7 +52,7 @@ export class SolicitudViajePage implements OnInit {
   showAtmDestino     = false;
 
   rolUsuario = '';
-  usuarioActivo: { usuario:string; rol:string; email?: string } | null = null;
+  usuarioActivo: { usuario:string; rol:string; correo?: string } | null = null;
   maxOcupantes = 9;
 
 
@@ -102,7 +101,7 @@ export class SolicitudViajePage implements OnInit {
     this.rolUsuario    = this.usuarioActivo?.rol ?? '';
   }
 
-  // ... (tus funciones onSalidaChange, onDestinoChange, etc. quedan igual)
+ 
   onSalidaChange(ev: any) {
     const val = ev.detail.value;
     this.showOtroSalida      = val === 'otro';
@@ -183,12 +182,26 @@ export class SolicitudViajePage implements OnInit {
       this.showToast('Solicitud creada','success');
 
       // Enviar la notificación usando el email del usuario activo
-      if (this.usuarioActivo?.email) {
-        this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.email, solicitud);
+      if (this.usuarioActivo?.correo) {
+        this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, solicitud);
       } else {
         console.warn('No se pudo enviar la notificación: el usuario no tiene un email registrado.');
       }
+      const todosLosUsuarios = await Memorialocal.obtener<any>('usuarios');
+      console.log('Todos los usuarios encontrados:', todosLosUsuarios); 
 
+      const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
+      
+      const adminsEncontrados = todosLosUsuarios
+        .filter(usuario => rolesAdmin.includes(usuario.rol));
+      console.log('Administradores filtrados:', adminsEncontrados); 
+
+      const correosDeAdmins = adminsEncontrados
+        .map(admin => admin.correo)
+        .filter(correo => correo); 
+      console.log('Correos de admins para notificar:', correosDeAdmins); 
+      
+      this.notificaciones.enviarNotificacionAdmin(correosDeAdmins, solicitud);
     } catch {
       this.showToast('Error al guardar','danger');
     }
