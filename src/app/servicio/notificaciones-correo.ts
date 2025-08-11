@@ -61,6 +61,34 @@ private apiUrl = 'http://localhost:3000/enviar-notificacion';
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
+    public enviarCorreoViajeRealizado(email: string, viaje: any) {
+    const asunto = `Nos alegra saber que tu viaje #${viaje.id} fue realizado`;
+    const contenido = PlantillasCorreo.viajeRealizado(viaje);
+    const cuerpoHtml = PlantillasCorreo.base('Viaje Realizado con exito', contenido);
+    this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
+  }
+
+  public enviarCorreoViajeNoRealizado(email: string, viaje: any) {
+    const asunto = `Lamentamos saber que tu viaje #${viaje.id} no fue realizado`;
+    const contenido = PlantillasCorreo.viajeNoRealizado(viaje);
+    const cuerpoHtml = PlantillasCorreo.base('viaje no realizado', contenido);
+    this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
+  }
+
+  public enviarCorreoAceptacionReagendamiento(email: string, viaje: any) {
+    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido reagendada y aceptada`;
+    const contenido = PlantillasCorreo.aceptacionReagendamiento(viaje);
+    const cuerpoHtml = PlantillasCorreo.base('Solicitud Reagendada y Aceptada', contenido);
+    this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
+  }
+
+    public enviarCorreoRechazoReagendamiento(email: string, viaje: any) {
+    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido reagendada y rechazada`;
+    const contenido = PlantillasCorreo.rechazoReagendamiento(viaje);
+    const cuerpoHtml = PlantillasCorreo.base('Solicitud Reagendada y Rechazada', contenido);
+    this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
+  }
+
   public enviarNotificacionAdmin(destinatariosAdmin: string[], viaje: any) {
     if (!destinatariosAdmin || destinatariosAdmin.length === 0) {
       console.warn('No se encontraron administradores para notificar.');

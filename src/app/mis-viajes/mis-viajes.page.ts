@@ -11,6 +11,10 @@ import { Memorialocal }            from '../almacen/memorialocal';
 import { AutentificacionUsuario }  from '../servicio/autentificacion-usuario';
 import { CentroServicio }         from '../servicio/centro-servicio';
 import { AlertController, ToastController } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { checkmarkDoneCircle, closeCircle, checkmarkCircle } from 'ionicons/icons';
+
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 
 interface Solicitud {
   id: string;
@@ -41,7 +45,15 @@ interface Solicitud {
   estado: 'pendiente'|'aceptado'|'rechazado'|'reagendado'|'finalizado'|'no realizado'|'agendado';
   fechaRegistro?: string;
   justificativo?: string; 
+  motivoRechazoReagendamiento?: string;
 
+}
+
+interface Usuario {
+  id: string;
+  usuario: string;
+  rol: string;
+  correo?: string;
 }
 
 @Component({
@@ -60,7 +72,7 @@ export class MisViajesPage implements OnInit {
   
   todas: Solicitud[] = [];
   filtro: 'todos'|'pendiente'|'aceptado'|'rechazado'|'reagendado' = 'pendiente';
-  usuarioActivo!: string;
+  usuarioActivo!: { usuario: string; correo?: string };
 
   centros = {
     central: [] as { value: string; label: string }[],
@@ -86,8 +98,13 @@ export class MisViajesPage implements OnInit {
     private auth: AutentificacionUsuario,
     private centroService: CentroServicio,
     private alertController: AlertController, 
-    private toastController: ToastController 
-  ) {}
+    private toastController: ToastController,
+    private notificaciones: NotificacionesCorreo,
+
+    
+  ) {
+    addIcons({checkmarkDoneCircle,closeCircle,checkmarkCircle});
+  }
 
   async ngOnInit() {
 
@@ -99,28 +116,22 @@ export class MisViajesPage implements OnInit {
   this.centros.otro       = this.centroService.obtenerCentros('otro' as any);
   
   const usr = await this.auth.obtenerUsuarioActivo();
-    this.usuarioActivo = usr?.usuario ?? '';
-    const all = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
-    this.todas = all
-      .filter(v => v.solicitante === this.usuarioActivo)
-      .map(v => ({
-        ...v,
-        estado: v.estado==='aceptado' && v.fechaRegistro&&v.fechaRegistro!==v.fecha
-                ? 'reagendado'
-                : v.estado
-      }));
+    this.usuarioActivo = usr ?? { usuario: '', correo: '' };
+    await this.cargarViajes();
+
+    this.verificarViajesPasados();
   }
+
 
   get viajes(): Solicitud[] {
     let list = [...this.todas];
     if (this.filtro!=='todos') {
       list = list.filter(v => v.estado===this.filtro);
     }
-    // pendientes al principio
     list.sort((a,b) => {
-      if (a.estado==='pendiente'&&b.estado!=='pendiente') return -1;
-      if (a.estado!=='pendiente'&&b.estado==='pendiente') return 1;
-      return a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora);
+       const fechaA = `${a.fecha}T${a.hora}`;
+      const fechaB = `${b.fecha}T${b.hora}`;
+      return fechaB.localeCompare(fechaA);
     });
     return list;
   }
@@ -139,7 +150,7 @@ export class MisViajesPage implements OnInit {
   async cargarViajes() {
     const all = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
     this.todas = all.filter(v =>
-      v.solicitante === this.usuarioActivo &&
+      v.solicitante === this.usuarioActivo.usuario &&
       (this.filtro === 'todos' || v.estado === this.filtro)
     );
   }
@@ -148,16 +159,105 @@ export class MisViajesPage implements OnInit {
     this.filtro = ev.detail.value;
     this.cargarViajes();
   }
+   private async verificarViajesPasados() {
+    const ahora = new Date();
+    const viajesPendientesDeCierre = this.todas.filter(viaje => {
+      if (viaje.estado !== 'aceptado' && viaje.estado !== 'agendado') {
+        return false;
+      }
+      const fechaViaje = new Date(`${viaje.fecha}T${viaje.hora}`);
+      return fechaViaje < ahora;
+    });
 
-  private formatLabelWithAddress( 
-  list: Array<{ value: string; label: string }>,
-  code: string,
-  address: string
-): string {
-  const found = list.find(i => i.value === code);
-  const label = found ? found.label : code;
-  return address ? `${label} – ${address}` : label;
-}
+    if (viajesPendientesDeCierre.length > 0) {
+      viajesPendientesDeCierre.sort((a, b) => new Date(`${a.fecha}T${a.hora}`).getTime() - new Date(`${b.fecha}T${b.hora}`).getTime());
+      const viajeAPreguntar = viajesPendientesDeCierre[0];
+      
+        const alert = await this.alertController.create({
+        header: 'Viaje Pasado Pendiente',
+        message: `Detectamos que el viaje para "${viajeAPreguntar.motivo}" del día ${viajeAPreguntar.fecha} ya ocurrió. ¿Se realizó este viaje?`,
+        buttons: [
+          { text: 'No, no se realizó', handler: () => this.solicitarJustificativo(viajeAPreguntar) },
+          { text: 'Sí, se realizó', handler: async () => {
+              viajeAPreguntar.estado = 'finalizado';
+              await Memorialocal.guardar('viajesSolicitados', viajeAPreguntar);
+              this.mostrarToast('Viaje marcado como finalizado.', 'success');
+              if (this.usuarioActivo?.correo) {
+                this.notificaciones.enviarCorreoViajeRealizado(this.usuarioActivo.correo, viajeAPreguntar.motivo);
+              }
+              this.cargarViajes();
+            }
+          }
+        ],
+        backdropDismiss: false
+      });
+      await alert.present();
+    }
+  }
+
+  async aceptarReagendamiento(viaje: Solicitud) {
+    viaje.estado = 'aceptado'; 
+    await Memorialocal.guardar('viajesSolicitados', viaje);
+    
+    const adminEmails = await this.getAdminEmails();
+    if (adminEmails.length > 0) {
+      this.notificaciones.enviarCorreoAceptacionReagendamiento(adminEmails[0], viaje);
+    }
+
+    this.mostrarToast('Has aceptado la nueva agenda del viaje.', 'success');
+    this.cargarViajes();
+  }
+
+  async rechazarReagendamiento(viaje: Solicitud) {
+    const alert = await this.alertController.create({
+      header: 'Rechazar Reagendamiento',
+      message: 'Por favor, indica por qué no puedes aceptar la nueva fecha/hora.',
+      inputs: [
+        { name: 'motivo', type: 'textarea', placeholder: 'Ej: No me sirve el horario, etc.' }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Confirmar Rechazo', handler: async (data) => {
+            if (!data.motivo || data.motivo.trim() === '') {
+              this.mostrarToast('Debes ingresar un motivo para el rechazo.', 'warning');
+              return false;
+            }
+            await this.procesarRechazoReagendamiento(viaje, data.motivo);
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+   private async procesarRechazoReagendamiento(viaje: Solicitud, motivo: string) {
+    viaje.estado = 'pendiente'; // El viaje vuelve a estar pendiente para que el admin lo vea
+    viaje.motivoRechazoReagendamiento = motivo;
+    await Memorialocal.guardar('viajesSolicitados', viaje);
+
+    // Notificar a los administradores
+    const adminEmails = await this.getAdminEmails();
+    adminEmails.forEach(email => {
+      this.notificaciones.enviarCorreoRechazoReagendamiento(email, viaje);
+    });
+
+    this.mostrarToast('Has rechazado la nueva agenda. El administrador será notificado.', 'tertiary');
+    this.cargarViajes();
+  }
+
+   private async getAdminEmails(): Promise<string[]> {
+    const todosLosUsuarios = await Memorialocal.obtener<Usuario>('usuarios');
+    const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
+    return todosLosUsuarios
+      .filter(usuario => rolesAdmin.includes(usuario.rol) && usuario.correo)
+      .map(admin => admin.correo!);
+  }
+
+  private formatLabelWithAddress(list: Array<{ value: string; label: string }>, code: string, address: string): string {
+    const found = list.find(i => i.value === code);
+    const label = found ? found.label : code;
+    return address ? `${label} – ${address}` : label;
+  }
 
   getSalidaLabel(sol: Solicitud): string {
   let list = this.centros.central;
@@ -180,7 +280,7 @@ export class MisViajesPage implements OnInit {
   }
 
 
-  return this.formatLabelWithAddress(list, code, subCode ?? '');
+  return this.formatLabelWithAddress(list, sol.puntoSalida, sol.direccionSalida ?? '');
 }
 
 
@@ -205,7 +305,7 @@ getDestinoLabel(sol: Solicitud): string {
   }
 
  
-  return this.formatLabelWithAddress(list, code, sub ?? '');
+  return this.formatLabelWithAddress( list, sol.puntoDestino || '', sol.direccionDestino || '');
 }
 
 async marcarViajeRealizado(viaje: Solicitud) {
@@ -266,7 +366,10 @@ async marcarViajeRealizado(viaje: Solicitud) {
             viaje.justificativo = data.justificativo;
             await Memorialocal.guardar('viajesSolicitados', viaje);
             this.mostrarToast('El viaje ha sido marcado como no realizado.', 'tertiary');
-            this.ngOnInit(); 
+           if (this.usuarioActivo?.correo) {
+              this.notificaciones.enviarCorreoViajeNoRealizado(this.usuarioActivo.correo, viaje);
+            }
+            this.cargarViajes(); 
             return true;
           },
         },

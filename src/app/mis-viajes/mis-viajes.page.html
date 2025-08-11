@@ -43,6 +43,9 @@
         </p>
         <p><strong>¿Carga?</strong> {{v.necesitaCarga}}</p>
         <p><strong>Responsable:</strong> {{v.ocupante}}</p>
+        <p *ngIf="v.estado === 'reagendado' && v.motivoReagendamiento">
+    <strong>Motivo Reagendamiento:</strong> {{v.motivoReagendamiento}}
+  </p>
       </ion-card-content>
       <ion-footer *ngIf="v.estado === 'aceptado' || v.estado === 'agendado'">
       <ion-toolbar>
@@ -54,6 +57,22 @@
         </ion-buttons>
       </ion-toolbar>
     </ion-footer>
+    <ion-footer *ngIf="v.estado === 'reagendado'">
+  <ion-toolbar class="reagendado-toolbar">
+    <ion-buttons slot="start">
+      <ion-button fill="solid" color="danger" (click)="rechazarReagendamiento(v)">
+        <ion-icon slot="start" name="close-circle"></ion-icon>
+        Rechazar
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="success" (click)="aceptarReagendamiento(v)">
+        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+        Aceptar Agenda
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
     </ion-card>
   </ng-container>
 

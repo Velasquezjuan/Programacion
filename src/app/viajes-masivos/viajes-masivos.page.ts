@@ -18,8 +18,10 @@ import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
  import { addIcons } from 'ionicons';
 import { addCircleOutline, trashOutline} from 'ionicons/icons';
 
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 
 
+interface Usuario { id: string; usuario: string; rol: string; correo: string; }
 
 @Component({
   selector: 'app-viajes-masivos',
@@ -53,7 +55,8 @@ export class ViajesMasivosPage implements OnInit {
     private router: Router,
     private toastController: ToastController,
     private auth: AutentificacionUsuario,
-    private centroServicio: CentroServicio
+    private centroServicio: CentroServicio,
+    private notificaciones: NotificacionesCorreo,
   ) {
     addIcons({ trashOutline, addCircleOutline });
 
@@ -77,7 +80,7 @@ export class ViajesMasivosPage implements OnInit {
     // Cargamos todos los datos necesarios
     await this.cargarVehiculos();
     this.cargarProgramas(); 
-    this.cargarCentros(); // Cargamos los centros para los dropdowns
+    this.cargarCentros(); 
     this.agregarHorario();
 
     this.planificacionForm.get('vehiculo')?.valueChanges.subscribe(() => this.updateOcupantesValidator());
@@ -215,7 +218,7 @@ export class ViajesMasivosPage implements OnInit {
       return;
     }
     
-    // ... (El resto de la lógica de onSubmit ya es correcta)
+
     const formValue = this.planificacionForm.value;
     const diasSeleccionados = formValue.diasSeleccionados;
     const vehiculoSeleccionado = this.vehiculos.find(v => v.id === formValue.vehiculo);
@@ -230,7 +233,6 @@ export class ViajesMasivosPage implements OnInit {
           solicitante: this.usuarioActivo?.usuario || 'Desconocido',
           fecha: new Date(fechaStr).toISOString().split('T')[0],
           hora: horario.inicio,
-          // SOLUCIÓN: Se toman todos los campos de ruta de cada horario
           puntoSalida: horario.puntoSalida,
           direccionSalida: horario.direccionSalida,
           centroSaludSalida: horario.centroSaludSalida,
@@ -266,6 +268,13 @@ export class ViajesMasivosPage implements OnInit {
       this.mostrarToast('Hubo un error al guardar los viajes.', 'danger');
       console.error('Error al guardar viajes masivos:', error);
     }
+    const solicitante = this.usuarioActivo?.usuario;
+    const usuarioSolicitante = await Memorialocal.buscarPorCampo<Usuario>('usuarios', 'usuario', solicitante);
+        if (usuarioSolicitante?.correo) {
+          this.notificaciones.enviarCorreoMasivo(usuarioSolicitante.correo);
+        } else {
+          console.warn(`No se pudo notificar a "${nuevosViajes} ", correo no encontrado.`);
+        }
   }
 
   async mostrarToast(message: string, color: string) {

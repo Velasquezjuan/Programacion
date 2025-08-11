@@ -237,7 +237,7 @@ export class CalendarioPage implements OnInit {
       El responsable del viaje es: ${p.responsable} -- 
       El motivo de uso es: ${p.motivo} -- 
       No olvide su dia de salida es: ${fecha} -- 
-      No olvide su hora de salida: ${hora} Muchas gracuias por su atención.
+      No olvide su hora de salida: ${hora} Muchas gracias por su atención.
     `;
     const alert = await this.alertCtrl.create({ header: 'Detalle de viaje', message:  html, buttons: ['Cerrar'] });
     await alert.present();

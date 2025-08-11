@@ -1,3 +1,5 @@
+import { SolicitudViajePage } from "../solicitud-viaje/solicitud-viaje.page";
+
 export const PlantillasCorreo = {
 
     base: (titulo: string, contenido: string) => `
@@ -62,5 +64,31 @@ export const PlantillasCorreo = {
     <p>Revisa tu calendario en la aplicación para poder confirmar los viajes cargados.</p>
     <p>Si tienes algún problema con la carga de viajes, por favor contacta con el administrador.</p>
     <p>Gracias por su comprensión.</p>
+  `,
+
+  viajeRealizado: (viaje: any ) => `
+    <h1>Gracias por Aceptar su viaje <b>#${viaje.id} </b> </h1>
+    <p>Nos alegra saber que su viaje fue realizado con exito.</p>
+    <p>Gracias por su apoyo.</p>
+  `,
+
+  viajeNoRealizado: (viaje: any) => `
+    <h1>Viaje No Realizado #${viaje.id}</h1>
+    <p>Hemos registrado que el viaje con destino a <b>${viaje.puntoDestino}</b> 
+    no fue realizado.</p>
+    <p>No olvide que puede agendar su viaje en la sección "Solicitar Viaje".</p>
+    <p>Gracias por su comprensión.</p>
+  `,
+
+  aceptacionReagendamiento: (viaje: any) => `
+    <p>Su solicitud #${viaje.id} ha sido reagendada y aceptada.</p>
+    <p>Nueva fecha es: <b>${viaje.fecha}</b>.</p>
+    <p>Nueva hora es: <b>${viaje.hora}</b>.</p>
+    <p>Por favor, revise la nueva fecha y hora en la aplicación y confirme si es favorable para usted.</p>
+  `,
+  rechazoReagendamiento: (viaje: any) => `
+    <p>Su solicitud #${viaje.id} ha sido reagendada y rechazada.</p>
+    <p>Motivo del rechazo: <b>${viaje.motivoRechazo || 'No disponible'}</b>.</p>
+    <p>Por favor, ingrese a la aplicación para agendar un nuevo viaje en la sección de "Solicitar Viaje".</p>
   `,
 }
