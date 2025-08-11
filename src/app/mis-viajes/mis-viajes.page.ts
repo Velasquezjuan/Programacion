@@ -46,6 +46,7 @@ interface Solicitud {
   fechaRegistro?: string;
   justificativo?: string; 
   motivoRechazoReagendamiento?: string;
+  motivoReagendamiento?: string;
 
 }
 
