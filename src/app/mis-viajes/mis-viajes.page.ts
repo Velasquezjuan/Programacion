@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, 
   IonCardHeader, IonCardSubtitle, IonCardTitle, IonCardContent, IonButton,
-  IonButtons, IonMenuButton,
+  IonButtons, IonMenuButton, IonSearchbar
  } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { Memorialocal }            from '../almacen/memorialocal';
@@ -47,6 +47,7 @@ interface Solicitud {
   justificativo?: string; 
   motivoRechazoReagendamiento?: string;
   motivoReagendamiento?: string;
+  
 
 }
 
@@ -66,7 +67,7 @@ interface Usuario {
   imports: [CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton,
     IonCard, IonCardHeader, IonCardTitle,
-    IonCardSubtitle, IonCardContent, 
+    IonCardSubtitle, IonCardContent, IonSearchbar
   ]
 })
 export class MisViajesPage implements OnInit {
@@ -74,6 +75,7 @@ export class MisViajesPage implements OnInit {
   todas: Solicitud[] = [];
   filtro: 'todos'|'pendiente'|'aceptado'|'rechazado'|'reagendado' = 'pendiente';
   usuarioActivo!: { usuario: string; correo?: string };
+  searchTerm: string = '';
 
   centros = {
     central: [] as { value: string; label: string }[],
@@ -126,6 +128,11 @@ export class MisViajesPage implements OnInit {
 
   get viajes(): Solicitud[] {
     let list = [...this.todas];
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      list = list.filter(viaje => {
+      return viaje.id.toString().includes(this.searchTerm.trim());
+      });
+    }
     if (this.filtro!=='todos') {
       list = list.filter(v => v.estado===this.filtro);
     }
@@ -135,6 +142,7 @@ export class MisViajesPage implements OnInit {
       return fechaB.localeCompare(fechaA);
     });
     return list;
+
   }
 
   getBorderClass(e: string){

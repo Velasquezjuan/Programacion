@@ -1,23 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Memorialocal } from '../almacen/memorialocal';
-import { Observable, tap } from 'rxjs';
+import { Observable, from, of, throwError } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
 
-export interface AuthResponse {
+interface LoginResponse {
   message: string;
   token: string;
-  username: string;
-  rol: string;
+  usuario: any;
 }
 
 export interface NuevoUsuario {
-  
   id:string;
   rut: string;
   usuario: string;
   contraseña: string;
   nombre: string;
-  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
+  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
   correo: string;
 }
 
@@ -25,73 +25,95 @@ export interface NuevoUsuario {
     providedIn: 'root'
   })
   export class AutentificacionUsuario {
+  private apiUrl = 'http://localhost:3000/api/auth';
+  private tokenKey = 'auth-token';
 
-  constructor() {}
+  constructor( private http: HttpClient) {}
 
-    /**
-   * LOGIN LOCAL con IndexedDB
-   */
-    async loginLocal(correo: string, contraseña: string): Promise<NuevoUsuario> {
-      const todos = await Memorialocal.obtener<NuevoUsuario>('usuarios') || [];
-      const u = todos.find(u => u.correo === correo);
-      if (!u) {
-        throw new Error('Usuario no encontrado (offline)');
-      }
-      if (u.contraseña !== contraseña) {
-        throw new Error('Contraseña incorrecta (offline)');
-      }
-        console.log('Usuario encontrado para iniciar sesión:', u);
-      // marcamos usuario activo
-      await Memorialocal.guardar('usuarioActivo', u);
-      return u;
-    }
-  
-    /**
-     * REGISTRO ONLINE: llama a la API y luego guarda en IndexedDB
+
+  login(correo: string, contrasena: string): Observable<any> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { correo, contrasena }).pipe(
+      tap(response => {
+        localStorage.setItem(this.tokenKey, response.token);
+        Memorialocal.guardar('usuarioActivo', response.usuario);
+        console.log('Login API exitoso.');
+      }),
+      catchError(error => {
+        console.warn('Falló el login con la API, intentando login local...', error);
+        return from(this.loginLocal(correo, contrasena));
+      })
+    );
+  }
+
+  private async loginLocal(correo: string, contrasena: string): Promise<any> {
+    const todos = await Memorialocal.obtener<NuevoUsuario>('usuarios') || [];
+    const usuario = todos.find(u => u.correo === correo);
     
-    registrarUsuarioAPI(u: NuevoUsuario): Observable<any> {
-      return this.http.post('/api/auth/register', {
-        username: u.usuario,
-        password: u.contraseña,
-        rol: u.rol
-      }).pipe(
-        tap(async () => {
-          // guardado local para fallback offline
-          await Memorialocal.guardar('usuarios', u);
-        })
+    if (!usuario) {
+      throw new Error('Usuario no encontrado localmente.');
+    }
+
+ 
+    if (usuario.contraseña !== contrasena) {
+      throw new Error('Contraseña incorrecta para login offline.');
+    }
+
+    console.log('Login local exitoso.');
+ 
+    const { contraseña: _, ...usuarioParaSesion } = usuario;
+    await Memorialocal.guardar('usuarioActivo', usuarioParaSesion);
+    return { message: 'Login local exitoso', usuario: usuarioParaSesion };
+  }
+  
+  registrarUsuario(nuevoUsuario: any): Observable<any> {
+    if (navigator.onLine) {
+      return this.http.post(`${this.apiUrl}/registro-usuario`, nuevoUsuario).pipe(
+        switchMap(() => from(Memorialocal.guardar('usuarios', nuevoUsuario)))
       );
-    } 
-      */
-    /**
-     * REGISTRO OFFLINE: sólo IndexedDB
-     */
-    async registrarUsuarioLocal(nuevo: NuevoUsuario): Promise<boolean> {
-      const todos = await Memorialocal.obtener<NuevoUsuario>('usuarios') || [];
-      if (todos.some(x => x.correo === nuevo.correo)) {
-        return false;
-      }
-      // aquí ya tenemos id, lo usamos directamente
-      await Memorialocal.guardar('usuarios', nuevo);
-      return true;
+    } else {
+      console.warn('Sin conexión. Registrando usuario localmente para sincronizar después.');
+      const usuarioOffline = { ...nuevoUsuario, syncPending: true };
+      return from(Memorialocal.guardar('usuarios', usuarioOffline));
     }
+  }
+
+  async logout(): Promise<void> {
+    localStorage.removeItem(this.tokenKey);
+    const usuario = await this.obtenerUsuarioActivo();
+    if (usuario) {
+     
+      await Memorialocal.eliminar('usuarioActivo', usuario.id);
+    }
+  }
   
-    /** Logout */
-    async logout(): Promise<void> {
-      const activo = await this.obtenerUsuarioActivo();
-      if (activo) {
-        await Memorialocal.eliminar('usuarioActivo', activo.id);
-      }
-    }
+  /** Obtiene el token guardado */
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  /** Usuario activo (sigue usando Memorialocal) */
+  async obtenerUsuarioActivo(): Promise<any | null> {
+    const arr = await Memorialocal.obtener<any>('usuarioActivo');
+    return arr.length ? arr[0] : null;
+  }
   
-    /** Usuario activo */
-    async obtenerUsuarioActivo(): Promise<NuevoUsuario|null> {
-      const arr = await Memorialocal.obtener<NuevoUsuario>('usuarioActivo');
-      return arr.length ? arr[0] : null;
+  estaLogeado(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return false;
     }
-  
-    /** Está logeado */
-    async estaLogeado(): Promise<boolean> {
-      const arr = await Memorialocal.obtener<NuevoUsuario>('usuarioActivo');
-      return arr.length > 0;
+
+    try {
+      const decodedToken: any = jwtDecode(token);
+      const expiracion = decodedToken.exp * 1000;
+      const ahora = new Date().getTime();
+
+      
+      return expiracion > ahora;
+    } catch (error) {
+ 
+      console.error('Error al decodificar el token:', error);
+      return false;
     }
+  }
   }

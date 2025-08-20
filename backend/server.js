@@ -56,5 +56,5 @@ app.post('/enviar-notificacion', (req, res) => {
 // --- Iniciar el Servidor ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(` Servidor completo corriendo en puerto ${PORT}`);
+  console.log(` ♫ Servidor completo corriendo en puerto ${PORT}`);
 });

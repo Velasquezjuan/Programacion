@@ -13,6 +13,7 @@ import { CentroServicio } from '../servicio/centro-servicio';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 import { Memorialocal } from '../almacen/memorialocal';
 import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 interface NuevoUsuario {
@@ -21,7 +22,7 @@ interface NuevoUsuario {
   usuario: string;
   contraseña: string;
   nombre: string;
-  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
+  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
   correo: string;
 }
 
@@ -46,7 +47,7 @@ export class RegistroUsuarioPage implements OnInit {
   correo: string = '';
   rut: string = '';
   contraseña: string = '';
-  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador' = 'solicitante';
+  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador' = 'solicitante';
   usarAPI: boolean = false;
 
   centros: {
@@ -123,43 +124,48 @@ export class RegistroUsuarioPage implements OnInit {
    
   }
 
-  async onSubmit() {
+  onSubmit(): void {
     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
-      return this.mostrarToast('Formulario incompleto', 'danger');
+      this.mostrarToast('Formulario incompleto', 'danger');
+      return;
     }
-
+    
     const f = this.registroForm.value;
 
-    const nuevo: NuevoUsuario = {
-      id:            f.correo,                   
-      rut:           f.rut,
-      usuario:       `${f.nombre} ${f.apellidoPaterno}`,
-      contraseña:    f.contrasena,
-      nombre:        f.nombre,
-      rol:           f.cargo,
-      correo:        f.correo
-
-      
+    
+    const nuevo = {
+      id: f.rut,
+      rut_usuario: f.rut,
+      nombre: f.nombre,
+      apellido_paterno: f.apellidoPaterno,
+      apellido_materno: f.apellidoMaterno,
+      correo: f.correo,
+      contrasena: f.contrasena,
+      rol: f.cargo,
+      ESTABLECIMIENTO_idEstablecimiento: f.centro, 
+      area: f.areaDesempeno
     };
-     try {
-      console.log('Intentando registrar usuario...');
-      const ok = await this.auth.registrarUsuarioLocal(nuevo);
-      console.log('Resultado de registrarUsuarioLocal:', ok); // <-- Cámara de seguridad 1
 
-      if (ok) {
-        console.log('Registro exitoso. Intentando enviar correo...'); // <-- Cámara de seguridad 2
+     this.auth.registrarUsuario(nuevo).subscribe({
+      next: () => {
         this.notificaciones.enviarCorreoBienvenida(nuevo.correo, nuevo.nombre);
-        await this.mostrarToast('¡Usuario registrado con éxito!', 'success');
+        this.mostrarToast('¡Usuario registrado con éxito!', 'success');
         this.router.navigate(['/login']);
-      } else {
-        console.log('El usuario ya existe. No se enviará correo.'); // <-- Cámara de seguridad 3
-        this.mostrarToast('El RUT o correo ya existe', 'warning');
+      },
+      error: (error) => {
+        console.error('Error en el proceso de registro:', error);
+        
+        let mensajeError = 'Error al registrar usuario.';
+        if (error instanceof HttpErrorResponse) {
+          mensajeError = error.error?.message || error.error?.errors?.[0]?.msg || 'Error de conexión.';
+        } else if (error instanceof Error) {
+          mensajeError = error.message;
+        }
+        
+        this.mostrarToast(mensajeError, 'danger');
       }
-    } catch (error) {
-      console.error('Error CATCH al registrar usuario:', error); // <-- Cámara de seguridad 4
-      this.mostrarToast('Ocurrió un error al registrar el usuario.', 'danger');
-    }
+    });
   }
 
 
@@ -183,7 +189,7 @@ export class RegistroUsuarioPage implements OnInit {
       this.showCoordinadorFields = true;
     } else if (selectedCargo === 'its') {
      this.showItsFields = true;
-    } else if (selectedCargo ==='adminSistema'){
+    } else if (selectedCargo ==='admin sistema'){
       this.showAdminSistemaFields = true;
     }
  }

@@ -1,265 +1,121 @@
-<ion-app>
-  <!-- MENÚ LATERAL -->
-  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
+<app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
 
-  <div class="ion-page" id="main-content">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Registro Vehículo</ion-title>
-      </ion-toolbar>
-    </ion-header>
+<div class="ion-page" id="main-content">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+      <ion-title>Registro de Vehículo</ion-title>
+    </ion-toolbar>
+  </ion-header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="ion-page" id="main-content">
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Registro de Vehículos</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content [fullscreen]="true">
-      <div class="form-wrapper">
-      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
-        <ion-grid>
-          <ion-row class="ion-justify-content-center">
-            <ion-title class="text-center">
-              <img src="assets/img/Logo cmpa.png" alt="Logo" class="logo-image">
-            </ion-title>
-          </ion-row>
-          
-      
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Nombre Enc. Vehículo</ion-label>
-              <ion-input formControlName="nombreEncVehiculo" type="text"></ion-input>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('nombreEncVehiculo')?.invalid && (registroForm.get('nombreEncVehiculo')?.touched || registroForm.get('nombreEncVehiculo')?.dirty)">
-              <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['required']">El Nombre del Enc Vehículo es obligatorio.</small>
-              <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-          </ion-col>
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Apellido Enc. Vehículo</ion-label>
-              <ion-input formControlName="apellidoEncVehiculo" type="text"></ion-input>
-             </ion-item>
-             <ion-text color="danger" *ngIf="registroForm.get('apellidoEncVehiculo')?.invalid && (registroForm.get('apellidoEncVehiculo')?.touched || registroForm.get('apellidoEncVehiculo')?.dirty)">
-              <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['required']">El Apellido del Enc Vehículo es obligatorio.</small>
-              <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-         </ion-col>
-
-            <ion-col size="12">
-             <ion-item>
-              <ion-label position="floating">Rut Enc Vehículo</ion-label>
-              <ion-input formControlName="rutEncVehiculo" type="text"></ion-input>
-             </ion-item>
-             <ion-text color="danger" *ngIf="registroForm.get('rutEncVehiculo')?.invalid && (registroForm.get('rutEncVehiculo')?.touched || registroForm.get('rutEncVehiculo')?.dirty)">
-              <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['required']">El Rut del Enc de Vehículo es obligatorio.</small>
-              <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['validarRut']">Debe agregar un formato valido para el rut.</small>
-             </ion-text>
-           </ion-col>
-
-          <ion-row>
-            <ion-col size="12">
-              <ion-item>
-                <ion-label position="floating">Patente</ion-label>
-                <ion-input formControlName="patente" type="text"></ion-input>
-              </ion-item>
-              <ion-text color="danger" *ngIf="registroForm.get('patente')?.invalid && (registroForm.get('patente')?.touched || registroForm.get('patente')?.dirty)">
-                <small *ngIf="registroForm.get('patente')?.errors?.['required']">La patente es obligatoria.</small>
-                <small *ngIf="registroForm.get('patente')?.errors?.['patenteInvalida']">La patente debe tener 4 letras seguidas de 2 números. Ej: ABCD12</small>
-              </ion-text>
-            </ion-col>
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Marca</ion-label>
-              <ion-input formControlName="marca" type="text"></ion-input>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('marca')?.invalid && (registroForm.get('marca')?.touched || registroForm.get('marca')?.dirty)">
-              <small *ngIf="registroForm.get('marca')?.errors?.['required']">La Marca del Vehículo es obligatoria</small>
-              <small *ngIf="registroForm.get('marca')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-          </ion-col>
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Modelo</ion-label>
-              <ion-input formControlName="modelo" type="text"></ion-input>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('modelo')?.invalid && (registroForm.get('modelo')?.touched || registroForm.get('modelo')?.dirty)">
-              <small *ngIf="registroForm.get('modelo')?.errors?.['required']">El Modelo del Vehículo es obligatorio.</small>
-              <small *ngIf="registroForm.get('modelo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-          </ion-col>
-
-          
-
-          <!--Segmento para introducir si el vehiculo tiene carga con un toogle-->
-          <ion-item>
-            <ion-label>Tiene Capacidad de Carga</ion-label>
-            <ion-toggle formControlName="tieneCarga" [enableOnOffLabels]="true"></ion-toggle>
-          </ion-item>
-         <ion-col size="12">
-            <ion-item>
-              <ion-label>Tipo de Vehículo</ion-label>
-                <ion-select formControlName="tipoVehiculo">
-                  <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
-              </ion-select>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('tipoVehiculo')?.invalid && (registroForm.get('tipoVehiculo')?.touched || registroForm.get('tipoVehiculo')?.dirty)">
-              <small *ngIf="registroForm.get('tipoVehiculo')?.errors?.['required']">Debe ingresar un Tipo de Vehículo.</small>
-            </ion-text>
-          </ion-col>
-
-              <!-- Botón para seleccionar año -->
-              <ion-col size="12">
-                <ion-item>
-                  <ion-label>Año Vehículo</ion-label>
-                  <ion-button expand="block" fill="outline" (click)="openYearPicker()">
-                    {{ registroForm.value.anoVehiculo || 'Seleccionar Año' }}
-                  </ion-button>
-                </ion-item>
-
-                <!-- Muestra el año ya elegido -->
-                <ion-item lines="none" *ngIf="registroForm.get('anoVehiculo')?.value">
-                  <ion-label color="medium">
-                    Año: {{ registroForm.get('anoVehiculo')?.value }}
-                  </ion-label>
-                </ion-item>
-
-                <!-- Mensaje de error si no se selecciona -->
-                <ion-text
-                  color="danger"
-                  *ngIf="registroForm.get('anoVehiculo')?.touched && registroForm.get('anoVehiculo')?.invalid"
-                >
-                  <small>Selecciona el año del vehículo.</small>
-                </ion-text>
-
-                <!-- ion-datetime oculto, sólo abre con open() desde el botón -->
-                <ion-datetime
-                  #yearPicker
-                  hidden
-                  presentation="year"
-                  displayFormat="YYYY"
-                  pickerFormat="YYYY"
-                  [min]="startYear + '-01-01'"
-                  [max]="endYear   + '-12-31'"
-                  interface="popover"
-                  (ionChange)="onYearSelected($event)"
-                ></ion-datetime>
-              </ion-col>
-
-
-          <ion-col size="12">
-            <ion-item>
-             <ion-label position="floating">Conductor Titular</ion-label>
-             <ion-input formControlName="conductorTitular" type="text"></ion-input>             
-             <ion-text color="danger" *ngIf="registroForm.get('conductorTitular')?.invalid && (registroForm.get('conductorTitular')?.touched || registroForm.get('conductorTitular')?.dirty)">
-              <small *ngIf="registroForm.get('conductorTitular')?.errors?.['required']">Es obligatorio ingresar al Conductor Titular.</small>
-              <small *ngIf="registroForm.get('conductorTitular')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-            </ion-item> 
-            </ion-col>
-    
-          <ion-col size="12">
-            <ion-item>
-             <ion-label position="floating">Conductor Reemplazo</ion-label>
-             <ion-input formControlName="conductorReemplazo" type="text"></ion-input>              
-             <ion-text color="danger" *ngIf="registroForm.get('conductorReemplazo')?.invalid && (registroForm.get('conductorReemplazo')?.touched || registroForm.get('conductorReemplazo')?.dirty)">
-              <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['required']">Es obligatorio ingresar al Conductor de Reemplazo.</small>
-              <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['textoInvalido']">Debe ingresar solamente letras</small>
-            </ion-text>
-            </ion-item>
-          </ion-col>
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label>Programa</ion-label>
-                  <ion-select formControlName="programa" [multiple]="true" >
-                  <ion-select-option *ngFor="let item of programa.prog" [value]="item.value">{{ item.label }}</ion-select-option>  
-                  </ion-select>                      
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('programa')?.value?.length > 2 && registroForm.get('programa')?.touched">
-              <small>No puedes seleccionar más de 2 programas.</small>
-            </ion-text>
-          </ion-col>
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label>Centro</ion-label>
-                <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
-                  <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>             
-              </ion-select>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
-              <small>Selecciona un centro válido.</small>
-            </ion-text>
-          </ion-col>
-
-          <!-- Centros -->
-        <ion-col size="12" *ngIf="showSaludFields">
-          <ion-item>
-            <ion-label>Centro de salud</ion-label>
-              <ion-select formControlName="centroSalud1"  >
-                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
-              </ion-select>                          
-          </ion-item>
-          <ion-item>
-            <ion-label>Centro de salud</ion-label>
-              <ion-select formControlName="centroSalud2"  >
-                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
-              </ion-select>                          
-          </ion-item>
-          <!-- advertencia -->
-          <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
-            <small>Selecciona un Centro de Salud válido.</small>
-          </ion-text>
-        </ion-col>
-
-     
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">N° de Contrato</ion-label>
-              <ion-input formControlName="contrato" type="text"></ion-input>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('contrato')?.invalid && (registroForm.get('contrato')?.touched || registroForm.get('contrato')?.dirty)">
-              <small *ngIf="registroForm.get('contrato')?.errors?.['required']">Es obligatorio ingresar el numero de contrato</small>
-            </ion-text>
-          </ion-col>        
-
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Última Revisión Técnica</ion-label>
-              <ion-input formControlName="fechaRevision" type="date"></ion-input>
-            </ion-item>
-            <ion-text color="danger" *ngIf="registroForm.get('fechaRevision')?.invalid && (registroForm.get('fechaRevision')?.touched || registroForm.get('fechaRevision')?.dirty)">
-              <small *ngIf="registroForm.get('fechaRevision')?.errors?.['required']">Es obligatorio ingresar la fecha de la ultima revision tecnica</small>
-            </ion-text>
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+      <ion-grid>
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa.png" alt="Logo" class="logo-image">
           </ion-col>
         </ion-row>
 
-        <!-- Botones -->
         <ion-row>
-          <ion-col size="12" class="ion-padding-top">
-            <ion-button type="submit" color="primary" expand="block">Registrar</ion-button>
-          </ion-col>
           <ion-col size="12">
-            <ion-button fill="clear" color="medium" expand="block" (click)="goToHomePage()">Volver</ion-button>
+
+            <!-- Card para el Encargado del Vehículo -->
+            <ion-card>
+              <ion-card-header><ion-card-title>Datos del Encargado</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <ion-item>
+                  <ion-input label="Nombre Encargado" label-placement="stacked" formControlName="nombreEncVehiculo"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Apellido Enc." label-placement="stacked" formControlName="apellidoEncVehiculo"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="RUT Encargado" label-placement="stacked" formControlName="rutEncVehiculo" placeholder="12345678-9"></ion-input>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+
+            <!-- Card para los Datos del Vehículo -->
+            <ion-card>
+              <ion-card-header><ion-card-title>Datos del Vehículo</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <ion-item>
+                  <ion-input label="Patente" label-placement="stacked" formControlName="patente" placeholder="ABCD12"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Marca" label-placement="stacked" formControlName="marca"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Modelo" label-placement="stacked" formControlName="modelo"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-select formControlName="tipoVehiculo" label="Tipo de Vehículo" label-placement="stacked">
+                    <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Año del Vehículo</ion-label>
+                  <ion-text slot="end">{{ registroForm.get('anoVehiculo')?.value || 'Seleccionar' }}</ion-text>
+                  <ion-datetime-button datetime="ano-picker"></ion-datetime-button>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+
+            <!-- Card para Conductores y Asignaciones -->
+            <ion-card>
+              <ion-card-header><ion-card-title>Asignación y Documentación</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <ion-item>
+                  <ion-input label="Conductor Titular" label-placement="stacked" formControlName="conductorTitular"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Conductor Reemplazo" label-placement="stacked" formControlName="conductorReemplazo"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-select formControlName="programa" label="Programa(s) Asignado(s)" label-placement="stacked" [multiple]="true">
+                    <ion-select-option *ngFor="let p of programa.prog" [value]="p.value">{{p.label}}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-item>
+                  <ion-select formControlName="centro" label="Centro Principal" label-placement="stacked" (ionChange)="onCentroChange($event)">
+                    <ion-select-option *ngFor="let c of centros.central" [value]="c.value">{{c.label}}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                
+                <!-- Campos dinámicos para centros específicos -->
+                <div *ngIf="showSaludFields">
+                  <ion-item><ion-select formControlName="centroSalud1" label="Centro de Salud 1" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                  <ion-item><ion-select formControlName="centroSalud2" label="Centro de Salud 2 (Opcional)" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                </div>
+                <div *ngIf="showEducacionFields">
+                  <ion-item><ion-select formControlName="centroEducacion" label="Centro de Educación" label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                </div>
+                <div *ngIf="showAtmFields">
+                  <ion-item><ion-select formControlName="centroAtm" label="Centro Atención a Menores" label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                </div>
+
+                <ion-item>
+                  <ion-input label="N° de Contrato" label-placement="stacked" formControlName="contrato"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Última Revisión Técnica</ion-label>
+                  <ion-datetime-button datetime="rev-picker"></ion-datetime-button>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+
+            <ion-button expand="block" color="primary" type="submit" [disabled]="!registroForm.valid" class="ion-margin-top">
+              Registrar Vehículo
+            </ion-button>
+
           </ion-col>
         </ion-row>
       </ion-grid>
     </form>
-  </div>
+
+    <!-- Datetime pickers ocultos -->
+    <ion-datetime id="ano-picker" presentation="year" (ionChange)="onYearSelected($event)" [min]="startYear" [max]="endYear"></ion-datetime>
+    <ion-datetime id="rev-picker" presentation="date" formControlName="fechaRevision" [max]="today"></ion-datetime>
   </ion-content>
 </div>

@@ -7,47 +7,56 @@
 </ion-header>
 
   <ion-content [fullscreen]="true" class="ion-padding">
+    
+    <ion-grid class="full-height-grid">
+    <ion-row class="ion-justify-content-center ion-align-items-center full-height-row">
+    <ion-col size="12" size-sm="8" size-md="6" size-lg="4">
+        
     <!-- Imagen centrada debajo del encabezado -->
     <div class="container text-center mt-4 d-flex justify-content-center align-items-center">
       <img src="assets/img/auto_centro.png" alt="Auto" class="img-fluid auto-image">
     </div>
   
-    <!-- Texto debajo de la imagen -->
-     <!-- Lista de inputs -->
-      <ion-list class="ion-text-center">
-        <ion-item class="ion-margin-bottom">
-          <ion-icon class="icono-izquierda" slot="start" name="at-sharp" aria-hidden="true" color="primary"></ion-icon>
-              <ion-input
-              [(ngModel)]="correo"
-              type="email"
-              placeholder="nombre.apellido@cmpuentealto.cl"
-              label-placement="floating"
-              fill="outline"></ion-input>
-            </ion-item>
-            
-            <ion-item class="ion-margin-bottom">
-              <ion-icon class="icono-izquierda" slot="start" name="lock-closed" aria-hidden="true" color="primary"></ion-icon>
-              <ion-input name="contrasena"
-              [(ngModel)]="contrasena"
-               type="password"
-               placeholder="Contraseña"
-              label-placement="floating"
-              placeholder="Ingrese su Contraseña"
-              fill="outline"></ion-input>
-              <!--Boton para la recuperacion de contraseña-->
-        </ion-item>
-            <ion-item class="ion-margin-bottom">
-              <ion-button src="asset/icon/log-in-outline" fill="clear" (click)="goToRecuperarContrasenaPage()">Olvido su Contraseña</ion-button>
-            </ion-item>
-            </ion-list>
-            <!--Botones para inicio y registro usuarios-->
-      <div class="button-container">
-        <ion-button fill="outline"  (click)="login()" >Iniciar sesión</ion-button>
-         
-        <ion-button fill="outline" (click)="goToRegistroUsuarioPage()" >Registro Usuario</ion-button>
+  <!-- Formulario de Login -->
+     <form [formGroup]="loginForm" (ngSubmit)="login()">
+    <ion-list class="ion-no-padding">
+      <ion-item class="ion-margin-bottom">
+        <ion-icon slot="start" name="at-sharp" aria-hidden="true" color="primary"></ion-icon>
+        <ion-input
+          type="email" placeholder="nombre.apellido@cmpuentealto.cl"
+          label="Correo Electrónico"
+          label-placement="floating" fill="outline" formControlName="correo"
+        ></ion-input>
+      </ion-item>
+      
+      <ion-item class="ion-margin-bottom">
+        <ion-icon slot="start" name="lock-closed" aria-hidden="true" color="primary"></ion-icon>
+        <ion-input
+          type="password" placeholder="Ingrese su Contraseña" label="Contraseña"
+          label-placement="floating" fill="outline"
+          formControlName="contrasena"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
 
-      </div>
-
+    <!-- Botones de acción -->    
+    <div class="button-container">
+      <ion-button type="submit" expand="block" [disabled]="!loginForm.valid">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
+        Iniciar sesión
+      </ion-button>
+      <ion-button fill="clear" expand="block" (click)="goToRegistroUsuarioPage()">
+        Registro Usuario
+      </ion-button>
+      <ion-button fill="clear" expand="block" size="small" (click)="goToRecuperarContrasenaPage()">
+        ¿Olvidó su Contraseña?
+      </ion-button>
+    </div>
+  </form>
+  
+      </ion-col>
+    </ion-row>
+  </ion-grid>
      
 </ion-content>
 

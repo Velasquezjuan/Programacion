@@ -1,67 +1,100 @@
-const { validationResult } = require('express-validator');
-const jwt = require('jsonwebtoken');
+const db = require('../db');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const express = require('express');
+const router = express.Router(); 
 
-const users = []; // Almacenamiento temporal local
-
+// --- REGISTRO DE USUARIO ---
 exports.register = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+  try {
+    const { rut_usuario,
+  nombre,
+  apellido_paterno,
+  apellido_materno,
+  correo,
+  contrasena,
+  rol,
+  area,
+  ESTABLECIMIENTO_idEstablecimiento } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const contrasenaHasheada = await bcrypt.hash(contrasena, salt);
+
+    const query = `INSERT INTO USUARIO (
+    rut_usuario,
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    contrasena,
+    rol,
+    area,
+    ESTABLECIMIENTO_idEstablecimiento
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)`;
+    
+     await db.query(query, [
+      rut_usuario,
+  nombre,
+  apellido_paterno,
+  apellido_materno,
+  correo,
+  contrasenaHasheada,
+  rol,
+  area,
+  ESTABLECIMIENTO_idEstablecimiento
+    ]);
+
+    res.status(201).json({ message: 'Usuario registrado con éxito.' });
+
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'El correo o RUT ya está en uso.' });
+    }
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
-
-  const { username, password, rol } = req.body;
-
-  const userExists = users.find(u => u.username === username);
-  if (userExists) {
-    return res.status(400).json({ message: 'El usuario ya existe' });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  users.push({ username, password: hashedPassword, rol }); //  Ahora también guarda el rol
-  res.json({ message: 'Usuario registrado correctamente' });
 };
 
-// LOGIN DE USUARIO
+// --- LOGIN DE USUARIO ---
 exports.login = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+  try {
+    const { correo, contrasena } = req.body;
+
+    const [rows] = await db.query('SELECT * FROM USUARIO WHERE correo = ?', [correo]);
+
+    const usuario = rows[0];
+    if (!usuario) {
+      return res.status(401).json({ message: 'Credenciales inválidas.' });
+    }
+
+    const esContrasenaCorrecta = await bcrypt.compare(contrasena, usuario.contrasena);
+    if (!esContrasenaCorrecta) {
+      return res.status(401).json({ message: 'Credenciales inválidas.' });
+    }
+
+    
+    const payload = {
+      rut: usuario.rut_usuario,
+      rol: usuario.rol
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '1d' 
+    });
+
+    res.status(200).json({
+      message: 'Login exitoso',
+      token: token, 
+      usuario: {
+        rut: usuario.rut_usuario,
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        rol: usuario.rol
+      }
+    });
+
+  } catch (error) {
+    console.error('Error en el login:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
-
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username);
-  if (!user) {
-    return res.status(404).json({ message: 'Usuario no encontrado' });
-  }
-
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) {
-    return res.status(401).json({ message: 'Contraseña incorrecta' });
-  }
-
-  //  En el token también enviamos el rol
-  const token = jwt.sign({ username: user.username, rol: user.rol }, process.env.JWT_SECRET, { expiresIn: '2h' });
-
-  res.json({
-    message: 'Login exitoso',
-    token,
-    username: user.username,
-    rol: user.rol
-  });
 };
-
-// protecccion de rutas
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
-
-  if (!token) return res.status(403).json({ message: 'No token provided' });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ message: 'Unauthorized' });
-
-    req.userId = decoded.username;
-    req.userRol = decoded.rol;
-    next();
-  });
-}

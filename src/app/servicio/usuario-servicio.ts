@@ -12,7 +12,7 @@ export interface UsuarioPendiente {
   usuario: string;
   contraseña: string;
   nombre: string;
-  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
+  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
   correo: string;
 }
 

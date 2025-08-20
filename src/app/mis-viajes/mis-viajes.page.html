@@ -11,14 +11,24 @@
           </ion-col>
 
   <!-- Select de filtro -->
-  <ion-item>
-    <ion-label>Estado:</ion-label>
-    <ion-select [value]="filtro" (ionChange)="onFiltroChange($event)">
-      <ion-select-option *ngFor="let e of estados" [value]="e.value">
-        {{e.label}}
-      </ion-select-option>
-    </ion-select>
-  </ion-item>
+  <div class="contenedor-filtros">
+    <!-- Barra de búsqueda por ID -->
+    <ion-searchbar
+      class="search-by-id"  color="primary"  type="number" placeholder="Buscar por Nº Solicitud"
+      [(ngModel)]="searchTerm" (ionClear)="searchTerm = ''" debounce="300"
+    ></ion-searchbar>
+
+    <!-- Select de filtro por estado -->
+    <ion-item class="filtros-estado">
+      <ion-label>Estado:</ion-label>
+      <ion-select [value]="filtro" (ionChange)="onFiltroChange($event)">
+        <ion-select-option *ngFor="let e of estados" [value]="e.value">
+          {{e.label}}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
 
   <ng-container *ngIf="viajes.length; else noHay">
     <ion-card *ngFor="let v of viajes"

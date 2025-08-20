@@ -20,7 +20,10 @@ export class CentroServicio {
         { value: 'CESFAM DR. Alejandro del Río', label: 'CESFAM DR. Alejandro del Río' },
         { value: 'Centro de Integracion María Isabel', label: 'Centro de Integracion María Isabel' },
         { value: 'COSAM-CEIF Norte', label: 'COSAM-CEIF Norte' },
-        ],
+        { velue: 'CESFAM SAN GERONIMO' , label: 'CESFAM SAN GERONIMO' },
+        { value: 'CESFAM Laurita Vicuña', label: 'CESFAM Laurita Vicuña' },    
+         ],
+
         educacion: [
          { value: 'Centro Educacional Nueva Creación' , label: 'Centro Educacional Nueva Creación' },
          { value: 'Centro Integral de Adultos Profesora Teresa Moya Reyes' , label: 'Centro Integral de Adultos Profesora Teresa Moya Reyes' },
@@ -93,19 +96,19 @@ export class CentroServicio {
 
         ],
         central: [
-            { value: 'nivelCentral', label: 'Nivel Central' },
-            { value: 'educacion', label: 'Educacion' },
-            { value: 'salud', label: 'Salud' },
-            { value: 'atm', label: 'Atención a Menores' },
+            { value: '1', label: 'Nivel Central' },
+            { value: '2', label: 'Salud' },
+            { value: '3', label: 'Educacion' },
+            { value: '4', label: 'Atención a Menores' },
         ]
     };
 
     private auto = {
         vehiculo: [
-            { value: 'suv', label: 'suv' },
-            { value: 'minivan', label: 'Minivan' },
-            { value: 'camioneta', label: 'Camioneta' },
-            { value: 'camion', label: 'Camion' },
+            { value: '1', label: 'suv' },
+            { value: '2', label: 'Camioneta' },
+            { value: '3', label: 'Camion' },
+            { value: '4', label: 'Minivan' },            
         ]
 
     };

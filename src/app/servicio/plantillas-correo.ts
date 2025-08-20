@@ -88,7 +88,7 @@ export const PlantillasCorreo = {
   `,
   rechazoReagendamiento: (viaje: any) => `
     <p>Su solicitud #${viaje.id} ha sido reagendada y rechazada.</p>
-    <p>Motivo del rechazo: <b>${viaje.motivoRechazo || 'No disponible'}</b>.</p>
+    <p>Motivo del rechazo: <b>${viaje.motivoRechazo}</b>.</p>
     <p>Por favor, ingrese a la aplicación para agendar un nuevo viaje en la sección de "Solicitar Viaje".</p>
   `,
 }
