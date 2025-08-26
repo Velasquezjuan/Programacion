@@ -21,8 +21,8 @@
           <ion-col size="12">
 
             <!-- Card para el Encargado del Vehículo -->
-            <ion-card>
-              <ion-card-header><ion-card-title>Datos del Encargado</ion-card-title></ion-card-header>
+           <ion-card>
+              <ion-card-header><ion-card-title>Datos del Proveedor</ion-card-title></ion-card-header>
               <ion-card-content>
                 <ion-item>
                   <ion-input label="Nombre Encargado" label-placement="stacked" formControlName="nombreEncVehiculo"></ion-input>
@@ -54,15 +54,22 @@
                     <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
                   </ion-select>
                 </ion-item>
-                <ion-item>
+                  <ion-item>
+                  <ion-toggle formControlName="capacidad" justify="space-between">¿Tiene capacidad de carga?</ion-toggle>
+                </ion-item>
+                  <ion-item>
                   <ion-label>Año del Vehículo</ion-label>
-                  <ion-text slot="end">{{ registroForm.get('anoVehiculo')?.value || 'Seleccionar' }}</ion-text>
-                  <ion-datetime-button datetime="ano-picker"></ion-datetime-button>
+                  <div slot="end" class="date-button-container">
+                    <ion-text>{{ registroForm.get('anoVehiculo')?.value ? (registroForm.get('anoVehiculo')?.value | date:'yyyy') : 'Seleccionar' }}</ion-text>
+                    <ion-button fill="clear" (click)="isAnoPickerOpen = true">
+                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
                 </ion-item>
               </ion-card-content>
             </ion-card>
 
-            <!-- Card para Conductores y Asignaciones -->
+            <!-- Card para Asignaciones -->
             <ion-card>
               <ion-card-header><ion-card-title>Asignación y Documentación</ion-card-title></ion-card-header>
               <ion-card-content>
@@ -83,7 +90,6 @@
                   </ion-select>
                 </ion-item>
                 
-                <!-- Campos dinámicos para centros específicos -->
                 <div *ngIf="showSaludFields">
                   <ion-item><ion-select formControlName="centroSalud1" label="Centro de Salud 1" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
                   <ion-item><ion-select formControlName="centroSalud2" label="Centro de Salud 2 (Opcional)" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
@@ -100,7 +106,12 @@
                 </ion-item>
                 <ion-item>
                   <ion-label>Última Revisión Técnica</ion-label>
-                  <ion-datetime-button datetime="rev-picker"></ion-datetime-button>
+                  <div slot="end" class="date-button-container">
+                    <ion-text>{{ registroForm.get('fechaRevision')?.value | date:'dd/MM/yyyy' }}</ion-text>
+                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
+                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
                 </ion-item>
               </ion-card-content>
             </ion-card>
@@ -114,8 +125,24 @@
       </ion-grid>
     </form>
 
-    <!-- Datetime pickers ocultos -->
-    <ion-datetime id="ano-picker" presentation="year" (ionChange)="onYearSelected($event)" [min]="startYear" [max]="endYear"></ion-datetime>
-    <ion-datetime id="rev-picker" presentation="date" formControlName="fechaRevision" [max]="today"></ion-datetime>
+    <!-- ¡¡¡CORRECCIÓN AQUÍ!!! Se restauran los ion-modal para que los calendarios estén ocultos -->
+    <ion-modal [isOpen]="isAnoPickerOpen" (didDismiss)="isAnoPickerOpen = false">
+      <ng-template>
+        <ion-datetime
+          presentation="year"
+          (ionChange)="onDateChange($event, 'anoVehiculo', 'ano')">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal [isOpen]="isRevPickerOpen" (didDismiss)="isRevPickerOpen = false">
+      <ng-template>
+        <ion-datetime
+          presentation="date"
+          (ionChange)="onDateChange($event, 'fechaRevision', 'rev')">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+    
   </ion-content>
 </div>

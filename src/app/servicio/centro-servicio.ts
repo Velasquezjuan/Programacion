@@ -96,16 +96,17 @@ export class CentroServicio {
 
         ],
         central: [
-            { value: '1', label: 'Nivel Central' },
-            { value: '2', label: 'Salud' },
-            { value: '3', label: 'Educacion' },
-            { value: '4', label: 'Atención a Menores' },
+            { value: 'nivelCentral', label: 'Nivel Central' },
+            { value: 'salud', label: 'Salud' },
+            { value: 'educacion', label: 'Educacion' },
+            { value: 'atencionAMenores', label: 'Atención a Menores' },
+            { value: 'otro', label: 'otro' },
         ]
     };
 
     private auto = {
         vehiculo: [
-            { value: '1', label: 'suv' },
+            { value: '1', label: 'Suv' },
             { value: '2', label: 'Camioneta' },
             { value: '3', label: 'Camion' },
             { value: '4', label: 'Minivan' },            
@@ -115,18 +116,17 @@ export class CentroServicio {
 
     private programa = {
         prog: [
-        {value: 'operacional', label: 'Operacional' },
-        {value: 'chile crece contigo', label: 'Chile Crece Contigo' },
-        {value: 'fofar', label: 'FOFAR' },
-        {value: 'acompañamiento', label: 'Acompañamiento' },
-        {value: 'odontologia a domicilio', label: 'Odontologia A Domicilio' },
-        {value: 'sembrando sonrisas', label: 'Sembrando Sonrisas' },
-        {value: 'junaeb', label: 'JUNAEB' },
-        {value: 'pama', label: 'PAMA' },
-        {value: 'cuidados paleativos', label: 'Cuidados Paleativos' },
-        {value: 'transferencia municipal (vacunas)', label: 'Transferencia Municipal Vacunas' },
-        {value: 'transferencia municiapl(farmacia domicilio)', label: 'Transferencia Municipal Farmacia a Domicilio' },
-        {value: 'cuidados paleativos', label: 'Cuidados Paleativos' },
+        {value: '1', label: 'Operacional' },
+        {value: '2', label: 'Chile Crece Contigo' },
+        {value: '3', label: 'FOFAR' },
+        {value: '4', label: 'Acompañamiento' },
+        {value: '5', label: 'Odontologia A Domicilio' },
+        {value: '6', label: 'Sembrando Sonrisas' },
+        {value: '7', label: 'JUNAEB' },
+        {value: '8', label: 'PAMA' },
+        {value: '9', label: 'Cuidados Paleativos' },
+        {value: '10', label: 'Transferencia Municipal Vacunas' },
+        {value: '11', label: 'Transferencia Municipal Farmacia a Domicilio' },
         ]
     };
   

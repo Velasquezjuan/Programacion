@@ -12,9 +12,9 @@ const validateUser = [
   body('correo').isEmail().withMessage('El correo debe ser un email válido.'),
   body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
   body('rol').notEmpty().withMessage('El rol es obligatorio.'),
-  body('ESTABLECIMIENTO_idEstablecimiento').isInt().withMessage('Debe seleccionar un establecimiento válido.'),
   body('area').notEmpty().withMessage('El área es obligatoria.'),
-
+  body('centro').notEmpty().withMessage('El centro es obligatorio.'),
+  body('establecimiento').optional(),
 
   (req, res, next) => {
     const errors = validationResult(req);

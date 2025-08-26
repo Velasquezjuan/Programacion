@@ -22,7 +22,7 @@ interface NuevoUsuario {
   usuario: string;
   contraseña: string;
   nombre: string;
-  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
+  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
   correo: string;
 }
 
@@ -47,7 +47,7 @@ export class RegistroUsuarioPage implements OnInit {
   correo: string = '';
   rut: string = '';
   contraseña: string = '';
-  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador' = 'solicitante';
+  rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador' = 'solicitante';
   usarAPI: boolean = false;
 
   centros: {
@@ -110,8 +110,13 @@ export class RegistroUsuarioPage implements OnInit {
       contrasena: ['', Validators.compose([Validators.required, Validadores.contra])],
       cargo: ['', Validators.required], 
       centro: ['', Validators.required],
+      establecimiento: [''],
       areaDesempeno: ['', Validators.compose([Validators.required, Validadores.soloTexto])],
-      departamento: ['', Validators.compose([Validators.required, Validadores.soloTexto])]
+     centroSalud: [''],
+      centroEducacion: [''],
+      centroAtm: [''],
+      nivelCentral: ['']
+    
     });
 
     this.centros = {
@@ -132,10 +137,10 @@ export class RegistroUsuarioPage implements OnInit {
     }
     
     const f = this.registroForm.value;
-
     
-    const nuevo = {
-      id: f.rut,
+    
+
+      const nuevoUsuario = {
       rut_usuario: f.rut,
       nombre: f.nombre,
       apellido_paterno: f.apellidoPaterno,
@@ -143,13 +148,14 @@ export class RegistroUsuarioPage implements OnInit {
       correo: f.correo,
       contrasena: f.contrasena,
       rol: f.cargo,
-      ESTABLECIMIENTO_idEstablecimiento: f.centro, 
-      area: f.areaDesempeno
+      area: f.areaDesempeno,
+      centro: f.centro,
+      establecimiento: f.establecimiento
     };
 
-     this.auth.registrarUsuario(nuevo).subscribe({
+     this.auth.registrarUsuario(nuevoUsuario).subscribe({
       next: () => {
-        this.notificaciones.enviarCorreoBienvenida(nuevo.correo, nuevo.nombre);
+        this.notificaciones.enviarCorreoBienvenida(nuevoUsuario.correo, nuevoUsuario.nombre);
         this.mostrarToast('¡Usuario registrado con éxito!', 'success');
         this.router.navigate(['/login']);
       },
@@ -189,7 +195,7 @@ export class RegistroUsuarioPage implements OnInit {
       this.showCoordinadorFields = true;
     } else if (selectedCargo === 'its') {
      this.showItsFields = true;
-    } else if (selectedCargo ==='admin sistema'){
+    } else if (selectedCargo ==='adminSistema'){
       this.showAdminSistemaFields = true;
     }
  }

@@ -68,9 +68,7 @@ export class MenuLateralComponent {
   ) {}
 
   async onLogout() {
-    // cierra el menú
     await this.menuCtrl.close();
-    // borra sesión y redirige
     await this.auth.logout();
     await this.router.navigate(['/login']);
   }

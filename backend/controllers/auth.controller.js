@@ -15,7 +15,19 @@ exports.register = async (req, res) => {
   contrasena,
   rol,
   area,
-  ESTABLECIMIENTO_idEstablecimiento } = req.body;
+  centro,
+  establecimiento,
+} = req.body;
+
+
+ let establecimientoIdFinal;
+    const centroId = parseInt(centro, 10);
+
+    if (centroId === 1) { 
+      establecimientoIdFinal = 1; 
+    } else {
+      establecimientoIdFinal = establecimiento;
+    }
 
     const salt = await bcrypt.genSalt(10);
     const contrasenaHasheada = await bcrypt.hash(contrasena, salt);
@@ -32,8 +44,9 @@ exports.register = async (req, res) => {
     ESTABLECIMIENTO_idEstablecimiento
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)`;
     
-     await db.query(query, [
-      rut_usuario,
+    
+ await db.query(query, [
+  rut_usuario,
   nombre,
   apellido_paterno,
   apellido_materno,
@@ -41,7 +54,7 @@ exports.register = async (req, res) => {
   contrasenaHasheada,
   rol,
   area,
-  ESTABLECIMIENTO_idEstablecimiento
+  establecimientoIdFinal
     ]);
 
     res.status(201).json({ message: 'Usuario registrado con éxito.' });

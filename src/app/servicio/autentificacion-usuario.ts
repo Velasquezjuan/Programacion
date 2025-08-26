@@ -4,6 +4,8 @@ import { Memorialocal } from '../almacen/memorialocal';
 import { Observable, from, of, throwError } from 'rxjs';
 import { switchMap, tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
+import { BehaviorSubject } from 'rxjs'; 
+
 
 interface LoginResponse {
   message: string;
@@ -17,7 +19,7 @@ export interface NuevoUsuario {
   usuario: string;
   contraseña: string;
   nombre: string;
-  rol: 'admin sistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
+  rol: 'adminsistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador';
   correo: string;
 }
 
@@ -27,15 +29,31 @@ export interface NuevoUsuario {
   export class AutentificacionUsuario {
   private apiUrl = 'http://localhost:3000/api/auth';
   private tokenKey = 'auth-token';
+  private usuarioActivoSubject = new BehaviorSubject<any | null>(null);
+  public usuarioActivo$ = this.usuarioActivoSubject.asObservable();
 
-  constructor( private http: HttpClient) {}
+  constructor( private http: HttpClient) {
+     this.cargarUsuarioInicial();
+  }
+
+    async cargarUsuarioInicial() {
+    const usuario = await this.obtenerUsuarioActivo();
+    if (usuario && this.estaLogeado()) {
+      this.usuarioActivoSubject.next(usuario);
+    } else {
+      this.usuarioActivoSubject.next(null);
+    }
+  }
 
 
   login(correo: string, contrasena: string): Observable<any> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { correo, contrasena }).pipe(
       tap(response => {
         localStorage.setItem(this.tokenKey, response.token);
-        Memorialocal.guardar('usuarioActivo', response.usuario);
+        const usuarioParaGuardar = { ...response.usuario, id: response.usuario.rut};
+        Memorialocal.guardar('usuarioActivo', usuarioParaGuardar);
+        console.log('Login API exitoso.');
+        this.usuarioActivoSubject.next(usuarioParaGuardar);
         console.log('Login API exitoso.');
       }),
       catchError(error => {
@@ -44,6 +62,10 @@ export interface NuevoUsuario {
       })
     );
   }
+
+  /**
+   * Login local usando Memorialocal
+   */
 
   private async loginLocal(correo: string, contrasena: string): Promise<any> {
     const todos = await Memorialocal.obtener<NuevoUsuario>('usuarios') || [];
@@ -60,12 +82,16 @@ export interface NuevoUsuario {
 
     console.log('Login local exitoso.');
  
-    const { contraseña: _, ...usuarioParaSesion } = usuario;
+     const { contraseña: _, ...usuarioParaSesion } = usuario;
     await Memorialocal.guardar('usuarioActivo', usuarioParaSesion);
+    this.usuarioActivoSubject.next(usuarioParaSesion);
     return { message: 'Login local exitoso', usuario: usuarioParaSesion };
+
   }
+
+  /** Registro de nuevo usuario online con respaldo offline*/
   
-  registrarUsuario(nuevoUsuario: any): Observable<any> {
+    registrarUsuario(nuevoUsuario: any): Observable<any> {
     if (navigator.onLine) {
       return this.http.post(`${this.apiUrl}/registro-usuario`, nuevoUsuario).pipe(
         switchMap(() => from(Memorialocal.guardar('usuarios', nuevoUsuario)))
@@ -77,13 +103,15 @@ export interface NuevoUsuario {
     }
   }
 
-  async logout(): Promise<void> {
+  // Logout
+
+   async logout(): Promise<void> {
     localStorage.removeItem(this.tokenKey);
     const usuario = await this.obtenerUsuarioActivo();
     if (usuario) {
-     
       await Memorialocal.eliminar('usuarioActivo', usuario.id);
     }
+    this.usuarioActivoSubject.next(null);
   }
   
   /** Obtiene el token guardado */
@@ -91,12 +119,13 @@ export interface NuevoUsuario {
     return localStorage.getItem(this.tokenKey);
   }
 
-  /** Usuario activo (sigue usando Memorialocal) */
+  /** Usuario activo ( Memorialocal) */
   async obtenerUsuarioActivo(): Promise<any | null> {
     const arr = await Memorialocal.obtener<any>('usuarioActivo');
     return arr.length ? arr[0] : null;
   }
   
+  /** ve rificacion del token es valido y no ha expirado */
   estaLogeado(): boolean {
     const token = this.getToken();
     if (!token) {
