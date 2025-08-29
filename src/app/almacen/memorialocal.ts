@@ -9,7 +9,7 @@ export class Memorialocal {
 
   private static initDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
-      // Usamos versión alta para asegurarnos de que siempre sea >= la existente
+    
       this.dbPromise = openDB('AppDB', 11, {
         upgrade(db) {
           const stores = [

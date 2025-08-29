@@ -200,26 +200,14 @@ export class RegistroUsuarioPage implements OnInit {
     }
  }
 
-  onCentroChange(event: any) {
-    
-    const selectedCentro = event.detail.value;
+ onCentroChange(event: any) {
+    const selectedCentroId = event.detail.value;
+    this.registroForm.get('establecimiento')?.setValue('');
 
-    // Restablecer los campos visibles
-    this.showNivelCentralFields = false;
-    this.showEducacionFields = false;
-    this.showAtmFields = false;
-    this.showSaludFields = false;    
-
-    // Mostrar campos según el cargo seleccionado
-   if (selectedCentro === 'nivelCentral') {
-      this.showNivelCentralFields = true;
-    } else if (selectedCentro === 'educacion') {
-      this.showEducacionFields = true;
-    } else if (selectedCentro === 'atm') {
-      this.showAtmFields = true;
-    } else if (selectedCentro === 'salud') {
-     this.showSaludFields= true;
-    } 
+    this.showSaludFields = selectedCentroId === 2;
+    this.showEducacionFields = selectedCentroId === 3;
+    this.showAtmFields = selectedCentroId === 4;
+    this.showNivelCentralFields = selectedCentroId === 1;
   }
 
 

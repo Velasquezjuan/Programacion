@@ -91,27 +91,17 @@ export interface NuevoUsuario {
 
   /** Registro de nuevo usuario online con respaldo offline*/
   
-    registrarUsuario(nuevoUsuario: any): Observable<any> {
-    if (navigator.onLine) {
-      return this.http.post(`${this.apiUrl}/registro-usuario`, nuevoUsuario).pipe(
-        switchMap(() => from(Memorialocal.guardar('usuarios', nuevoUsuario)))
-      );
-    } else {
-      console.warn('Sin conexión. Registrando usuario localmente para sincronizar después.');
-      const usuarioOffline = { ...nuevoUsuario, syncPending: true };
-      return from(Memorialocal.guardar('usuarios', usuarioOffline));
-    }
+ 
+      registrarUsuario(datosUsuario: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/registro-usuario`, datosUsuario);
+ 
+   
   }
 
   // Logout
-
-   async logout(): Promise<void> {
-    localStorage.removeItem(this.tokenKey);
-    const usuario = await this.obtenerUsuarioActivo();
-    if (usuario) {
-      await Memorialocal.eliminar('usuarioActivo', usuario.id);
-    }
-    this.usuarioActivoSubject.next(null);
+ logout() {
+    Memorialocal.eliminar('token', 'token');
+    Memorialocal.eliminar('usuarioActivo', 'usuarioActivo');
   }
   
   /** Obtiene el token guardado */

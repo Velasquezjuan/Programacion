@@ -80,7 +80,7 @@ export class GestionPage implements OnInit {
     }
   }
 
-  usuarioEditandoRut: string | null = null; // NUEVA propiedad
+  usuarioEditandoRut: string | null = null; 
 
 editarUsuario(usuario: any) {
   this.usuarioEditandoRut = usuario.rut;
@@ -155,7 +155,7 @@ async guardarUsuario(usuarioEditado: any) {
     this.cargarUsuarios();
     this.cargarVehiculos();
   }
-  vehiculoEditandoPatente: string | null = null; // NUEVA propiedad
+  vehiculoEditandoPatente: string | null = null;
 
 editarVehiculo(vehiculo: any) {
   this.vehiculoEditandoPatente = vehiculo.patente;

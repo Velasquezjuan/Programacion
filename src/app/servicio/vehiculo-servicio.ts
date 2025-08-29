@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Memorialocal } from '../almacen/memorialocal';
@@ -15,20 +15,22 @@ export class VehiculoServicio {
 
   constructor(private http: HttpClient) { }
 
-  getVehiculos(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
-  }
+   registrarVehiculo(datosVehiculo: any): Observable<any> {
+    const token = Memorialocal.obtener('token');
 
-
- registrarVehiculo(nuevoVehiculo: any): Observable<any> {
-    if (navigator.onLine) {
-      return this.http.post(`${this.apiUrl}/registro-vehiculo`, nuevoVehiculo).pipe(
-        switchMap(() => from(Memorialocal.guardar('vehiculos', nuevoVehiculo)))
-      );
-    } else {
-      console.warn('Sin conexión. Registrando vehículo localmente para sincronizar después.');
-      const vehiculoOffline = { ...nuevoVehiculo, syncPending: true }; 
-      return from(Memorialocal.guardar('vehiculos', vehiculoOffline));
+   
+    if (!token) {
+      return new Observable(observer => {
+        observer.error({ error: { message: 'No se encontró token de autenticación.' } });
+      });
     }
+
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.post(`${this.apiUrl}/registro-vehiculo`, datosVehiculo, { headers: headers });
   }
 }

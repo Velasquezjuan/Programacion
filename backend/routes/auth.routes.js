@@ -13,13 +13,14 @@ const validateUser = [
   body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
   body('rol').notEmpty().withMessage('El rol es obligatorio.'),
   body('area').notEmpty().withMessage('El área es obligatoria.'),
-  body('centro').notEmpty().withMessage('El centro es obligatorio.'),
-  body('establecimiento').optional(),
+  body('centro').isInt({ min: 1 }).withMessage('Debe seleccionar un centro válido.'),
+  body('establecimiento').if(body('centro').not().equals('1'))
+    .isInt({ min: 1 }).withMessage('Debe seleccionar un establecimiento válido.'),
 
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ message: errors.array()[0].msg });
     }
     next();
   }
