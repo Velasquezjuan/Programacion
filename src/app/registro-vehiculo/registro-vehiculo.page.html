@@ -104,7 +104,12 @@
                 <ion-item>
                   <ion-input label="N° de Contrato" label-placement="stacked" formControlName="contrato"></ion-input>
                 </ion-item>
+                <!--
                 <ion-item>
+                  <ion-input label="N° de horas" label-placement="stacked" formControlName="numHoras"></ion-input>
+                </ion-item>-->
+
+                  <ion-item>
                   <ion-label>Última Revisión Técnica</ion-label>
                   <div slot="end" class="date-button-container">
                     <ion-text>{{ registroForm.get('fechaRevision')?.value | date:'dd/MM/yyyy' }}</ion-text>

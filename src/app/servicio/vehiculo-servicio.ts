@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Memorialocal } from '../almacen/memorialocal';
-import { from } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,22 +14,40 @@ export class VehiculoServicio {
 
   constructor(private http: HttpClient) { }
 
-   registrarVehiculo(datosVehiculo: any): Observable<any> {
-    const token = Memorialocal.obtener('token');
+private getAuthHeaders(): Observable<HttpHeaders> {
+    return from(Memorialocal.obtener<string>('token')).pipe(
+      switchMap(token => {
+        if (!token) {
+          return of(new HttpHeaders({ 'Content-Type': 'application/json' }));
+        }
+        return of(new HttpHeaders({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }));
+      })
+    );
+  }
 
-   
-    if (!token) {
-      return new Observable(observer => {
-        observer.error({ error: { message: 'No se encontró token de autenticación.' } });
-      });
-    }
+ getVehiculos(): Observable<any[]> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.get<any[]>(this.apiUrl, { headers });
+      })
+    );
+  }
 
-    
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-
-    return this.http.post(`${this.apiUrl}/registro-vehiculo`, datosVehiculo, { headers: headers });
+   registrarVehiculo(nuevoVehiculo: any): Observable<any> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.post(`${this.apiUrl}/registro-vehiculo`, nuevoVehiculo, { headers });
+      })
+    );
+  }
+    actualizarVehiculo(id: string, datosVehiculo: any): Observable<any> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.put(`${this.apiUrl}/${id}`, datosVehiculo, { headers });
+      })
+    );
   }
 }
