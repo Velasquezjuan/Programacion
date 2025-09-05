@@ -7,102 +7,104 @@ import { Injectable } from "@angular/core";
 export class CentroServicio {
 
 
-    private centros = {
-        salud:[
-        { value: '1', label: 'CESFAM Bernardo Leightom' },
-        { value: '2', label: 'CESFAM Vista Hermosa' },
-        { value: '3', label: 'COSAM-CEIF Centro' },
-        { value: '4', label: 'CESFAM Padre Manuel Villaseca' },
-        { value: '5', label: 'CESFAM Cardenal Raúl Silva Henriquez' },
-        { value: '6', label: 'CEP San Lázaro' },
-        { value: '7', label: 'Farmacia Solidaria' },
-        { value: '8', label: 'CESFAM Karol Wojtyla' },
-        { value: '9', label: 'CESFAM DR. Alejandro del Río' },
-        { value: '10', label: 'Centro de Integracion María Isabel' },
-        { value: '11', label: 'COSAM-CEIF Norte' },
-        { velue: '12' , label: 'CESFAM SAN GERONIMO' },
-        { value: '13', label: 'CESFAM Laurita Vicuña' },    
-         ],
+   private establecimientos = [
+        // Nivel Central id 1
+        { id: 1, centroId: 1 , label: 'Nivel Central' },
+        // Salud id 2
+        { id: 2,  centroId: 2, label: 'CESFAM Bernardo Leightom' },
+        { id: 3,  centroId: 2, label: 'CESFAM Vista Hermosa' },
+        { id: 4,  centroId: 2  , label: 'COSAM-CEIF Centro' },
+        { id: 5,  centroId: 2  , label: 'CESFAM Padre Manuel Villaseca' },
+        { id: 6,  centroId: 2  , label: 'CESFAM Cardenal Raúl Silva Henriquez' },
+        { id: 7,  centroId: 2  , label: 'CEP San Lázaro' },
+        { id: 8,  centroId: 2  , label: 'Farmacia Solidaria' },
+        { id: 9,  centroId: 2  , label: 'CESFAM Karol Wojtyla' },
+        { id: 10, centroId: 2 , label: 'CESFAM DR. Alejandro del Río' },
+        { id: 11, centroId: 2 , label: 'Centro de Integracion María Isabel' },
+        { id: 12, centroId: 2 , label: 'COSAM-CEIF Norte' },
+        { id: 13, centroId: 2 , label: 'CESFAM SAN GERONIMO' },
+        { id: 14, centroId: 2 , label: 'CESFAM Laurita Vicuña' },    
 
-        educacion: [
-         { value: '14' , label: 'Centro Educacional Nueva Creación' },
-         { value: '15' , label: 'Centro Integral de Adultos Profesora Teresa Moya Reyes' },
-         { value: '16' , label: 'Colegio Maipo' },
-         { value: '17' , label: 'Complejo Educacional Consolidada'}, 
-         { value: '18' , label: 'Escuela Andes del Sur' },
-         { value: '19' , label: 'Escuela Básica Padre Alberto Hurtado'},
-         { value: '20' , label: 'Escuela Casas Viejas' }, 
-         { value: '21' , label: 'Escuela Ejército Libertador' }, 
-         { value: '22' , label: 'Escuela Especial Open Door' },
-         { value: '23' , label: 'Escuela Gabriela' }, 
-         { value: '24', label: 'Escuela Las Palmas' },
-         { value: '25' , label: 'Escuela Los Andes'}, 
-         { value: '26' , label: 'Escuela Luis Matte Larraín' },
-         { value: '27' , label: 'Escuela Nonato Coo' }, 
-         { value: '28' , label: 'Escuela Óscar Bonilla' },  
-         { value: '29' , label: 'Escuela República de Grecia' },                           
-         { value: '30' , label: 'Escuela Villa Independencia' },
-         { value: '31' , label: 'Escuela Villa Pedro Aguirre Cerda' }, 
-         { value: '32' , label: 'Liceo Industrial de Puente Alto' },
-         { value: '33'  , label: 'Liceo Camino de Luz' },
-         { value: '34' , label: 'Liceo Comercial de Puente Alto' }, 
-         { value: '35' , label: 'Liceo Municipal Chiloé' },
-         { value: '36' , label: 'Liceo Municipal Ingeniero Militar Juan MAckenna O´reilly'},
-         { value: '37' , label: 'Liceo Puente Alto' },
-         { value: '38' , label: 'Liceo San Gerónimo' }, 
-         { value: '39' , label: 'Liceo San Pedro' },
-         { value: '40' , label: 'Liceo Volcan San José' },
-         { value: '41' , label: 'Centro Integral Ketrawe' },
-         { value: '42' , label: 'Casa Estudio Sargento Menadier' }, 
-         { value: '43' , label: 'Casa Estudio San José de la Construcción' },
-         { value: '44' , label: 'Casa Estudio El Sauce' }
-        ],
-        atm: [
-            { value: '45' , label: 'Jardín Infantil Sargento Menadier' },
-            { value: '46' , label: 'Jardín Infantil Creación'},
-            { value: '47' , label: 'Jardín Infantil San Miguel I' },
-            { value: '48' , label: 'Jardín Infantil Volcán San José' },
-            { value: '49' , label: 'Sala Cuna y Jardín Infantil Ferroviaria' },
-            { value: '50' , label: 'Sala Cuna y Jardín Infantil Almendral' },
-            { value: '51' , label: 'Sala Cuna y Jardín Infantil Pacífico Sur' },
-            { value: '52' , label: 'Sala Cuna y Jardín Infantil Monseñor Alvear' },
-            { value: '53' , label: 'Sala Cuna y Jardín Infantil Francisco Coloane I' },
-            { value: '54' , label: 'Sala Cuna y Jardín Infantil Padre Hurtado' },
-            { value: '55' , label: 'Jardín Infantil Nocedal' },
-            { value: '56' , label: 'Sala Cuna y Jardín Infantil Francisco Coloane II' },
-            { value: '57' , label: 'Sala Cuna y Jardín Infantil San Francisco Troncal' },
-            { value: '58' , label: 'Sala Cuna y Jardín Infantil San Gerónimo' },
-            { value: '59' , label: 'Sala Cuna y Jardín Infantil Pedro Lira' },
-            { value: '60' , label: 'Sala Cuna y Jardín Infantil altué' },
-            { value: '61' , label: 'Sala Cuna y Jardín Infantil Rosa Valdés Ramírez' },
-            { value: '62' , label: 'Sala Cuna y Jardín Infantil Chiloé' },
-            { value: '63' , label: 'Sala Cuna y Jardín Infantil Andes del Sur' },
-            { value: '64' , label: 'Sala Cuna y Jardín Infantil San Pedro y San Pablo' },
-            { value: '65' , label: 'Sala Cuna y Jardín Infantil San José de la Construcción' },
-            { value: '66' , label: 'Sala Cuna y Jardín Infantil Bernardo Leighton' },
-            { value: '67' , label: 'Sala Cuna y Jardín Infantil Don Vicente' },
-            { value: '68' , label: 'Sala Cuna y Jardín Infantil Los Nogales' },
-            { value: '69' , label: 'Sala Cuna y Jardín Infantil Cerrito Arriba' },
-            { value: '70' , label: 'Sala Cuna y Jardín Infantil El Mariscal' },
-            { value: '71' , label: 'Sala Cuna y Jardín Infantil Casas Viejas' },
-            { value: '72' , label: 'Sala Cuna y Jardín Infantil Humberto Díaz Casanueva' },
-            { value: '73' , label: 'Sala Cuna y Jardín Infantil Las Azaleas' },
-            { value: '74' , label: 'Sala Cuna y Jardín Infantil Vista Hermosa' },
-            { value: '75' , label: 'Sala Cuna y Jardín Infantil Lomas Oriente' },
-            { value: '76' , label: 'Sala Cuna y Jardín Infantil Los Canales' },
-            { value: '77' , label: 'Sala Cuna y Jardín Infantil La Frontera' },
-            { value: '78' , label: 'Sala Cuna y Jardín Infantil Sor Teresa' },
-            { value: '79' , label: 'Sala Cuna y Jardín Infantil Los Robles' }
+        // Educacion id 3
+         { id: 15, centroId: 3 , label: 'Centro Educacional Nueva Creación' },
+         { id: 16, centroId: 3 , label: 'Centro Integral de Adultos Profesora Teresa Moya Reyes' },
+         { id: 17, centroId: 3 , label: 'Colegio Maipo' },
+         { id: 18, centroId: 3 , label: 'Complejo Educacional Consolidada'}, 
+         { id: 19, centroId: 3 , label: 'Escuela Andes del Sur' },
+         { id: 20, centroId: 3 , label: 'Escuela Básica Padre Alberto Hurtado'},
+         { id: 21, centroId: 3 , label: 'Escuela Casas Viejas' }, 
+         { id: 22, centroId: 3 , label: 'Escuela Ejército Libertador' }, 
+         { id: 23, centroId: 3 , label: 'Escuela Especial Open Door' },
+         { id: 24, centroId: 3 , label: 'Escuela Gabriela' }, 
+         { id: 25, centroId: 3 , label: 'Escuela Las Palmas' },
+         { id: 26, centroId: 3 , label: 'Escuela Los Andes'}, 
+         { id: 27, centroId: 3 , label: 'Escuela Luis Matte Larraín' },
+         { id: 28, centroId: 3 , label: 'Escuela Nonato Coo' }, 
+         { id: 29, centroId: 3 , label: 'Escuela Óscar Bonilla' },  
+         { id: 30, centroId: 3 , label: 'Escuela República de Grecia' },                           
+         { id: 31, centroId: 3 , label: 'Escuela Villa Independencia' },
+         { id: 32, centroId: 3 , label: 'Escuela Villa Pedro Aguirre Cerda' }, 
+         { id: 33, centroId: 3 , label: 'Liceo Industrial de Puente Alto' },
+         { id: 34, centroId: 3 , label: 'Liceo Camino de Luz' },
+         { id: 35, centroId: 3 , label: 'Liceo Comercial de Puente Alto' }, 
+         { id: 36, centroId: 3 , label: 'Liceo Municipal Chiloé' },
+         { id: 37, centroId: 3 , label: 'Liceo Municipal Ingeniero Militar Juan MAckenna O´reilly'},
+         { id: 38, centroId: 3 , label: 'Liceo Puente Alto' },
+         { id: 39, centroId: 3 , label: 'Liceo San Gerónimo' }, 
+         { id: 40, centroId: 3 , label: 'Liceo San Pedro' },
+         { id: 41, centroId: 3 , label: 'Liceo Volcan San José' },
+         { id: 42, centroId: 3 , label: 'Centro Integral Ketrawe' },
+         { id: 43, centroId: 3 , label: 'Casa Estudio Sargento Menadier' }, 
+         { id: 44, centroId: 3 , label: 'Casa Estudio San José de la Construcción' },
+         { id: 45, centroId: 3 , label: 'Casa Estudio El Sauce' },
+      // Atención a Menores id 4 
+         { id: 46, centroId: 4 , label: 'Jardín Infantil Sargento Menadier' },
+         { id: 47, centroId: 4 , label: 'Jardín Infantil Creación'},
+         { id: 48, centroId: 4 , label: 'Jardín Infantil San Miguel I' },
+         { id: 49, centroId: 4 , label: 'Jardín Infantil Volcán San José' },
+         { id: 50, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Ferroviaria' },
+         { id: 51, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Almendral' },
+         { id: 52, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Pacífico Sur' },
+         { id: 53, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Monseñor Alvear' },
+         { id: 54, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Francisco Coloane I' },
+         { id: 55, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Padre Hurtado' },
+         { id: 56, centroId: 4 , label: 'Jardín Infantil Nocedal' },
+         { id: 57, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Francisco Coloane II' },
+         { id: 58, centroId: 4 , label: 'Sala Cuna y Jardín Infantil San Francisco Troncal' },
+         { id: 59, centroId: 4 , label: 'Sala Cuna y Jardín Infantil San Gerónimo' },
+         { id: 60, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Pedro Lira' },
+         { id: 61, centroId: 4 , label: 'Sala Cuna y Jardín Infantil altué' },
+         { id: 62, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Rosa Valdés Ramírez' },
+         { id: 63, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Chiloé' },
+         { id: 64, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Andes del Sur' },
+         { id: 65, centroId: 4 , label: 'Sala Cuna y Jardín Infantil San Pedro y San Pablo' },
+         { id: 66, centroId: 4 , label: 'Sala Cuna y Jardín Infantil San José de la Construcción' },
+         { id: 67, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Bernardo Leighton' },
+         { id: 68, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Don Vicente' },
+         { id: 69, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Los Nogales' },
+         { id: 70, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Cerrito Arriba' },
+         { id: 71, centroId: 4 , label: 'Sala Cuna y Jardín Infantil El Mariscal' },
+         { id: 72, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Casas Viejas' },
+         { id: 73, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Humberto Díaz Casanueva' },
+         { id: 74, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Las Azaleas' },
+         { id: 75, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Vista Hermosa' },
+         { id: 76, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Lomas Oriente' },
+         { id: 77, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Los Canales' },
+         { id: 78, centroId: 4 , label: 'Sala Cuna y Jardín Infantil La Frontera' },
+         { id: 79, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Sor Teresa' },
+         { id: 80, centroId: 4 , label: 'Sala Cuna y Jardín Infantil Los Robles' }
 
-        ],
-        central: [
-            { value: '1', label: 'Nivel Central' },
-            { value: '2', label: 'Salud' },
-            { value: '3', label: 'Educacion' },
-            { value: '4', label: 'Atención a Menores' },
-            { value: '5', label: 'otro' },
-        ]
-    };
+        ];
+    
+
+    private centros= [
+            { value: 1, label: 'Nivel Central' },
+            { value: 2, label: 'Salud' },
+            { value: 3, label: 'Educacion' },
+            { value: 4, label: 'Atención a Menores' },
+            { value: 5, label: 'otro' },
+        ];
+    
 
     private auto = {
         vehiculo: [
@@ -134,9 +136,14 @@ export class CentroServicio {
         
     }
 
-    obtenerCentros(tipo: 'salud' | 'educacion' | 'atm' | 'central' ): any[] {
-        return this.centros[tipo] || [];
-      }
+    obtenerCentros():{ value: number; label: string} []{
+        return this.centros;
+    }
+
+    obtenerEstablecimientos(centroId: number): { value: number; label: string }[]{
+        return this.establecimientos.filter(e => e.centroId === centroId)
+        .map(e => ({ value: e.id, label: e.label}))
+    }
 
     obtenerAuto(tipo: 'vehiculo'): any[] {
         return this.auto[tipo] || [];

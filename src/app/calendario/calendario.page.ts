@@ -8,10 +8,34 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin  from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import { AlertController } from '@ionic/angular';
+//servicios
 import { Memorialocal } from '../almacen/memorialocal';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 import { CentroServicio } from '../servicio/centro-servicio';
+import { ViajesServicio } from '../servicio/viajes-servicio';
 
+interface ViajeAPI {
+  id_viaje: number;
+  solicitante_nombre: string;
+  correo_solicitante: string;
+  fecha_viaje: string;
+  hora_inicio: string;
+  hora_fin: string | null;
+  punto_salida: string;
+  punto_destino: string;
+  motivo: string;
+  ocupantes: number;
+  estado: string;
+  vehiculo_patente: string | null;
+  responsable_nombre: string;
+}
+
+interface Usuario {
+  rut: string;
+  rol: string;
+  nombre: string;
+  correo: string;
+}
 
 @Component({
   selector: 'app-calendario',
@@ -25,6 +49,7 @@ export class CalendarioPage implements OnInit {
 
  
    rolUsuario: string | null = null;
+   nombreUsuario: string = '';
   calendarOptions: CalendarOptions = {
     locale: 'es',
     locales: [esLocale],
@@ -68,7 +93,8 @@ export class CalendarioPage implements OnInit {
   constructor(
     private auth: AutentificacionUsuario,
     private alertCtrl: AlertController,
-    private centroSvc: CentroServicio
+    private centroSvc: CentroServicio,
+    private viajesServicio: ViajesServicio,
   ) {}
 
     async ngOnInit() {
@@ -180,26 +206,12 @@ export class CalendarioPage implements OnInit {
     return found ? found.label : code;
   }
 
-  private getSalidaLabel(s: any): string {
-    const code = s.puntoSalida;
-    if (!code) return s.origen || ''; 
-    let label = this.lookup(this.centroSvc.obtenerCentros('central'), code);
-    const addr = s.direccionSalida || '';
-    if (code === 'salud')      label = this.lookup(this.centroSvc.obtenerCentros('salud'), s.centroSaludSalida);
-    else if (code === 'educacion') label = this.lookup(this.centroSvc.obtenerCentros('educacion'), s.centroEducacionSalida);
-    else if (code === 'atm')       label = this.lookup(this.centroSvc.obtenerCentros('atm'), s.centroAtmSalida);
-    return addr ? `${label} – ${addr}` : label;
+  private getSalidaLabel(viaje: ViajeAPI): string {
+    return viaje.punto_salida || 'Origen no especificado';
   }
 
-  private getDestinoLabel(s: any): string {
-    const code = s.puntoDestino;
-    if (!code) return s.destino || ''; 
-    let label = this.lookup(this.centroSvc.obtenerCentros('central'), code);
-    const addr = s.direccionDestino || '';
-    if (code === 'salud')      label = this.lookup(this.centroSvc.obtenerCentros('salud'), s.centroSaludDestino);
-    else if (code === 'educacion') label = this.lookup(this.centroSvc.obtenerCentros('educacion'), s.centroEducacionDestino);
-    else if (code === 'atm')       label = this.lookup(this.centroSvc.obtenerCentros('atm'), s.centroAtmDestino);
-    return addr ? `${label} – ${addr}` : label;
+  private getDestinoLabel(viaje: ViajeAPI): string {
+    return viaje.punto_destino || 'Destino no especificado';
   }
 
   private async showToast(msg: string, color: 'success' | 'warning' | 'danger' = 'success') {

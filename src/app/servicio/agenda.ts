@@ -30,7 +30,7 @@ export class Agenda {
 
   // Inicializa la base de datos 
   private async initDB(): Promise<IDBPDatabase<any>> {
-    return await openDB('AppDB', 11, {
+    return await openDB('AppDB', 12, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('viajesSolicitados')) {
           db.createObjectStore('viajesSolicitados', { keyPath: 'id' });

@@ -144,7 +144,7 @@
           <ion-item>
             <ion-label>Centro</ion-label>
               <ion-select formControlName="centro" (ionChange)="onCentroChange($event)" >
-                <ion-select-option *ngFor="let item of centros.central" [value]="item.value">{{ item.label }}</ion-select-option>             
+                <ion-select-option *ngFor="let centro of centrosPrincipales" [value]="centro.value">{{ centro.label }}</ion-select-option>             
             </ion-select>
           </ion-item>
           <ion-text color="danger" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
@@ -153,11 +153,11 @@
         </ion-col>
 
           <!-- Centros de Salud -->
-        <ion-col size="12" *ngIf="showSaludFields">
+        <ion-col size="12" *ngIf="showSalud">
           <ion-item>
             <ion-label>Centro de salud</ion-label>
               <ion-select formControlName="centroSalud"  >
-                <ion-select-option *ngFor="let item of centros.salud" [value]="item.value">{{ item.label }}</ion-select-option>                        
+                <ion-select-option *ngFor="let est of establecimientosSalud" [value]="est.value">{{ est.label }}</ion-select-option>                        
               </ion-select>                          
           </ion-item>
           <ion-text color="danger" *ngIf="registroForm.get('centroSalud')?.invalid && registroForm.get('centroSalud')?.touched">

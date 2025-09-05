@@ -86,19 +86,27 @@
                 </ion-item>
                 <ion-item>
                   <ion-select formControlName="centro" label="Centro Principal" label-placement="stacked" (ionChange)="onCentroChange($event)">
-                    <ion-select-option *ngFor="let c of centros.central" [value]="c.value">{{c.label}}</ion-select-option>
+                    <ion-select-option *ngFor="let centro of centrosPrincipales" [value]="centro.value">{{ centro.label }}</ion-select-option>
                   </ion-select>
                 </ion-item>
                 
-                <div *ngIf="showSaludFields">
-                  <ion-item><ion-select formControlName="centroSalud1" label="Centro de Salud 1" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
-                  <ion-item><ion-select formControlName="centroSalud2" label="Centro de Salud 2 (Opcional)" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                <div *ngIf="showSalud">
+                  <ion-item><ion-select formControlName="centroSalud1" label="Centro de Salud 1" label-placement="stacked">
+                    <ion-select-option *ngFor="let est of establecimientosSalud" [value]="est.value">{{ est.label }}</ion-select-option>
+                  </ion-select></ion-item>
+                  <ion-item><ion-select formControlName="centroSalud2" label="Centro de Salud 2 (Opcional)" label-placement="stacked">
+                   <ion-select-option *ngFor="let est of establecimientosSalud" [value]="est.value">{{ est.label }}</ion-select-option>
+                  </ion-select></ion-item>
                 </div>
-                <div *ngIf="showEducacionFields">
-                  <ion-item><ion-select formControlName="centroEducacion" label="Centro de Educación" label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                <div *ngIf="showEducacion">
+                  <ion-item><ion-select formControlName="centroEducacion" label="Centro de Educación" label-placement="stacked">
+                    <ion-select-option *ngFor="let est of establecimientosEducacion" [value]="est.value">{{ est.label }}</ion-select-option>
+                  </ion-select></ion-item>
                 </div>
-                <div *ngIf="showAtmFields">
-                  <ion-item><ion-select formControlName="centroAtm" label="Centro Atención a Menores" label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" [value]="c.value">{{c.label}}</ion-select-option></ion-select></ion-item>
+                <div *ngIf="showAtm">
+                  <ion-item><ion-select formControlName="centroAtm" label="Centro Atención a Menores" label-placement="stacked">
+                    <ion-select-option *ngFor="let est of establecimientosAtm" [value]="est.value">{{ est.label }}</ion-select-option>
+                  </ion-select></ion-item>
                 </div>
 
                 <ion-item>

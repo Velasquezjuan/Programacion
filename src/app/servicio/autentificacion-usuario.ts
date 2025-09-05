@@ -37,8 +37,9 @@ export interface NuevoUsuario {
   }
 
     async cargarUsuarioInicial() {
-    const usuario = await this.obtenerUsuarioActivo();
-    if (usuario && this.estaLogeado()) {
+    const token = await Memorialocal.obtenerValor<string>('token');
+    if (token && this.tokenEsValido(token)) {
+      const usuario = await Memorialocal.obtenerValor('usuarioActivo');
       this.usuarioActivoSubject.next(usuario);
     } else {
       this.usuarioActivoSubject.next(null);
@@ -48,13 +49,12 @@ export interface NuevoUsuario {
 
   login(correo: string, contrasena: string): Observable<any> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { correo, contrasena }).pipe(
-      tap(response => {
-        localStorage.setItem(this.tokenKey, response.token);
-        const usuarioParaGuardar = { ...response.usuario, id: response.usuario.rut};
-        Memorialocal.guardar('usuarioActivo', usuarioParaGuardar);
-        console.log('Login API exitoso.');
-        this.usuarioActivoSubject.next(usuarioParaGuardar);
-        console.log('Login API exitoso.');
+      switchMap(async (response) => {
+        
+        await Memorialocal.guardarValor('token', response.token);
+        await Memorialocal.guardarValor('usuarioActivo', response.usuario);
+        this.usuarioActivoSubject.next(response.usuario);
+        return response;
       }),
       catchError(error => {
         console.warn('Falló el login con la API, intentando login local...', error);
@@ -71,66 +71,55 @@ export interface NuevoUsuario {
     const todos = await Memorialocal.obtener<NuevoUsuario>('usuarios') || [];
     const usuario = todos.find(u => u.correo === correo);
     
-    if (!usuario) {
-      throw new Error('Usuario no encontrado localmente.');
+    if (!usuario || usuario.contraseña !== contrasena) {
+      throw new Error('Credenciales locales inválidas.');
     }
 
- 
-    if (usuario.contraseña !== contrasena) {
-      throw new Error('Contraseña incorrecta para login offline.');
-    }
-
-    console.log('Login local exitoso.');
- 
-     const { contraseña: _, ...usuarioParaSesion } = usuario;
-    await Memorialocal.guardar('usuarioActivo', usuarioParaSesion);
+    const { contraseña: _, ...usuarioParaSesion } = usuario;
+    await Memorialocal.guardarValor('usuarioActivo', usuarioParaSesion);
     this.usuarioActivoSubject.next(usuarioParaSesion);
     return { message: 'Login local exitoso', usuario: usuarioParaSesion };
-
   }
 
   /** Registro de nuevo usuario online con respaldo offline*/
   
- 
-      registrarUsuario(datosUsuario: any): Observable<any> {
+  registrarUsuario(datosUsuario: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/registro-usuario`, datosUsuario);
- 
-   
   }
 
+
   // Logout
- logout() {
-    Memorialocal.eliminar('token', 'token');
-    Memorialocal.eliminar('usuarioActivo', 'usuarioActivo');
+ async logout(): Promise<void> {
+    await Memorialocal.eliminarValor('token');
+    await Memorialocal.eliminarValor('usuarioActivo');
+    this.usuarioActivoSubject.next(null);
   }
   
   /** Obtiene el token guardado */
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+  getToken(): Promise<string | null> {
+    return Memorialocal.obtenerValor('token');
   }
 
   /** Usuario activo ( Memorialocal) */
-  async obtenerUsuarioActivo(): Promise<any | null> {
-    const arr = await Memorialocal.obtener<any>('usuarioActivo');
-    return arr.length ? arr[0] : null;
+  obtenerUsuarioActivo(): Promise<any | null> {
+    return Memorialocal.obtenerValor('usuarioActivo');
   }
   
   /** ve rificacion del token es valido y no ha expirado */
-  estaLogeado(): boolean {
-    const token = this.getToken();
+  async estaLogeado(): Promise<boolean> {
+    const token = await this.getToken();
+    return this.tokenEsValido(token);
+  }
+
+  private tokenEsValido(token: string | null): boolean {
     if (!token) {
       return false;
     }
-
     try {
       const decodedToken: any = jwtDecode(token);
       const expiracion = decodedToken.exp * 1000;
-      const ahora = new Date().getTime();
-
-      
-      return expiracion > ahora;
+      return expiracion > new Date().getTime();
     } catch (error) {
- 
       console.error('Error al decodificar el token:', error);
       return false;
     }

@@ -4,14 +4,23 @@ export interface BaseItem {
   id: string;
 }
 
+export interface KeyVal {
+  key: string;
+  value: any;
+}
+
 export class Memorialocal {
   private static dbPromise: Promise<IDBPDatabase>;
 
   private static initDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
     
-      this.dbPromise = openDB('AppDB', 11, {
+      this.dbPromise = openDB('AppDB', 12, {
         upgrade(db) {
+
+          if (!db.objectStoreNames.contains('keyval')) {
+            db.createObjectStore('keyval', { keyPath: 'key' });
+          }
           const stores = [
             'usuarios',
             'usuarioActivo',
@@ -70,10 +79,15 @@ export class Memorialocal {
   static async desactivarUsuario(id: string): Promise<void> {
     const db = await this.initDB();
     const tx = db.transaction(['usuarioActivo','usuarioDesactivado'], 'readwrite');
-    const act = tx.objectStore('usuarioActivo');
+  const act = tx.objectStore('usuarios');
     const des = tx.objectStore('usuarioDesactivado');
-    const u = await act.get(id);
-    if (u) { await act.delete(id); await des.put(u); }
+   const usuario = await act.get(id);
+    if (usuario) {
+      await act.delete(id);
+      await des.put(usuario);
+    }
+    // También limpiamos el usuario activo de keyval por seguridad
+    await this.eliminarValor('usuarioActivo');
     await tx.done;
   }
 
@@ -168,6 +182,8 @@ export class Memorialocal {
     }
     await tx.done;
   }
+
+  
 static async getVehiculosConConductor(): Promise<any[]> {
     const vehiculos = await this.obtener('vehiculos') || [];
     const usuarios = await this.obtener('usuarios') || [];
@@ -183,5 +199,21 @@ static async getVehiculosConConductor(): Promise<any[]> {
       };
     });
     return vehiculosCombinados;
+  }
+
+   static async guardarValor<T>(key: string, value: T): Promise<void> {
+    const db = await this.initDB();
+    await db.put('keyval', { key, value });
+  }
+
+  static async obtenerValor<T>(key: string): Promise<T | null> {
+    const db = await this.initDB();
+    const result = await db.get('keyval', key);
+    return result ? result.value : null;
+  }
+
+  static async eliminarValor(key: string): Promise<void> {
+    const db = await this.initDB();
+    await db.delete('keyval', key);
   }
 }

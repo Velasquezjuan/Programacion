@@ -126,13 +126,13 @@ export class ViajesMasivosPage implements OnInit {
     this.programa = { prog: this.centroServicio.obtenerPrograma('prog') };
   }
 
-  // SOLUCIÓN: Método para cargar los centros desde tu servicio
+ 
   cargarCentros() {
     this.centros = {
-      salud: this.centroServicio.obtenerCentros('salud'),
-      atm: this.centroServicio.obtenerCentros('atm'),
-      educacion: this.centroServicio.obtenerCentros('educacion'),
-      central: this.centroServicio.obtenerCentros('central')
+      salud: this.centroServicio.obtenerEstablecimientos(2),
+      atm: this.centroServicio.obtenerEstablecimientos(4),
+      educacion: this.centroServicio.obtenerEstablecimientos(3),
+      central: this.centroServicio.obtenerEstablecimientos(1)
     };
   }
 
@@ -140,7 +140,6 @@ export class ViajesMasivosPage implements OnInit {
     return this.planificacionForm.get('horarios') as FormArray;
   }
 
-  // SOLUCIÓN: Se añaden todos los campos de ruta al crear un nuevo horario
   nuevoHorario(): FormGroup {
     return this.fb.group({
       inicio: ['08:00', Validators.required],
@@ -175,12 +174,11 @@ export class ViajesMasivosPage implements OnInit {
     }
   }
 
-  // SOLUCIÓN: Métodos para manejar la lógica de mostrar/ocultar campos, ahora por índice
+  
   onSalidaChange(ev: any, index: number) {
     const val = ev.detail.value;
     const horarioGroup = this.horarios.at(index);
 
-    // Lógica para limpiar validadores y valores
     ['direccionSalida', 'centroSaludSalida', 'centroEducacionSalida', 'centroAtmSalida'].forEach(k => {
       horarioGroup.get(k)?.clearValidators();
       horarioGroup.get(k)?.setValue('');

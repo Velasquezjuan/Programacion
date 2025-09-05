@@ -13,6 +13,8 @@ import { CentroServicio } from '../servicio/centro-servicio';
 import { Agenda } from '../servicio/agenda';
 import { ToastController } from '@ionic/angular';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
+import { ViajesServicio } from '../servicio/viajes-servicio';
 
 
 @Component({
@@ -54,14 +56,18 @@ registroForm!: FormGroup;
   rolUsuario = '';
   usuarioActivo: { usuario:string; rol:string } | null = null;
    maxOcupantes = 9;
-
+ centrosPrincipales: { value: number; label: string }[] = [];
+  establecimientos: { value: number; label: string }[] = [];
   constructor(
     private fb:      FormBuilder,
     private router:  Router,
     private toast:   ToastController,
     private centroSvc: CentroServicio,
     private auth:    AutentificacionUsuario,
-    public agenda:   Agenda
+    public agenda:   Agenda,
+    private notificacionCorreo: NotificacionesCorreo,
+    private viajeServicio: ViajesServicio,
+
   ) {}
 
   async ngOnInit() {
@@ -94,10 +100,7 @@ registroForm!: FormGroup;
     });
 
     // 2) Carga catálogos
-    this.centros.central   = this.centroSvc.obtenerCentros('central');
-    this.centros.salud     = this.centroSvc.obtenerCentros('salud');
-    this.centros.educacion = this.centroSvc.obtenerCentros('educacion');
-    this.centros.atm       = this.centroSvc.obtenerCentros('atm');
+    this.centrosPrincipales = this.centroSvc.obtenerCentros();
     this.auto.vehiculo     = this.centroSvc.obtenerAuto('vehiculo');
 
     // 3) Usuario activo

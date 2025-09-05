@@ -2,18 +2,22 @@ import { Component, OnInit,CUSTOM_ELEMENTS_SCHEMA  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Memorialocal } from '../almacen/memorialocal';
-import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
-
+// componentes
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 import {IonContent,IonMenuButton, IonHeader, IonTitle, 
   IonToolbar, IonInput, IonToggle,
   IonGrid, IonRow, IonCol, IonButton, IonItem, IonLabel, IonSelect, 
   IonSelectOption,  } from '@ionic/angular/standalone';
+
+import { ToastController } from '@ionic/angular';
+// servicios
+import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+import { Memorialocal } from '../almacen/memorialocal';
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
+import { ViajesServicio } from '../servicio/viajes-servicio';
+import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 import { CentroServicio } from '../servicio/centro-servicio';
 import { Agenda } from '../servicio/agenda';
-import { ToastController } from '@ionic/angular';
-import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 
 
 @Component({
@@ -91,10 +95,12 @@ export class SolicitudViajePage implements OnInit {
       ocupante: ['', Validators.required]
     });
 
-    this.centros.central   = this.centroSvc.obtenerCentros('central');
-    this.centros.salud     = this.centroSvc.obtenerCentros('salud');
-    this.centros.educacion = this.centroSvc.obtenerCentros('educacion');
-    this.centros.atm       = this.centroSvc.obtenerCentros('atm');
+   
+      this.centroSvc.obtenerEstablecimientos(2),
+      this.centroSvc.obtenerEstablecimientos(4),
+      this.centroSvc.obtenerEstablecimientos(3),
+      this.centroSvc.obtenerEstablecimientos(1)
+    
     this.auto.vehiculo     = this.centroSvc.obtenerAuto('vehiculo');
 
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
@@ -181,7 +187,6 @@ export class SolicitudViajePage implements OnInit {
       this.registroForm.reset();
       this.showToast('Solicitud creada','success');
 
-      // Enviar la notificación usando el email del usuario activo
       if (this.usuarioActivo?.correo) {
         this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, solicitud);
       } else {

@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { Memorialocal }            from '../almacen/memorialocal';
 import { AutentificacionUsuario }  from '../servicio/autentificacion-usuario';
 import { CentroServicio }         from '../servicio/centro-servicio';
+import { ViajesServicio }         from '../servicio/viajes-servicio';
+import { VehiculoServicio }       from '../servicio/vehiculo-servicio';
 import { AlertController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { checkmarkDoneCircle, closeCircle, checkmarkCircle } from 'ionicons/icons';
@@ -70,6 +72,8 @@ interface Usuario {
     IonCardSubtitle, IonCardContent, IonSearchbar
   ]
 })
+
+
 export class MisViajesPage implements OnInit {
   
   todas: Solicitud[] = [];
@@ -96,13 +100,18 @@ export class MisViajesPage implements OnInit {
   { value: 'reagendado', label: 'Reagendados' }
 ];
 
+  centrosPrincipales: { value: number; label: string }[] = [];
+  establecimientos: { value: number; label: string }[] = [];
+
   constructor(
     private router: Router,
     private auth: AutentificacionUsuario,
-    private centroService: CentroServicio,
+    private centroServicio: CentroServicio,
     private alertController: AlertController, 
     private toastController: ToastController,
     private notificaciones: NotificacionesCorreo,
+    private viajeServicio: ViajesServicio,
+    private vehiculoServicio: VehiculoServicio
 
     
   ) {
@@ -111,12 +120,7 @@ export class MisViajesPage implements OnInit {
 
   async ngOnInit() {
 
-  this.centros.central   = this.centroService.obtenerCentros('central');
-  this.centros.salud     = this.centroService.obtenerCentros('salud');
-  this.centros.atm       = this.centroService.obtenerCentros('atm');
-  this.centros.educacion = this.centroService.obtenerCentros('educacion');
-  this.centros.comunal    = this.centroService.obtenerCentros('comunal' as any);
-  this.centros.otro       = this.centroService.obtenerCentros('otro' as any);
+    this.centrosPrincipales = this.centroServicio.obtenerCentros();
   
   const usr = await this.auth.obtenerUsuarioActivo();
     this.usuarioActivo = usr ?? { usuario: '', correo: '' };
@@ -240,7 +244,7 @@ export class MisViajesPage implements OnInit {
     await alert.present();
   }
    private async procesarRechazoReagendamiento(viaje: Solicitud, motivo: string) {
-    viaje.estado = 'pendiente'; // El viaje vuelve a estar pendiente para que el admin lo vea
+    viaje.estado = 'pendiente'; 
     viaje.motivoRechazoReagendamiento = motivo;
     await Memorialocal.guardar('viajesSolicitados', viaje);
 
@@ -398,7 +402,6 @@ async marcarViajeRealizado(viaje: Solicitud) {
     toast.present();
   }
 
-   // Navegaciones
    goToHomePage() {
     this.router.navigate(['/home']);
   }

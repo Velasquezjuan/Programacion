@@ -44,15 +44,14 @@ export class RegistroVehiculoPage implements OnInit {
     endYearNum = new Date().getFullYear();
     endYear = new Date().getFullYear().toString();
   
-  centros: { salud: any[]; atm: any[]; educacion: any[]; central: any[]; } = 
-    { salud: [], atm: [], educacion: [], central: [] };
   programa: { prog: any[] } = { prog: [] };
   auto: { vehiculo: any[] } = { vehiculo: [] };
   
-  showSaludFields = false; 
-  showEducacionFields = false;
-  showAtmFields = false;
-  showNivelCentralFields = false;
+  centrosPrincipales: { value: number; label: string }[] = [];
+  establecimientos: { value: number; label: string }[] = [];
+  establecimientosSalud: { value: number, label: string }[] = [];
+  establecimientosEducacion: { value: number, label: string }[] = [];
+  establecimientosAtm: { value: number, label: string }[] = [];
   
   rolUsuario: string = '';
   usuarioActivo: { usuario:string; rol:string; correo?: string } | null = null;
@@ -61,6 +60,14 @@ export class RegistroVehiculoPage implements OnInit {
 
     isAnoPickerOpen = false;
     isRevPickerOpen = false;
+    
+    //vaiables para mostrar los select de los establecimientos
+    showEstablecimiento = false;
+    showSalud = false;
+    showEducacion = false;
+    showAtm = false;
+
+
 
   constructor(
     private fb: FormBuilder, 
@@ -86,55 +93,51 @@ export class RegistroVehiculoPage implements OnInit {
   }
 
 
-  onSubmit() {
+    async onSubmit() {
     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
-      this.mostrarToast('Lo sentimos, el formulario no está completo.', 'danger');
+      this.mostrarToast('Por favor, complete todos los campos requeridos.', 'danger');
       return;
     }
-  
+
     const formValue = this.registroForm.value;
     
-    
+    // Preparar el objeto para enviar a la API
     const nuevoVehiculo = {
-       patente: formValue.patente.toUpperCase(),
-       marca: formValue.marca,
-       modelo: formValue.modelo,
-       ano: new Date(formValue.anoVehiculo).getFullYear(), 
-       capacidad: formValue.capacidad,
-       tipo_vehiculo: formValue.tipoVehiculo,
-       revision_tecnica: new Date(formValue.fechaRevision).toISOString().split('T')[0],
-       nombre_conductor: formValue.conductorTitular,
-       encargado_nombre: `${formValue.nombreEncVehiculo} ${formValue.apellidoEncVehiculo}`, 
-       encargado_rut: formValue.rutEncVehiculo,
-       conductor_reemplazo: formValue.conductorReemplazo,
-       centro_asignado: formValue.centro,
-       centro_salud_1: formValue.centroSalud1 || null,
-       centro_salud_2: formValue.centroSalud2 || null,
-       centro_educacion: formValue.centroEducacion || null,
-       centro_atm: formValue.centroAtm || null,
-       programa: formValue.programa,
-       contrato: formValue.contrato,
-          
+      // Proveedor / Contrato
+      rut_proveedor: formValue.rutEncVehiculo,
+      nombre_proveedor: `${formValue.nombreEncVehiculo} ${formValue.apellidoEncVehiculo}`,
+      id_contrato: formValue.contrato,
+      
+      // Vehículo
+      patente: formValue.patente.toUpperCase(),
+      marca: formValue.marca,
+      modelo: formValue.modelo,
+      ano: new Date(formValue.anoVehiculo).getFullYear(),
+      TIPO_VEHICULO_id_tipoVehiculo: formValue.tipoVehiculo,
+      capacidad: formValue.capacidad ? 1 : 0, 
+      revision_tecnica: new Date(formValue.fechaRevision).toISOString().split('T')[0],
+      nombre_conductor: formValue.conductorTitular,
+      nombre_conductor_reemplazo: formValue.conductorReemplazo,
+
+      // Asignaciones
+      programas: formValue.programa,
+      establecimientos: formValue.establecimiento
     };
-  
-     this.VehiculoServicio.registrarVehiculo(nuevoVehiculo).subscribe({
-            next: () => {
-                this.mostrarToast('Vehículo registrado con éxito.', 'success');
-                this.registroForm.reset();
-                this.router.navigate(['/gestion']);
-            },
-            error: (error) => {
-                console.error('Error al registrar vehículo:', error);
-                let mensajeError = 'Error desconocido al registrar el vehículo.';
-                if (error instanceof HttpErrorResponse) {
-                    mensajeError = error.error?.message || 'Error de conexión con el servidor.';
-                }
-                this.mostrarToast(mensajeError, 'danger');
-            }
+
+    this.VehiculoServicio.registrarVehiculo(nuevoVehiculo).subscribe({
+      next: () => {
+        this.mostrarToast('Vehículo registrado con éxito.', 'success');
+        this.registroForm.reset();
+        this.router.navigate(['/gestion']);
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al registrar vehículo:', err);
+        const errorMsg = err.error?.message || 'Error de conexión con el servidor.';
+        this.mostrarToast(errorMsg, 'danger');
+      }
     });
   }
-
 
 
   ngOnInit() {
@@ -167,12 +170,8 @@ export class RegistroVehiculoPage implements OnInit {
       fechaRevision: ['',Validators.required],
     });
 
-  this.centros = {
-      salud: this.centroServicio.obtenerCentros('salud'),
-      atm: this.centroServicio.obtenerCentros('atm'),
-      educacion: this.centroServicio.obtenerCentros('educacion'),
-      central: this.centroServicio.obtenerCentros('central')
-    };
+  this.centrosPrincipales = this.centroServicio.obtenerCentros();
+
   this.auto = {
       vehiculo: this.centroServicio.obtenerAuto('vehiculo')
     };
@@ -201,34 +200,40 @@ onRevSelected(ev: any) {
     }
   
 onCentroChange(event: any) {
-  const selectedCentro = event.detail.value;
-   this.showSaludFields = selectedCentro === 'salud';
-    this.showEducacionFields = selectedCentro === 'educacion';
-    this.showAtmFields = selectedCentro === 'atm';
+     const centroId = event.detail.value;
 
-        // Limpia validadores y valores de los campos dinámicos
- const dynamicControls = ['centroSalud1', 'centroSalud2', 'centroEducacion', 'centroAtm'];
-    dynamicControls.forEach(controlName => {
-    this.registroForm.get(controlName)?.clearValidators();
-     this.registroForm.get(controlName)?.setValue('');
-       this.registroForm.get(controlName)?.updateValueAndValidity();
-     });
+    // Resetear todo
+    this.showSalud = false;
+    this.showEducacion = false;
+    this.showAtm = false;
+    const estControls = ['establecimientoSalud', 'establecimientoEducacion', 'establecimientoAtm'];
+    estControls.forEach(controlName => {
+        const control = this.registroForm.get(controlName);
+        control?.clearValidators();
+        control?.setValue('');
+        control?.updateValueAndValidity();
+    });
 
-   if (this.showSaludFields) {
-      this.registroForm.get('centroSalud1')?.setValidators([Validators.required]);
-   }
-   if (this.showEducacionFields) {
-    this.registroForm.get('centroEducacion')?.setValidators([Validators.required]);
+    // dejamos los 4 centros para realizar bien el registro.
+    if (centroId === 2) { // Salud
+      this.showSalud = true;
+      this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoSalud')?.setValidators([Validators.required]);
+    } else if (centroId === 3) { // Educación
+      this.showEducacion = true;
+      this.establecimientosEducacion = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoEducacion')?.setValidators([Validators.required]);
+    } else if (centroId === 4) { // ATM
+      this.showAtm = true;
+      this.establecimientosAtm = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoAtm')?.setValidators([Validators.required]);
     }
-   if (this.showAtmFields) {
-     this.registroForm.get('centroAtm')?.setValidators([Validators.required]);
-    }
-        
-   dynamicControls.forEach(controlName => {
-     this.registroForm.get(controlName)?.updateValueAndValidity();
-     });
-    
+    /*
+    considerar que los centros estan guardados segun su id para la 
+    conversacion entren el front, backend y bd 
+    */
   }
+
 
   goToHomePage() {
     this.router.navigate(['/home']);

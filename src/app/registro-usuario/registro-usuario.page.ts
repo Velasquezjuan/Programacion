@@ -50,7 +50,7 @@ export class RegistroUsuarioPage implements OnInit {
   rol: 'adminSistema' | 'conductor' | 'its' | 'solicitante' | 'coordinador' = 'solicitante';
   usarAPI: boolean = false;
 
-  centros: {
+  /*centros: {
     salud: any[];
     atm: any[];
     educacion: any[];
@@ -60,9 +60,16 @@ export class RegistroUsuarioPage implements OnInit {
     atm: [],
     educacion: [],
     central: []
-  };
+  };*/
 
   registroForm!: FormGroup; 
+
+  centrosPrincipales: { value: number; label: string }[] = [];
+  establecimientos: { value: number; label: string }[] = [];
+  establecimientosSalud: { value: number, label: string }[] = [];
+  establecimientosEducacion: { value: number, label: string }[] = [];
+  establecimientosAtm: { value: number, label: string }[] = [];
+
 
    //Variables para mostrar campos dinámicamente
    showSolicitanteFields = false;
@@ -70,12 +77,10 @@ export class RegistroUsuarioPage implements OnInit {
    showCoordinadorFields = false;
    showItsFields = false;
    showAdminSistemaFields = false;
-
-    showNivelCentralFields = false;
-    showEducacionFields = false;
-    showAtmFields = false;
-    showSaludFields = false; 
-
+   showEstablecimiento = false;
+   showSalud = false;
+   showEducacion = false;
+   showAtm = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -119,13 +124,8 @@ export class RegistroUsuarioPage implements OnInit {
     
     });
 
-    this.centros = {
-      
-      salud: this.centroServicio.obtenerCentros('salud'),
-      atm: this.centroServicio.obtenerCentros('atm'),
-      educacion: this.centroServicio.obtenerCentros('educacion'),
-      central: this.centroServicio.obtenerCentros('central')
-    };
+       this.centrosPrincipales = this.centroServicio.obtenerCentros();
+  
    
   }
 
@@ -200,14 +200,39 @@ export class RegistroUsuarioPage implements OnInit {
     }
  }
 
- onCentroChange(event: any) {
-    const selectedCentroId = event.detail.value;
-    this.registroForm.get('establecimiento')?.setValue('');
+onCentroChange(event: any) {
+     const centroId = event.detail.value;
 
-    this.showSaludFields = selectedCentroId === 2;
-    this.showEducacionFields = selectedCentroId === 3;
-    this.showAtmFields = selectedCentroId === 4;
-    this.showNivelCentralFields = selectedCentroId === 1;
+    // Resetear todo
+    this.showSalud = false;
+    this.showEducacion = false;
+    this.showAtm = false;
+    const estControls = ['establecimientoSalud', 'establecimientoEducacion', 'establecimientoAtm'];
+    estControls.forEach(controlName => {
+        const control = this.registroForm.get(controlName);
+        control?.clearValidators();
+        control?.setValue('');
+        control?.updateValueAndValidity();
+    });
+
+    // dejamos los 4 centros por si se solicitan cambios de regla con el registro.
+    if (centroId === 2) { // Salud
+      this.showSalud = true;
+      this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoSalud')?.setValidators([Validators.required]);
+    } else if (centroId === 3) { // Educación
+      this.showEducacion = true;
+      this.establecimientosEducacion = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoEducacion')?.setValidators([Validators.required]);
+    } else if (centroId === 4) { // ATM
+      this.showAtm = true;
+      this.establecimientosAtm = this.centroServicio.obtenerEstablecimientos(centroId);
+      this.registroForm.get('establecimientoAtm')?.setValidators([Validators.required]);
+    }
+    /*
+    considerar que los centros estan guardados segun su id para la 
+    conversacion entren el front, backend y bd 
+    */
   }
 
 
