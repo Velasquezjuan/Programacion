@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, from, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, from, of, throwError } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { Memorialocal } from '../almacen/memorialocal';
+import { environment } from 'src/environments/environment';
+
 
 @Injectable({
   providedIn: 'root'
@@ -10,25 +12,27 @@ import { Memorialocal } from '../almacen/memorialocal';
 
 export class VehiculoServicio {
 
-    private apiUrl = 'http://localhost:3000/api/vehiculos';
+    private apiUrl = `${environment.apiUrl}api/vehiculos`;
 
   constructor(private http: HttpClient) { }
 
 private getAuthHeaders(): Observable<HttpHeaders> {
-    return from(Memorialocal.obtener<string>('token')).pipe(
+    return from(Memorialocal.obtenerValor<string>('token')).pipe(
       switchMap(token => {
         if (!token) {
           return of(new HttpHeaders({ 'Content-Type': 'application/json' }));
         }
-        return of(new HttpHeaders({
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }));
+        return of(
+          new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          })
+        );
       })
     );
   }
 
- getVehiculos(): Observable<any[]> {
+  getVehiculos(): Observable<any[]> {
     return this.getAuthHeaders().pipe(
       switchMap(headers => {
         return this.http.get<any[]>(this.apiUrl, { headers });
@@ -36,17 +40,26 @@ private getAuthHeaders(): Observable<HttpHeaders> {
     );
   }
 
-   registrarVehiculo(nuevoVehiculo: any): Observable<any> {
+  registrarVehiculo(nuevoVehiculo: any): Observable<any> {
     return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.post(`${this.apiUrl}/registro-vehiculo`, nuevoVehiculo, { headers });
+      switchMap(headers =>
+        this.http.post(`${this.apiUrl}/registro-vehiculo`, nuevoVehiculo, {
+          headers
+        })
+      ),
+      catchError(error => {
+        console.error('Error al registrar vehículo en la API:', error);
+        return throwError(() => new Error(error.error?.message || 'Error de conexión con el servidor.'));
       })
     );
   }
-    actualizarVehiculo(id: string, datosVehiculo: any): Observable<any> {
+
+  actualizarVehiculo(id: string, datosVehiculo: any): Observable<any> {
     return this.getAuthHeaders().pipe(
       switchMap(headers => {
-        return this.http.put(`${this.apiUrl}/${id}`, datosVehiculo, { headers });
+        return this.http.put(`${this.apiUrl}/${id}`, datosVehiculo, {
+          headers
+        });
       })
     );
   }

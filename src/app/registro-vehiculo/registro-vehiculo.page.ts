@@ -16,9 +16,14 @@ import { Memorialocal } from '../almacen/memorialocal';
 import { CentroServicio } from '../servicio/centro-servicio';
 import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 import  { HttpErrorResponse } from '@angular/common/http';
+import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
+import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 
 import { addIcons  } from 'ionicons';
 import { calendarOutline } from 'ionicons/icons';
+
+
+
 @Component({
   selector: 'app-registro-vehiculo',
   templateUrl: './registro-vehiculo.page.html',
@@ -74,7 +79,9 @@ export class RegistroVehiculoPage implements OnInit {
     private router: Router,
     private toastController: ToastController,
     private centroServicio: CentroServicio,
-    private VehiculoServicio : VehiculoServicio
+    private VehiculoServicio : VehiculoServicio,
+    private notificaciones: NotificacionesCorreo,
+    private auth: AutentificacionUsuario,
     ) {
       addIcons({ calendarOutline
       });
@@ -114,22 +121,29 @@ export class RegistroVehiculoPage implements OnInit {
       marca: formValue.marca,
       modelo: formValue.modelo,
       ano: new Date(formValue.anoVehiculo).getFullYear(),
-      TIPO_VEHICULO_id_tipoVehiculo: formValue.tipoVehiculo,
+      tipo_vehiculo: formValue.tipoVehiculo,
       capacidad: formValue.capacidad ? 1 : 0, 
       revision_tecnica: new Date(formValue.fechaRevision).toISOString().split('T')[0],
       nombre_conductor: formValue.conductorTitular,
-      nombre_conductor_reemplazo: formValue.conductorReemplazo,
+      conductor_reemplazo: formValue.conductorReemplazo,
 
       // Asignaciones
-      programas: formValue.programa,
-      establecimientos: formValue.establecimiento
+      programa: formValue.programa,
+      establecimientos: formValue.establecimiento,
+     // /centro: formValue.centro,
+     // centroSalud1: formValue.centroSalud1,
+     // centroSalud2: formValue.centroSalud2,
+     // centroEducacion: formValue.centroEducacion,
+     // centroAtm: formValue.centroAtm
     };
 
     this.VehiculoServicio.registrarVehiculo(nuevoVehiculo).subscribe({
       next: () => {
         this.mostrarToast('Vehículo registrado con éxito.', 'success');
+        if (this.usuarioActivo?.correo) {
+          this.notificaciones.enviarCorreoVehiculoRegistrado(this.usuarioActivo.correo, nuevoVehiculo.patente);
+        }
         this.registroForm.reset();
-        this.router.navigate(['/gestion']);
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al registrar vehículo:', err);
@@ -168,6 +182,9 @@ export class RegistroVehiculoPage implements OnInit {
       programa: ['',Validators.required],
       contrato: ['',Validators.required],
       fechaRevision: ['',Validators.required],
+      //fechaSeguro: ['',Validators.required], futuras actualizaciones
+      //fechaContrato: ['',Validators.required],futuras actualizaciones
+      //fechaCirculacion: ['',Validators.required],futuras actualizaciones
     });
 
   this.centrosPrincipales = this.centroServicio.obtenerCentros();

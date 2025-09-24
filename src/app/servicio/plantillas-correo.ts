@@ -91,4 +91,26 @@ export const PlantillasCorreo = {
     <p>Motivo del rechazo: <b>${viaje.motivoRechazo}</b>.</p>
     <p>Por favor, ingrese a la aplicación para agendar un nuevo viaje en la sección de "Solicitar Viaje".</p>
   `,
+
+  vehiculoRegistrado: (vehiculo: any) => `
+    <p>El vehículo con la patente <b>${vehiculo.patente}</b> 
+    ha sido registrado exitosamente.</p>
+    <p>Gracias por mantener actualizada la información de los vehículos.</p>
+  `,
+  vencimientoRevisionTecnica: (vehiculo: any) => `
+    <p>El vehículo con la patente <b>${vehiculo.patente}</b> tiene la revisión técnica vencida desde el <b>${vehiculo.fechaRevision}</b>.</p>
+    <p>Por favor, actualice la revisión técnica lo antes posible para asegurar la seguridad y cumplimiento de las normativas.</p>
+  `,
+  vencimientoSeguro: (vehiculo: any) => `
+    <p>El vehículo con la patente <b>${vehiculo.patente}</b> tiene el seguro vencido desde el <b>${vehiculo.fechaSeguro}</b>.</p>
+    <p>Por favor, actualice el seguro lo antes posible para asegurar la seguridad y cumplimiento de las normativas.</p>
+  `,
+  vencimientoContrato: (vehiculo: any) => `
+    <p>El contrato asociado al vehículo con la patente <b>${vehiculo.patente}</b> ha vencido el <b>${vehiculo.fechaContrato}</b>.</p>
+    <p>Por favor, renueve el contrato lo antes posible para asegurar la continuidad del servicio.</p>
+  `,
+  vencimientoPermisoCirculacion: (vehiculo: any) => `
+    <p>El vehículo con la patente <b>${vehiculo.patente}</b> tiene el permiso de circulación vencido desde el <b>${vehiculo.fechaPermisoCirculacion}</b>.</p>
+    <p>Por favor, actualice el permiso de circulación lo antes posible para asegurar la seguridad y cumplimiento de las normativas.</p>
+  `,
 }

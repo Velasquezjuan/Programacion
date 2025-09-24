@@ -6,12 +6,14 @@ const nodemailer = require('nodemailer');
 // Tus rutas existentes
 const vehiculoRoutes = require('./routes/vehiculo.routes');
 const authRoutes = require('./routes/auth.routes');
+const viajeRoutes = require('./routes/viaje.routes'); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api/vehiculos', vehiculoRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/viajes', viajeRoutes);
 
 
 // --- Lógica de Notificaciones por Correo ---
@@ -41,6 +43,7 @@ app.post('/enviar-notificacion', (req, res) => {
     html: cuerpoHtml,
   };
 
+  console.log('Enviando correo a:', destinatario);
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error('Error al enviar el correo:', error);

@@ -3,21 +3,23 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Memorialocal } from '../almacen/memorialocal';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ViajesServicio {
 
-  private apiUrl = 'http://localhost:3000/api/viajes';
+  private apiUrl = `${environment.apiUrl}api/viajes`;
 
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): Observable<HttpHeaders> {
-    return from(Memorialocal.obtener<string>('token')).pipe(
-      switchMap(token => {
+    
+    return from(Memorialocal.obtenerValor<string>('token') as Promise<string>).pipe(
+      switchMap((token: string | null) => {
         if (!token) {
-          throw new Error('No se encontró token de autenticación.');
+          return new Observable<HttpHeaders>(observer => observer.error(new Error('No se encontró token de autenticación.')));
         }
         return of(new HttpHeaders({
           'Content-Type': 'application/json',

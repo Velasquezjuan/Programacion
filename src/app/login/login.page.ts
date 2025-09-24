@@ -38,7 +38,7 @@ export class LoginPage {
   ) {
       addIcons({atSharp,lockClosed, logInOutline});}
 
-
+  
   ngOnInit() {
         this.loginForm = this.fb.group({
       correo: ['', [Validators.required, Validadores.correoValido]],

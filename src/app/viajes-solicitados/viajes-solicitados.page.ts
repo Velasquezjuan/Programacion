@@ -57,6 +57,7 @@ interface Usuario { id: string; usuario: string; rol: string; correo: string; }
     IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput, IonButton,
     CommonModule, FormsModule ]
 })
+
 export class ViajesSolicitadosPage implements OnInit {
   solicitudes: Solicitud[] = [];
   vehiculos: Vehiculo[] = [];
@@ -78,7 +79,9 @@ export class ViajesSolicitadosPage implements OnInit {
     private alertCtrl: AlertController,
     private notificaciones: NotificacionesCorreo,
     private viajeServicio: ViajesServicio,
-    private vehiculoServicio: VehiculoServicio
+    private vehiculoServicio: VehiculoServicio,
+    private centroServicio: CentroServicio,
+    private auth: AutentificacionUsuario,
   ) {
     addIcons({ calendarOutline, carOutline, personOutline, closeCircleOutline });
   }

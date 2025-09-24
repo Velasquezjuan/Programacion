@@ -32,7 +32,7 @@ export class Validadores {
     // Validador de texto (solo letras y espacios)
     static soloTexto(control: AbstractControl): ValidationErrors | null {
       if (!control.value) return null;
-      const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+      const regex = /^[a-zAZ-ñÑ]/;
       return regex.test(control.value) ? null : { textoInvalido: true };
     }
 
@@ -73,15 +73,9 @@ export class Validadores {
     // Validador de patente estándar chilena: 4 letras y 2 números sin guiones ni espacios
   static validarPatente(control: AbstractControl): ValidationErrors | null {
     const valor = control.value;
-
     if (!valor) return null;
-
-    // Remover espacios y convertir a mayúsculas para validar correctamente
     const patente = valor.toUpperCase().trim();
-
-    // Expresión regular: 4 letras (A-Z) seguidas de 2 dígitos (0-9)
     const regex = /^[A-Z]{4}[0-9]{2}$/;
-
     return regex.test(patente) ? null : { patenteInvalida: true };
   }
 

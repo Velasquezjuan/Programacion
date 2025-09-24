@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
       message: 'Login exitoso',
       token: token, 
       usuario: {
-        rut: usuario.rut_usuario,
+        rut_usuario: usuario.rut_usuario,
         nombre: usuario.nombre,
         correo: usuario.correo,
         rol: usuario.rol

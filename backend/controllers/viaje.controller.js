@@ -30,8 +30,14 @@ exports.createViaje = async (req, res) => {
   try {
     const {
       fecha_viaje, hora_inicio, punto_salida, punto_destino,
-      motivo, ocupantes, programa, solicitante_rut
+      motivo, ocupantes, programa
     } = req.body;
+
+    const solicitante_rut = req.user.rut;
+
+    if (!solicitante_rut) {
+        return res.status(403).json({ message: 'No se pudo identificar al solicitante desde el token.' });
+    }
 
     const query = `
       INSERT INTO VIAJE (
@@ -41,7 +47,7 @@ exports.createViaje = async (req, res) => {
     `;
     await db.query(query, [
       fecha_viaje, hora_inicio, punto_salida, punto_destino,
-      motivo, ocupantes, programa, solicitante_rut, solicitante_rut // Por ahora, el solicitante es el responsable
+      motivo, ocupantes, programa, solicitante_rut, solicitante_rut
     ]);
     res.status(201).json({ message: 'Viaje solicitado con éxito.' });
   } catch (error) {

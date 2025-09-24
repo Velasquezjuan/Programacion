@@ -118,7 +118,7 @@
                 </ion-item>-->
 
                   <ion-item>
-                  <ion-label>Última Revisión Técnica</ion-label>
+                  <ion-label>Vencimiento Revisión Técnica</ion-label>
                   <div slot="end" class="date-button-container">
                     <ion-text>{{ registroForm.get('fechaRevision')?.value | date:'dd/MM/yyyy' }}</ion-text>
                     <ion-button fill="clear" (click)="isRevPickerOpen = true">
@@ -126,6 +126,26 @@
                     </ion-button>
                   </div>
                 </ion-item>
+                <!--
+                <ion-item>
+                  <ion-label>Vencimiento Permiso Circulacion</ion-label>
+                  <div slot="end" class="date-button-container">
+                    <ion-text>{{ registroForm.get('fechaCirculacion')?.value | date:'dd/MM/yyyy' }}</ion-text>
+                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
+                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+                  esto cambiara al subir la version de entrega
+                <ion-item>
+                  <ion-label>Vencimiento Seguro Obligatorio</ion-label>
+                  <div slot="end" class="date-button-container">
+                    <ion-text>{{ registroForm.get('fechaSeguro')?.value | date:'dd/MM/yyyy' }}</ion-text>
+                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
+                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>-->
               </ion-card-content>
             </ion-card>
 

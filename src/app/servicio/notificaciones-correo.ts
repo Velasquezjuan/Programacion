@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PlantillasCorreo } from './plantillas-correo';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { PlantillasCorreo } from './plantillas-correo';
 
 export class NotificacionesCorreo {
 
-private apiUrl = 'http://localhost:3000/enviar-notificacion';
+private apiUrl = `${environment.apiUrl}api/notificaciones`;
 
   constructor(private http: HttpClient) { }
 
@@ -23,6 +24,13 @@ private apiUrl = 'http://localhost:3000/enviar-notificacion';
     const asunto = '¡Bienvenido a nuestra aplicación!';
     const contenido = PlantillasCorreo.bienvenida(nombre);
     const cuerpoHtml = PlantillasCorreo.base('¡Bienvenido!', contenido);
+    this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
+  }
+
+  public enviarCorreoVehiculoRegistrado(email: string, patente: string) {
+    const asunto = `¡Tu vehículo ${patente} ha sido registrado con éxito!`;
+    const contenido = PlantillasCorreo.vehiculoRegistrado(patente);
+    const cuerpoHtml = PlantillasCorreo.base('Vehículo Registrado', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 

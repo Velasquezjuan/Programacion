@@ -5,6 +5,7 @@ import { Observable, from, of, throwError } from 'rxjs';
 import { switchMap, tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { BehaviorSubject } from 'rxjs'; 
+import { environment } from 'src/environments/environment';
 
 
 interface LoginResponse {
@@ -27,7 +28,7 @@ export interface NuevoUsuario {
     providedIn: 'root'
   })
   export class AutentificacionUsuario {
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private apiUrl = `${environment.apiUrl}api/auth`;
   private tokenKey = 'auth-token';
   private usuarioActivoSubject = new BehaviorSubject<any | null>(null);
   public usuarioActivo$ = this.usuarioActivoSubject.asObservable();

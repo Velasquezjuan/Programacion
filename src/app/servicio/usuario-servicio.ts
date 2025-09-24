@@ -4,6 +4,7 @@ import { from, Observable, of, Observer} from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { Memorialocal } from '../almacen/memorialocal';
+import { environment } from 'src/environments/environment';
 
 
 export interface UsuarioPendiente {
@@ -20,7 +21,7 @@ export interface UsuarioPendiente {
   providedIn: 'root'
 })
 export class UsuarioServicio {
-  private apiUrl = 'http://localhost:3000/api/usuarios'; 
+  private apiUrl = `${environment.apiUrl}api/usuarios`; 
 
   constructor(private http: HttpClient) {}
 

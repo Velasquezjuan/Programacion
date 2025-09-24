@@ -26,8 +26,8 @@ exports.createVehiculo = async (req, res) => {
 
     const {
       patente, marca, modelo, ano, capacidad, tipo_vehiculo, revision_tecnica,
-      nombre_conductor, conductor_reemplazo, encargado_rut, encargado_nombre,
-      contrato, programa, centro, centroSalud1, centroSalud2, centroEducacion, centroAtm
+      nombre_conductor, conductor_reemplazo, rut_proveedor, nombre_proveedor,
+      id_contrato, programa, centro, centroSalud1, centroSalud2, centroEducacion, centroAtm
     } = req.body;
 
     const capacidadInt = capacidad ? 1 : 0;
@@ -50,7 +50,7 @@ exports.createVehiculo = async (req, res) => {
       ) VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR), ?);
     `;
     await connection.query(sqlContrato, [
-      contrato, encargado_rut, encargado_nombre, patente
+      id_contrato, rut_proveedor, nombre_proveedor, patente
     ]);
 
     if (programa && programa.length > 0) {

@@ -3,6 +3,7 @@ import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { MenuLateralComponent } from './componentes/menu-lateral/menu-lateral.component';
 import { AutentificacionUsuario } from './servicio/autentificacion-usuario';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +18,22 @@ import { AutentificacionUsuario } from './servicio/autentificacion-usuario';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
   rolUsuario = '';
-  constructor(private auth: AutentificacionUsuario) {}
-  async ngOnInit() {
-    const u = await this.auth.obtenerUsuarioActivo();
-    this.rolUsuario = u?.rol || '';
+  private authSubscription: Subscription;
+
+  constructor(private auth: AutentificacionUsuario) {
+    this.authSubscription = new Subscription();
+  }
+   ngOnInit() {
+    this.authSubscription = this.auth.usuarioActivo$.subscribe(usuario => {
+      this.rolUsuario = usuario?.rol || '';
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 }

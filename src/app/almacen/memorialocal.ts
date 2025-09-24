@@ -15,21 +15,23 @@ export class Memorialocal {
   private static initDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
     
-      this.dbPromise = openDB('AppDB', 12, {
+      this.dbPromise = openDB('AppDB', 16, {
         upgrade(db) {
 
           if (!db.objectStoreNames.contains('keyval')) {
             db.createObjectStore('keyval', { keyPath: 'key' });
           }
-          const stores = [
+          const store = [
             'usuarios',
             'usuarioActivo',
             'usuarioDesactivado',
             'vehiculos',
             'viajesSolicitados',
             'programas',
+            'usuarios_pendientes',
+            'vehiculos_pendientes',
           ];
-          for (const storeName of stores) {
+          for (const storeName of store) {
             if (!db.objectStoreNames.contains(storeName)) {
               db.createObjectStore(storeName, { keyPath: 'id' });
             }
@@ -86,7 +88,6 @@ export class Memorialocal {
       await act.delete(id);
       await des.put(usuario);
     }
-    // También limpiamos el usuario activo de keyval por seguridad
     await this.eliminarValor('usuarioActivo');
     await tx.done;
   }

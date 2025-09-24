@@ -10,6 +10,9 @@ import {IonContent,IonMenuButton, IonHeader, IonTitle,
   IonSelectOption,  } from '@ionic/angular/standalone';
 
 import { ToastController } from '@ionic/angular';
+
+import { Validadores } from '../validador/validadores';
+
 // servicios
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 import { Memorialocal } from '../almacen/memorialocal';
@@ -35,15 +38,25 @@ import { Agenda } from '../servicio/agenda';
 })
 export class SolicitudViajePage implements OnInit {
  registroForm!: FormGroup;
-  centros = {
+  
+ /* centros = {
     central:   [] as { value:string; label:string }[],
     salud:     [] as { value:string; label:string }[],
     educacion: [] as { value:string; label:string }[],
     atm:       [] as { value:string; label:string }[]
-  };
+  };*/
   auto = {
     vehiculo: [] as { value:string; label:string }[]
   };
+
+    centrosPrincipales: { value: number; label: string }[] = [];
+ programas: { value: string; label: string }[] = [];
+  establecimientosSaludSalida: { value: number; label: string }[] = [];
+  establecimientosEducacionSalida: { value: number; label: string }[] = [];
+  establecimientosAtmSalida: { value: number; label: string }[] = [];
+  establecimientosSaludDestino: { value: number; label: string }[] = [];
+  establecimientosEducacionDestino: { value: number; label: string }[] = [];
+  establecimientosAtmDestino: { value: number; label: string }[] = [];
 
   showOtroSalida    = false;
   showSaludSalida   = false;
@@ -55,31 +68,39 @@ export class SolicitudViajePage implements OnInit {
   showEducacionDestino= false;
   showAtmDestino     = false;
 
+  programa: { prog: any[] } = { prog: [] };
+
   rolUsuario = '';
-  usuarioActivo: { usuario:string; rol:string; correo?: string } | null = null;
+  usuarioActivo: { usuario: string; rol: string; correo?: string; rut_usuario?: string } | null = null;
+
   maxOcupantes = 9;
+  minDate: string = '';
 
 
   constructor(
-   private fb:       FormBuilder,
+    private fb:       FormBuilder,
     private router:   Router,
     private toast:    ToastController,
     private centroSvc: CentroServicio,
     private auth:     AutentificacionUsuario,
-    public agenda:    Agenda,
+    public  agenda:    Agenda,
     private notificaciones: NotificacionesCorreo,
+    private vehiculoSvc: VehiculoServicio,
+    private viajesServicio: ViajesServicio,
   ) {}
 
   async ngOnInit() {
+    this.minDate = new Date().toISOString().split('T')[0];
+
     this.registroForm = this.fb.group({
       puntoSalida: ['', Validators.required],
-      direccionSalida: [''],
+      direccionSalida: ['', Validadores.soloTexto],
       centroSaludSalida: [''],
       centroEducacionSalida: [''],
       centroAtmSalida: [''],
       nivelCentralSalida: [false],
       puntoDestino: ['', Validators.required],
-      direccionDestino: [''],
+      direccionDestino: ['', Validadores.soloTexto],
       centroSaludDestino: [''],
       centroEducacionDestino: [''],
       centroAtmDestino: [''],
@@ -90,9 +111,11 @@ export class SolicitudViajePage implements OnInit {
       hora: ['', Validators.required],
       tiempoUso: ['', Validators.required],
       tipoVehiculo: ['', Validators.required],
+      programa: ['',Validators.required],
       ocupantes: ['', [Validators.required, Validators.min(1)]],
-      motivo: ['', Validators.required],
-      ocupante: ['', Validators.required]
+      motivo: ['',  Validators.compose([Validators.required, Validadores.soloTexto])],
+      ocupante: ['', Validators.required],
+
     });
 
    
@@ -104,36 +127,85 @@ export class SolicitudViajePage implements OnInit {
     this.auto.vehiculo     = this.centroSvc.obtenerAuto('vehiculo');
 
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
+
+    this.programa = { prog: this.centroSvc.obtenerPrograma('prog') };
     this.rolUsuario    = this.usuarioActivo?.rol ?? '';
   }
 
  
-  onSalidaChange(ev: any) {
-    const val = ev.detail.value;
-    this.showOtroSalida      = val === 'otro';
-    this.showSaludSalida     = val === 'salud';
-    this.showEducacionSalida = val === 'educacion';
-    this.showAtmSalida       = val === 'atm';
-    ['direccionSalida', 'centroSaludSalida','centroEducacionSalida','centroAtmSalida'].forEach(k => this.registroForm.get(k)!.clearValidators());
-    if (this.showOtroSalida) { this.registroForm.get('direccionSalida')!.setValidators([Validators.required]); }
-    if (this.showSaludSalida) { this.registroForm.get('centroSaludSalida')!.setValidators([Validators.required]); }
-    if (this.showEducacionSalida) { this.registroForm.get('centroEducacionSalida')!.setValidators([Validators.required]); }
-    if (this.showAtmSalida) { this.registroForm.get('centroAtmSalida')!.setValidators([Validators.required]); }
-    ['direccionSalida', 'centroSaludSalida','centroEducacionSalida','centroAtmSalida'].forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
+    
+  private handleLocationChange(type: 'Salida' | 'Destino', value: any) {
+    const isSalida = type === 'Salida';
+    
+    // 1. Resetear todas las visibilidades para este tipo (Salida o Destino)
+    this[isSalida ? 'showOtroSalida' : 'showOtroDestino'] = false;
+    this[isSalida ? 'showSaludSalida' : 'showSaludDestino'] = false;
+    this[isSalida ? 'showEducacionSalida' : 'showEducacionDestino'] = false;
+    this[isSalida ? 'showAtmSalida' : 'showAtmDestino'] = false;
+    
+    // 2. Definir los controles a limpiar para este tipo
+    const controlsToReset = [
+      `direccion${type}`,
+      `centroSalud${type}`,
+      `centroEducacion${type}`,
+      `centroAtm${type}`
+    ];
+
+    // 3. Limpiar validadores y valores de los controles
+    controlsToReset.forEach(controlName => {
+      const control = this.registroForm.get(controlName);
+      control?.clearValidators();
+      control?.setValue('');
+    });
+
+    // 4. Configurar el control específico que se seleccionó
+    let controlToValidate: string | null = null;
+    
+    switch (value) {
+      case '2': // Salud
+        this[isSalida ? 'showSaludSalida' : 'showSaludDestino'] = true;
+        this[isSalida ? 'establecimientosSaludSalida' : 'establecimientosSaludDestino'] = this.centroSvc.obtenerEstablecimientos(2);
+        controlToValidate = `centroSalud${type}`;
+        break;
+      case '3': // Educación
+        this[isSalida ? 'showEducacionSalida' : 'showEducacionDestino'] = true;
+        this[isSalida ? 'establecimientosEducacionSalida' : 'establecimientosEducacionDestino'] = this.centroSvc.obtenerEstablecimientos(3);
+        controlToValidate = `centroEducacion${type}`;
+        break;
+      case '4': // ATM
+        this[isSalida ? 'showAtmSalida' : 'showAtmDestino'] = true;
+        this[isSalida ? 'establecimientosAtmSalida' : 'establecimientosAtmDestino'] = this.centroSvc.obtenerEstablecimientos(4);
+        controlToValidate = `centroAtm${type}`;
+        break;
+      case '5': // Otro
+        this[isSalida ? 'showOtroSalida' : 'showOtroDestino'] = true;
+        controlToValidate = `direccion${type}`;
+        break;
+    }
+
+    // 5. Aplicar el validador requerido al control activo
+    if (controlToValidate) {
+      this.registroForm.get(controlToValidate)?.setValidators([Validators.required]);
+    }
+
+   /* if (controlToValidate == `direccion${type}`) {
+      this.registroForm.get(controlToValidate)?.setValidators([Validators.required, Validadores.soloTexto]);
+    }*/
+
+    // 6. Actualizar el estado de validación de todos los controles afectados
+    controlsToReset.forEach(controlName => {
+      this.registroForm.get(controlName)?.updateValueAndValidity();
+    });
   }
 
+  
+  onSalidaChange(ev: any) {
+    this.handleLocationChange('Salida', ev.detail.value);
+  }
+
+
   onDestinoChange(ev: any) {
-    const val = ev.detail.value;
-    this.showOtroDestino      = val === 'otro';
-    this.showSaludDestino     = val === 'salud';
-    this.showEducacionDestino = val === 'educacion';
-    this.showAtmDestino       = val === 'atm';
-    ['direccionDestino', 'centroSaludDestino','centroEducacionDestino','centroAtmDestino'].forEach(k => this.registroForm.get(k)!.clearValidators());
-    if (this.showOtroDestino) { this.registroForm.get('direccionDestino')!.setValidators([Validators.required]); }
-    if (this.showSaludDestino) { this.registroForm.get('centroSaludDestino')!.setValidators([Validators.required]); }
-    if (this.showEducacionDestino) { this.registroForm.get('centroEducacionDestino')!.setValidators([Validators.required]); }
-    if (this.showAtmDestino) { this.registroForm.get('centroAtmDestino')!.setValidators([Validators.required]); }
-    ['direccionDestino', 'centroSaludDestino','centroEducacionDestino','centroAtmDestino'].forEach(k => this.registroForm.get(k)!.updateValueAndValidity());
+    this.handleLocationChange('Destino', ev.detail.value);
   }
 
   actualizarMaxOcupantes(tipo: string) {
@@ -147,16 +219,24 @@ export class SolicitudViajePage implements OnInit {
   }
 
   async onSubmit() {
-    if (this.registroForm.invalid) {
+     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
-      return this.showToast('Formulario incompleto','danger');
+      this.showToast('Formulario incompleto','danger');
+      return;
     }
+    
+    if (!this.usuarioActivo?.rut_usuario) {
+        this.showToast('Error: No se pudo identificar al usuario. Por favor, inicie sesión de nuevo.', 'danger');
+        return;
+    }
+
     const v = this.registroForm.value;
 
     const solicitud = {
       id: Date.now().toString(),
+
       solicitante: this.usuarioActivo?.usuario||'desconocido',
-      fecha: v.fecha,
+      /*fecha: v.fecha,
       hora:  v.hora,
       puntoSalida: v.puntoSalida,
       direccionSalida:       this.showOtroSalida      ? v.direccionSalida       : undefined,
@@ -178,8 +258,31 @@ export class SolicitudViajePage implements OnInit {
       motivo:        v.motivo,
       ocupante:      v.ocupante,
       estado:        'pendiente',
-      fechaRegistro: new Date().toISOString()
+      fechaRegistro: new Date().toISOString()*/
+      fecha_viaje: v.fecha,
+      hora_inicio: v.hora,
+      punto_salida: this.obtenerTextoUbicacion(v.puntoSalida, v),
+      punto_destino: this.obtenerTextoUbicacion(v.puntoDestino, v, false),
+      motivo: v.motivo,
+      ocupantes: v.ocupantes,
+      programa: v.programa,
+      solicitante_rut: this.usuarioActivo?.rut_usuario
     };
+
+    this.viajesServicio.createViaje(solicitud).subscribe({
+      next: (respuesta): void => {
+        this.showToast('Solicitud enviada con éxito', 'success');
+        this.registroForm.reset();
+        if (this.usuarioActivo?.correo) {
+            this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, solicitud);
+        }
+      },
+      error: (error) => {
+        console.error('Error al crear el viaje:', error);
+        this.showToast('Error al enviar la solicitud. Intente de nuevo.', 'danger');
+      }
+    });
+    
 
     try {
       await this.agenda.agregarHorario(v.fecha, v.hora);
@@ -192,7 +295,7 @@ export class SolicitudViajePage implements OnInit {
       } else {
         console.warn('No se pudo enviar la notificación: el usuario no tiene un email registrado.');
       }
-      const todosLosUsuarios = await Memorialocal.obtener<any>('usuarios');
+      const todosLosUsuarios = await Memorialocal.obtener<any>('usuariosActivos') || [];
       console.log('Todos los usuarios encontrados:', todosLosUsuarios); 
 
       const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
@@ -209,6 +312,27 @@ export class SolicitudViajePage implements OnInit {
       this.notificaciones.enviarNotificacionAdmin(correosDeAdmins, solicitud);
     } catch {
       this.showToast('Error al guardar','danger');
+    }
+  }
+  
+  private obtenerTextoUbicacion(tipo: string, formValues: any, esSalida = true): string {
+    const prefijo = esSalida ? 'Salida' : 'Destino';
+    const punto = esSalida ? formValues.puntoSalida : formValues.puntoDestino;
+    switch(punto) {
+        case '1': return 'Nivel Central';
+        case '2': 
+          const centroSalud = formValues[`centroSalud${prefijo}`] || 'No especificado';
+          return `Salud: ${centroSalud}`;
+        case '3': 
+          const centroEducacion = formValues[`centroEducacion${prefijo}`] || 'No especificado';
+          return `Educación: ${centroEducacion}`;
+        case '4': 
+          const centroAtm = formValues[`centroAtm${prefijo}`] || 'No especificado';
+          return `ATM: ${centroAtm}`;
+        case '5': 
+          const direccion = formValues[`direccion${prefijo}`] || 'No especificada';
+          return `Otro: ${direccion}`;
+        default: return 'Ubicación no especificada';
     }
   }
 
