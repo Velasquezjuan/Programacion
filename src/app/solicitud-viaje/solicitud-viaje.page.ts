@@ -106,15 +106,15 @@ export class SolicitudViajePage implements OnInit {
       centroAtmDestino: [''],
       nivelCentralDestino: [false],
       dentroComuna: [false],
-      necesitaCarga:[false],
+      necesita_carga:[false],
       fecha: ['', Validators.required],
       hora: ['', Validators.required],
       tiempoUso: ['', Validators.required],
-      tipoVehiculo: ['', Validators.required],
+      vehiculo_deseado: ['', Validators.required],
       programa: ['',Validators.required],
       ocupantes: ['', [Validators.required, Validators.min(1)]],
       motivo: ['',  Validators.compose([Validators.required, Validadores.soloTexto])],
-      ocupante: ['', Validators.required],
+      responsable: ['', Validators.required],
 
     });
 
@@ -137,13 +137,11 @@ export class SolicitudViajePage implements OnInit {
   private handleLocationChange(type: 'Salida' | 'Destino', value: any) {
     const isSalida = type === 'Salida';
     
-    // 1. Resetear todas las visibilidades para este tipo (Salida o Destino)
     this[isSalida ? 'showOtroSalida' : 'showOtroDestino'] = false;
     this[isSalida ? 'showSaludSalida' : 'showSaludDestino'] = false;
     this[isSalida ? 'showEducacionSalida' : 'showEducacionDestino'] = false;
     this[isSalida ? 'showAtmSalida' : 'showAtmDestino'] = false;
     
-    // 2. Definir los controles a limpiar para este tipo
     const controlsToReset = [
       `direccion${type}`,
       `centroSalud${type}`,
@@ -151,14 +149,12 @@ export class SolicitudViajePage implements OnInit {
       `centroAtm${type}`
     ];
 
-    // 3. Limpiar validadores y valores de los controles
     controlsToReset.forEach(controlName => {
       const control = this.registroForm.get(controlName);
       control?.clearValidators();
       control?.setValue('');
     });
 
-    // 4. Configurar el control específico que se seleccionó
     let controlToValidate: string | null = null;
     
     switch (value) {
@@ -183,7 +179,6 @@ export class SolicitudViajePage implements OnInit {
         break;
     }
 
-    // 5. Aplicar el validador requerido al control activo
     if (controlToValidate) {
       this.registroForm.get(controlToValidate)?.setValidators([Validators.required]);
     }
@@ -192,7 +187,6 @@ export class SolicitudViajePage implements OnInit {
       this.registroForm.get(controlToValidate)?.setValidators([Validators.required, Validadores.soloTexto]);
     }*/
 
-    // 6. Actualizar el estado de validación de todos los controles afectados
     controlsToReset.forEach(controlName => {
       this.registroForm.get(controlName)?.updateValueAndValidity();
     });
@@ -209,12 +203,13 @@ export class SolicitudViajePage implements OnInit {
   }
 
   actualizarMaxOcupantes(tipo: string) {
-    this.maxOcupantes = tipo === 'minivan' ? 9 : 4;
+    this.maxOcupantes = tipo === 'minivan' ? 9 : 5;
+
     this.registroForm.get('ocupantes')!.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
     this.registroForm.get('ocupantes')!.updateValueAndValidity();
   }
   private async showToast(msg: string, color: 'success'|'warning'|'danger'='success') {
-    const t = await this.toast.create({ message: msg, color, duration: 2000 });
+    const t = await this.toast.create({ message: msg, color, duration: 15000 });
     await t.present();
   }
 
@@ -264,55 +259,48 @@ export class SolicitudViajePage implements OnInit {
       punto_salida: this.obtenerTextoUbicacion(v.puntoSalida, v),
       punto_destino: this.obtenerTextoUbicacion(v.puntoDestino, v, false),
       motivo: v.motivo,
+      vehiculo_deseado: v.vehiculo_deseado,
+      necesita_carga: v.necesita_carga? 'si':'no',
       ocupantes: v.ocupantes,
       programa: v.programa,
+      responsable: v.responsable,
       solicitante_rut: this.usuarioActivo?.rut_usuario
     };
 
     this.viajesServicio.createViaje(solicitud).subscribe({
-      next: (respuesta): void => {
-        this.showToast('Solicitud enviada con éxito', 'success');
-        this.registroForm.reset();
-        if (this.usuarioActivo?.correo) {
-            this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, solicitud);
-        }
-      },
-      error: (error) => {
-        console.error('Error al crear el viaje:', error);
-        this.showToast('Error al enviar la solicitud. Intente de nuevo.', 'danger');
-      }
-    });
-    
 
-    try {
-      await this.agenda.agregarHorario(v.fecha, v.hora);
-      await Memorialocal.guardar('viajesSolicitados', solicitud);
+    next: async (respuesta) => {
+      this.showToast('Solicitud enviada con éxito', 'success');
       this.registroForm.reset();
-      this.showToast('Solicitud creada','success');
+      
+      const viajeConfirmado = respuesta.viaje; 
 
       if (this.usuarioActivo?.correo) {
-        this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, solicitud);
-      } else {
-        console.warn('No se pudo enviar la notificación: el usuario no tiene un email registrado.');
+          this.notificaciones.enviarCorreoSolicitud(this.usuarioActivo.correo, viajeConfirmado);
       }
-      const todosLosUsuarios = await Memorialocal.obtener<any>('usuariosActivos') || [];
-      console.log('Todos los usuarios encontrados:', todosLosUsuarios); 
 
-      const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
-      
-      const adminsEncontrados = todosLosUsuarios
-        .filter(usuario => rolesAdmin.includes(usuario.rol));
-      console.log('Administradores filtrados:', adminsEncontrados); 
-
-      const correosDeAdmins = adminsEncontrados
-        .map(admin => admin.correo)
-        .filter(correo => correo); 
-      console.log('Correos de admins para notificar:', correosDeAdmins); 
-      
-      this.notificaciones.enviarNotificacionAdmin(correosDeAdmins, solicitud);
-    } catch {
-      this.showToast('Error al guardar','danger');
+      this.auth.getUsuarios().subscribe({
+        next: (todosLosUsuarios) => {
+          const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
+          const correosDeAdmins = todosLosUsuarios
+            .filter(usuario => rolesAdmin.includes(usuario.rol) && usuario.correo)
+            .map(admin => admin.correo);
+          
+          if (correosDeAdmins.length > 0) {
+            this.notificaciones.enviarNotificacionAdmin(correosDeAdmins, viajeConfirmado);
+          } else {
+            console.warn('No se encontraron administradores con correo para notificar.');
+          }
+        },
+        error: (err) => console.error('Error al obtener lista de usuarios para notificar a admins:', err)
+      });
+    },
+    error: (error) => {
+      console.error('Error al crear el viaje:', error);
+      const mensajeError = error.error?.message || 'Error al enviar la solicitud.';
+      this.showToast(mensajeError, 'danger');
     }
+  });
   }
   
   private obtenerTextoUbicacion(tipo: string, formValues: any, esSalida = true): string {

@@ -82,3 +82,25 @@ exports.createVehiculo = async (req, res) => {
     }
   }
 };
+// --- OBTENER VEHÍCULOS CON CONDUCTORES ASIGNADOS ---
+exports.getVehiculos = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        v.patente as id,
+        v.patente,
+        v.capacidad,
+        tv.nombre_tipoVehiculo as tipoVehiculo,
+        v.nombre_conductor as nombreConductor 
+      FROM VEHICULO v
+      LEFT JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo;
+    `;
+
+    const [vehiculos] = await db.query(query);
+    res.status(200).json(vehiculos);
+
+  } catch (error) {
+    console.error('Error al obtener los vehículos con conductor:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};

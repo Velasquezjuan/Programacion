@@ -7,12 +7,11 @@
 
 <ion-content class="ion-padding">
   <ion-col size="12" class="text-center">
-            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
+            <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
           </ion-col>
 
   <!-- Select de filtro -->
   <div class="contenedor-filtros">
-    <!-- Barra de búsqueda por ID -->
     <ion-searchbar
       class="search-by-id"  color="primary"  type="number" placeholder="Buscar por Nº Solicitud"
       [(ngModel)]="searchTerm" (ionClear)="searchTerm = ''" debounce="300"
@@ -35,11 +34,11 @@
               class="card-wrapper"
               [ngClass]="getBorderClass(v.estado)">
       <ion-card-header>
-        <ion-card-title>Solicitud Nº {{v.id}} – {{v.estado | titlecase}}</ion-card-title>
-        <ion-card-subtitle>Fecha: {{v.fecha}} – Hora: {{v.hora}}</ion-card-subtitle>
+        <ion-card-title>Solicitud Nº {{v.id_viaje}} – {{v.estado | titlecase}}</ion-card-title>
+        <ion-card-subtitle>Fecha: {{v.fecha_viaje}} – Hora: {{v.hora_inicio}}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <p><strong>Solicitante:</strong> {{v.solicitante}}</p>
+        <p><strong>Solicitante:</strong> {{v.nombre_solicitante}}</p>
         <p><strong>Punto Salida:</strong> {{ getSalidaLabel(v) }}
         </p>
         <p><strong>Punto Destino:</strong> 
@@ -49,10 +48,10 @@
         <p><strong>Ocupantes:</strong> {{v.ocupantes}}</p>
         <p><strong>Motivo:</strong> {{v.motivo}}</p>
         <p *ngIf="v.estado==='rechazado'">
-          <strong>Razón Rechazo:</strong> {{v.motivoRechazo}}
+          <strong>Razón Rechazo:</strong> {{v.justificativo_no_realizado}}
         </p>
-        <p><strong>¿Carga?</strong> {{v.necesitaCarga}}</p>
-        <p><strong>Responsable:</strong> {{v.ocupante}}</p>
+        <p><strong>¿Carga?</strong> {{v.necesita_carga === 'si' ? 'Sí' : 'No' }}</p>
+        <p><strong>Responsable:</strong> {{v.responsable}}</p>
         <p *ngIf="v.estado === 'reagendado' && v.motivoReagendamiento">
     <strong>Motivo Reagendamiento:</strong> {{v.motivoReagendamiento}}
   </p>

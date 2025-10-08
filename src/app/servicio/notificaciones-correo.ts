@@ -35,21 +35,21 @@ private apiUrl = `${environment.apiUrl}api/notificaciones`;
   }
 
   public enviarCorreoSolicitud(email: string, viaje: any) {
-    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido recibida`;
+    const asunto = `Tu solicitud de viaje #${viaje.id_viaje} ha sido recibida`;
     const contenido = PlantillasCorreo.solicitud(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Solicitud Recibida', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
   public enviarCorreoAceptacion(email: string, viaje: any) {
-    const asunto = `¡Tu viaje #${viaje.id} ha sido aceptado!`;
+    const asunto = `¡Tu viaje #${viaje.id_viaje} ha sido aceptado!`;
     const contenido = PlantillasCorreo.aceptacion(viaje);
     const cuerpoHtml = PlantillasCorreo.base('¡Viaje Aceptado!', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
   public enviarCorreoRechazo(email: string, viaje: any) {
-    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido rechazada`;
+    const asunto = `Tu solicitud de viaje #${viaje.id_viaje} ha sido rechazada`;
     const contenido = PlantillasCorreo.rechazo(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Solicitud Rechazada', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
@@ -63,35 +63,35 @@ private apiUrl = `${environment.apiUrl}api/notificaciones`;
   }
 
   public enviarCorreoReagendamiento(email: string, viaje: any) {
-    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido reagendada`;
+    const asunto = `Tu solicitud de viaje #${viaje.id_viaje} ha sido reagendada`;
     const contenido = PlantillasCorreo.reagendamiento(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Solicitud Reagendada', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
     public enviarCorreoViajeRealizado(email: string, viaje: any) {
-    const asunto = `Nos alegra saber que tu viaje #${viaje.id} fue realizado`;
+    const asunto = `Nos alegra saber que tu viaje #${viaje.id_viaje} fue realizado`;
     const contenido = PlantillasCorreo.viajeRealizado(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Viaje Realizado con exito', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
   public enviarCorreoViajeNoRealizado(email: string, viaje: any) {
-    const asunto = `Lamentamos saber que tu viaje #${viaje.id} no fue realizado`;
+    const asunto = `Lamentamos saber que tu viaje #${viaje.id_viaje} no fue realizado`;
     const contenido = PlantillasCorreo.viajeNoRealizado(viaje);
     const cuerpoHtml = PlantillasCorreo.base('viaje no realizado', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
   public enviarCorreoAceptacionReagendamiento(email: string, viaje: any) {
-    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido reagendada y aceptada`;
+    const asunto = `Tu solicitud de viaje #${viaje.id_viaje} ha sido reagendada y aceptada`;
     const contenido = PlantillasCorreo.aceptacionReagendamiento(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Solicitud Reagendada y Aceptada', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
     public enviarCorreoRechazoReagendamiento(email: string, viaje: any) {
-    const asunto = `Tu solicitud de viaje #${viaje.id} ha sido reagendada y rechazada`;
+    const asunto = `Tu solicitud de viaje #${viaje.id_viaje} ha sido reagendada y rechazada`;
     const contenido = PlantillasCorreo.rechazoReagendamiento(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Solicitud Reagendada y Rechazada', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
@@ -103,7 +103,7 @@ private apiUrl = `${environment.apiUrl}api/notificaciones`;
       return;
     }
     
-    const asunto = `Nueva Solicitud de Viaje Pendiente: #${viaje.id}`;
+    const asunto = `Nueva Solicitud de Viaje Pendiente: #${viaje.id_viaje}`;
     const contenido = PlantillasCorreo.notificacionAdmin(viaje);
     const cuerpoHtml = PlantillasCorreo.base('Nueva Solicitud Pendiente', contenido);
     const destinatariosComoString = destinatariosAdmin.join(', ');

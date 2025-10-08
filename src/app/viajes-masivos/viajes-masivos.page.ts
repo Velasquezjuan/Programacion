@@ -10,18 +10,22 @@ import {IonContent, IonMenuButton, IonHeader, IonTitle,
   IonCol, IonButton, IonItem, IonLabel, IonSelect,
   IonSelectOption, IonDatetime, IonDatetimeButton, IonModal,
   IonCheckbox, IonIcon, IonItemDivider, IonItemGroup  } from '@ionic/angular/standalone';
-import { CentroServicio } from '../servicio/centro-servicio';
 import { Agenda } from '../servicio/agenda';
 import { ToastController } from '@ionic/angular';
-import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+
+import { firstValueFrom, forkJoin } from 'rxjs';
 
  import { addIcons } from 'ionicons';
 import { addCircleOutline, trashOutline} from 'ionicons/icons';
 
+import { CentroServicio } from '../servicio/centro-servicio';
+import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
-
+import { ViajesServicio } from '../servicio/viajes-servicio';
+import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 
 interface Usuario { id: string; usuario: string; rol: string; correo: string; }
+interface Vehiculo { id: string; patente: string; conductor: string; capacidad: number; tipo: string; }
 
 @Component({
   selector: 'app-viajes-masivos',
@@ -42,13 +46,37 @@ export class ViajesMasivosPage implements OnInit {
   vehiculos: any[] = [];
   programa: { prog: any[] } = { prog: [] };
   rolUsuario = '';
-  usuarioActivo: { usuario: string; rol: string } | null = null;
+  usuarioActivo: { usuario: string; rol: string; nombre: string; correo: string } | null = null;
   maxOcupantes = 9;
   canAddHorario: boolean = true;
-  
-  // SOLUCIÓN: Objeto para guardar los centros que se usarán en los dropdowns
+
+    auto = {
+    vehiculo: [] as { value:string; label:string }[]
+  };
+
   centros: { salud: any[]; atm: any[]; educacion: any[]; central: any[]; } = 
     { salud: [], atm: [], educacion: [], central: []};
+
+ centrosPrincipales: { value: number; label: string }[] = [];
+ programas: { value: string; label: string }[] = [];
+  establecimientosSaludSalida: { value: number; label: string }[] = [];
+  establecimientosEducacionSalida: { value: number; label: string }[] = [];
+  establecimientosAtmSalida: { value: number; label: string }[] = [];
+  establecimientosSaludDestino: { value: number; label: string }[] = [];
+  establecimientosEducacionDestino: { value: number; label: string }[] = [];
+  establecimientosAtmDestino: { value: number; label: string }[] = [];
+
+  
+  showOtroSalida    = false;
+  showSaludSalida   = false;
+  showEducacionSalida= false;
+  showAtmSalida     = false;
+
+  showOtroDestino    = false;
+  showSaludDestino   = false;
+  showEducacionDestino= false;
+  showAtmDestino     = false;
+
 
   constructor(
     private fb: FormBuilder,
@@ -56,7 +84,9 @@ export class ViajesMasivosPage implements OnInit {
     private toastController: ToastController,
     private auth: AutentificacionUsuario,
     private centroServicio: CentroServicio,
-    private notificaciones: NotificacionesCorreo,
+    private notificaciones: NotificacionesCorreo, 
+    private viajesServicio: ViajesServicio,
+    private vehiculoServicio: VehiculoServicio,
   ) {
     addIcons({ trashOutline, addCircleOutline });
 
@@ -68,34 +98,58 @@ export class ViajesMasivosPage implements OnInit {
       motivo: ['', Validators.required],
       responsable: ['', Validators.required],
     });
+
+      this.centroServicio.obtenerEstablecimientos(2),
+      this.centroServicio.obtenerEstablecimientos(4),
+      this.centroServicio.obtenerEstablecimientos(3),
+      this.centroServicio.obtenerEstablecimientos(1)
+
+   this.auto.vehiculo     = this.centroServicio.obtenerAuto('vehiculo');
+
+    this.programa = { prog: this.centroServicio.obtenerPrograma('prog') };
+    
   }
 
   async ngOnInit() {
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
     if (this.usuarioActivo) {
         this.rolUsuario = this.usuarioActivo.rol;
-        this.planificacionForm.get('responsable')?.setValue(this.usuarioActivo.usuario);
+        this.planificacionForm.get('responsable')?.setValue(this.usuarioActivo.nombre);
+    } else {
+        this.rolUsuario = '';
     }
     
-    // Cargamos todos los datos necesarios
-    await this.cargarVehiculos();
+    this.cargarVehiculos(); 
     this.cargarProgramas(); 
     this.cargarCentros(); 
     this.agregarHorario();
 
     this.planificacionForm.get('vehiculo')?.valueChanges.subscribe(() => this.updateOcupantesValidator());
-    this.planificacionForm.get('diasSeleccionados')?.valueChanges.subscribe(() => this.checkTimeRestrictions());
-    this.checkTimeRestrictions();
   }
 
   updateOcupantesValidator() {
-    const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
-    const vehiculoSeleccionado = this.vehiculos.find(v => v.id === vehiculoId);
-    if (vehiculoSeleccionado) {
-      this.maxOcupantes = vehiculoSeleccionado.capacidad;
-      this.planificacionForm.get('ocupantes')?.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
-      this.planificacionForm.get('ocupantes')?.updateValueAndValidity();
+  const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
+  const vehiculoSeleccionado = this.vehiculos.find(v => v.id === vehiculoId);
+  
+  if (vehiculoSeleccionado) {
+    switch (vehiculoSeleccionado.tipoVehiculo.toLowerCase()) {
+      case 'suv':
+      case 'camioneta':
+        this.maxOcupantes = 4;
+        break;
+      case 'minivan':
+        this.maxOcupantes = 9;
+        break;
+      case 'camion':
+        this.maxOcupantes = 2;
+        break;
+      default:
+        this.maxOcupantes = 4; 
     }
+
+    this.planificacionForm.get('ocupantes')?.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
+    this.planificacionForm.get('ocupantes')?.updateValueAndValidity();
+  }
   }
 
   checkTimeRestrictions() {
@@ -119,7 +173,10 @@ export class ViajesMasivosPage implements OnInit {
   }
 
   async cargarVehiculos() {
-    this.vehiculos = await Memorialocal.getVehiculosConConductor();
+      this.vehiculoServicio.getVehiculos().subscribe({
+        next: (data) => this.vehiculos = data,
+        error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
+    });
   }
   
   cargarProgramas() {
@@ -174,60 +231,27 @@ export class ViajesMasivosPage implements OnInit {
     }
   }
 
-  
-  onSalidaChange(ev: any, index: number) {
-    const val = ev.detail.value;
-    const horarioGroup = this.horarios.at(index);
-
-    ['direccionSalida', 'centroSaludSalida', 'centroEducacionSalida', 'centroAtmSalida'].forEach(k => {
-      horarioGroup.get(k)?.clearValidators();
-      horarioGroup.get(k)?.setValue('');
-    });
-
-    if (val === 'otro') horarioGroup.get('direccionSalida')?.setValidators([Validators.required]);
-    if (val === 'salud') horarioGroup.get('centroSaludSalida')?.setValidators([Validators.required]);
-    if (val === 'educacion') horarioGroup.get('centroEducacionSalida')?.setValidators([Validators.required]);
-    if (val === 'atm') horarioGroup.get('centroAtmSalida')?.setValidators([Validators.required]);
-    
-    horarioGroup.updateValueAndValidity();
-  }
-
-  onDestinoChange(ev: any, index: number) {
-    const val = ev.detail.value;
-    const horarioGroup = this.horarios.at(index);
-
-    ['direccionDestino', 'centroSaludDestino', 'centroEducacionDestino', 'centroAtmDestino'].forEach(k => {
-      horarioGroup.get(k)?.clearValidators();
-      horarioGroup.get(k)?.setValue('');
-    });
-
-    if (val === 'otro') horarioGroup.get('direccionDestino')?.setValidators([Validators.required]);
-    if (val === 'salud') horarioGroup.get('centroSaludDestino')?.setValidators([Validators.required]);
-    if (val === 'educacion') horarioGroup.get('centroEducacionDestino')?.setValidators([Validators.required]);
-    if (val === 'atm') horarioGroup.get('centroAtmDestino')?.setValidators([Validators.required]);
-
-    horarioGroup.updateValueAndValidity();
-  }
-
   async onSubmit() {
     if (this.planificacionForm.invalid) {
-      this.mostrarToast('Por favor, complete todos los campos requeridos.', 'danger');
-      console.log('Formulario inválido. Errores:', this.planificacionForm);
-      return;
-    }
-    
+    this.mostrarToast('Por favor, complete todos los campos requeridos.', 'danger');
+    this.planificacionForm.markAllAsTouched();
+    return;
+  }
+  
+  const formValue = this.planificacionForm.value;
 
-    const formValue = this.planificacionForm.value;
-    const diasSeleccionados = formValue.diasSeleccionados;
-    const vehiculoSeleccionado = this.vehiculos.find(v => v.id === formValue.vehiculo);
-
-    const nuevosViajes = [];
-    for (const fechaStr of diasSeleccionados) {
-      for (const horario of formValue.horarios) {
-        const programaSeleccionado = this.programa.prog.find(p => p.value === horario.programa);
+  const vehiculoSeleccionado = this.vehiculos.find(v => v.id === formValue.vehiculo);
+  if (!vehiculoSeleccionado) {
+    this.mostrarToast('Error: Vehículo no encontrado.', 'danger');
+    return;
+  }
+  const viajesParaCrear = [];
+  for (const fechaStr of formValue.diasSeleccionados) {
+    for (const horario of formValue.horarios) {
         
         const nuevoViaje = {
-          id: `viaje-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          
+          /*id: `viaje-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           solicitante: this.usuarioActivo?.usuario || 'Desconocido',
           fecha: new Date(fechaStr).toISOString().split('T')[0],
           hora: horario.inicio,
@@ -253,26 +277,143 @@ export class ViajesMasivosPage implements OnInit {
           vehiculo: `${vehiculoSeleccionado.patente} - ${vehiculoSeleccionado.conductor}`,
           idPrograma: programaSeleccionado ? programaSeleccionado.value : 'N/A',
           programa: programaSeleccionado ? programaSeleccionado.label : 'No especificado'
+          */
+        fecha_viaje: new Date(fechaStr).toISOString().split('T')[0],
+        hora_inicio: horario.inicio,
+        hora_fin: horario.fin,
+        punto_salida: this.obtenerTextoUbicacion('Salida', horario),
+        punto_destino: this.obtenerTextoUbicacion('Destino', horario),
+        motivo: formValue.motivo,
+        ocupantes: formValue.ocupantes,
+        programa: horario.programa,
+        responsable: formValue.responsable,
+        necesita_carga: 'no',
+        vehiculo_deseado: vehiculoSeleccionado.tipoVehiculo || 'No especificado',
+        vehiculo_patente: vehiculoSeleccionado.patente,
+        estado: 'aceptado'
         };
-        nuevosViajes.push(nuevoViaje);
+
+        viajesParaCrear.push(nuevoViaje);
       }
+    }
+    if (viajesParaCrear.length === 0) {
+      this.mostrarToast('No hay viajes para planificar. Seleccione al menos un día.', 'warning');
+      return;
     }
 
     try {
-      await Memorialocal.guardar('viajesSolicitados', nuevosViajes);
-      await this.mostrarToast(`¡Se han agendado ${nuevosViajes.length} viajes con éxito!`, 'success');
-      this.router.navigate(['/calendario']);
-    } catch (error) {
-      this.mostrarToast('Hubo un error al guardar los viajes.', 'danger');
-      console.error('Error al guardar viajes masivos:', error);
+   
+    for (const viaje of viajesParaCrear) {
+    
+      await firstValueFrom(this.viajesServicio.createViajeMasivo(viaje));
     }
-    const solicitante = this.usuarioActivo?.usuario;
-    const usuarioSolicitante = await Memorialocal.buscarPorCampo<Usuario>('usuarios', 'usuario', solicitante);
-        if (usuarioSolicitante?.correo) {
-          this.notificaciones.enviarCorreoMasivo(usuarioSolicitante.correo);
-        } else {
-          console.warn(`No se pudo notificar a "${nuevosViajes} ", correo no encontrado.`);
-        }
+
+   this.mostrarToast(`¡Se han agendado ${viajesParaCrear.length} viajes con éxito!`, 'success');
+    
+    if (this.usuarioActivo?.correo) {
+      this.notificaciones.enviarCorreoMasivo(this.usuarioActivo.correo);
+    }
+    
+    this.router.navigate(['/calendario']);
+
+  } catch (error) {
+    this.mostrarToast('Hubo un error al guardar uno o más viajes. Intente de nuevo.', 'danger');
+    console.error('Error al guardar viajes masivos:', error);
+  }
+}
+
+
+  private handleLocationChange(type: 'Salida' | 'Destino', value: any, index: number ) {
+    const isSalida = type === 'Salida';
+
+  const horarioGroup = this.horarios.at(index);
+    
+    this[isSalida ? 'showOtroSalida' : 'showOtroDestino'] = false;
+    this[isSalida ? 'showSaludSalida' : 'showSaludDestino'] = false;
+    this[isSalida ? 'showEducacionSalida' : 'showEducacionDestino'] = false;
+    this[isSalida ? 'showAtmSalida' : 'showAtmDestino'] = false;
+    
+    const controlsToReset = [
+      `direccion${type}`,
+      `centroSalud${type}`,
+      `centroEducacion${type}`,
+      `centroAtm${type}`
+    ];
+
+    controlsToReset.forEach(controlName => {
+     const control = horarioGroup.get(controlName); 
+      control?.clearValidators();
+      control?.setValue('');
+    });
+
+    let controlToValidate: string | null = null;
+    
+    switch (value) {
+      case '2': // Salud
+        this[isSalida ? 'showSaludSalida' : 'showSaludDestino'] = true;
+        this[isSalida ? 'establecimientosSaludSalida' : 'establecimientosSaludDestino'] = this.centroServicio.obtenerEstablecimientos(2);
+        controlToValidate = `centroSalud${type}`;
+        break;
+      case '3': // Educación
+        this[isSalida ? 'showEducacionSalida' : 'showEducacionDestino'] = true;
+        this[isSalida ? 'establecimientosEducacionSalida' : 'establecimientosEducacionDestino'] = this.centroServicio.obtenerEstablecimientos(3);
+        controlToValidate = `centroEducacion${type}`;
+        break;
+      case '4': // ATM
+        this[isSalida ? 'showAtmSalida' : 'showAtmDestino'] = true;
+        this[isSalida ? 'establecimientosAtmSalida' : 'establecimientosAtmDestino'] = this.centroServicio.obtenerEstablecimientos(4);
+        controlToValidate = `centroAtm${type}`;
+        break;
+      case '5': // Otro
+        this[isSalida ? 'showOtroSalida' : 'showOtroDestino'] = true;
+        controlToValidate = `direccion${type}`;
+        break;
+    }
+
+   if (controlToValidate) {
+    horarioGroup.get(controlToValidate)?.setValidators([Validators.required]); 
+   }
+
+   /* if (controlToValidate == `direccion${type}`) {
+      this.registroForm.get(controlToValidate)?.setValidators([Validators.required, Validadores.soloTexto]);
+    }*/
+
+    controlsToReset.forEach(controlName => {
+      this.planificacionForm.get(controlName)?.updateValueAndValidity();
+    });
+  }
+
+  
+  onSalidaChange(ev: any, index: number) {
+    this.handleLocationChange('Salida', ev.detail.value, index);
+  }
+
+
+  onDestinoChange(ev: any, index: number) {
+    this.handleLocationChange('Destino', ev.detail.value, index);
+  }
+
+
+
+  private obtenerTextoUbicacion(tipo: string, formValues: any, esSalida = true): string {
+    const prefijo = esSalida ? 'Salida' : 'Destino';
+    const punto = esSalida ? formValues.puntoSalida : formValues.puntoDestino;
+    switch(punto) {
+        case '1': return 'Nivel Central';
+        case '2': 
+          const centroSalud = formValues[`centroSalud${prefijo}`] || 'No especificado';
+          return `Salud: ${centroSalud}`;
+        case '3': 
+          const centroEducacion = formValues[`centroEducacion${prefijo}`] || 'No especificado';
+          return `Educación: ${centroEducacion}`;
+        case '4': 
+          const centroAtm = formValues[`centroAtm${prefijo}`] || 'No especificado';
+          return `ATM: ${centroAtm}`;
+        case '5': 
+          const direccion = formValues[`direccion${prefijo}`] || 'No especificada';
+          return `Otro: ${direccion}`;
+        default: return 'Ubicación no especificada';
+    }
   }
 
   async mostrarToast(message: string, color: string) {

@@ -37,6 +37,10 @@ export interface NuevoUsuario {
      this.cargarUsuarioInicial();
   }
 
+  public getUsuarios(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/usuarios`);
+}
+
     async cargarUsuarioInicial() {
     const token = await Memorialocal.obtenerValor<string>('token');
     if (token && this.tokenEsValido(token)) {

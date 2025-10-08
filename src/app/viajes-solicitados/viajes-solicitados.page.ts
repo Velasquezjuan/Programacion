@@ -18,10 +18,13 @@ import { ViajesServicio } from '../servicio/viajes-servicio';
 
 
 interface Solicitud {
-  id: string;
-  solicitante: string;
-  fecha: string;
-  hora: string;
+  id_viaje: string;
+  nombre_solicitante: string;
+  apellido_solicitante: string;
+  responsable: string;
+  nombre_programa: string;
+  fecha_viaje: string;
+  hora_inicio: string;
   puntoSalida: string;
   direccionSalida?: string;
   centroSaludSalida?: string;
@@ -33,8 +36,8 @@ interface Solicitud {
   centroEducacionDestino?: string;
   centroAtmDestino?: string;
   motivo: string;
-  necesitaCarga?: 'si' | 'no';
-  ocupante: string;
+  necesita_carga?: 'si' | 'no';
+  //ocupante: string;
   ocupantes: number;
   estado: string;
   patenteVehiculo?: string;
@@ -44,7 +47,7 @@ interface Solicitud {
   correo_solicitante?: string;
 }
 
-interface Vehiculo { id: string; patente: string; tipoVehiculo: string; }
+interface Vehiculo { id: string; patente: string; tipoVehiculo: string; conductor?: string; }
 interface Usuario { id: string; usuario: string; rol: string; correo: string; }
 
 @Component({
@@ -98,11 +101,12 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   cargarDatos() {
-    this.viajeServicio.getViajes().subscribe({
+    this.viajeServicio.getViajes().subscribe({  
       next: (data) => {
         this.solicitudes = data.filter(s => s.estado === 'pendiente');
-      },
-      error: (err) => this.showToast('Error al cargar solicitudes.', 'danger')
+      },      
+      error: (err) => this.showToast('Error al cargar solicitudes.', 'danger'),
+      
     });
 
     this.vehiculoServicio.getVehiculos().subscribe({
@@ -112,13 +116,13 @@ export class ViajesSolicitadosPage implements OnInit {
   }
   
   trackByFn(index: number, item: any): any {
-    return item.id;
+    return item.id_viaje;
   }
 
   async abrirAgendar(solicitud: any) {
     const inputs = this.vehiculosDisponibles.map(v => ({
       type: 'radio' as const,
-      label: `${v.tipoVehiculo || 'Vehículo'} – ${v.patente}`,
+      label: `${v.tipoVehiculo || 'Vehículo'} – ${v.patente} - ${v.conductor || 'Sin asignar'}`,
       value: v.patente
     }));
 
@@ -144,16 +148,22 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   private procesarAgendar(solicitud: any, patente: string) {
-    this.viajeServicio.updateEstado(solicitud.id, 'aceptado', '', patente).subscribe({
-        next: () => {
-            this.showToast('Viaje agendado correctamente.', 'success');
-            if (solicitud.correo_solicitante) {
-                this.notificaciones.enviarCorreoAceptacion(solicitud.correo_solicitante, solicitud);
-            }
-            this.cargarDatos();
-        },
-        error: (err) => this.showToast('Error al agendar el viaje.', 'danger')
-    });
+     const datosActualizar = {
+    estado: 'aceptado',
+    vehiculo_patente: patente
+  };
+
+  this.viajeServicio.updateViaje(solicitud.id_viaje, datosActualizar).subscribe({
+      next: () => {
+          this.showToast('Viaje agendado correctamente.', 'success');
+          if (solicitud.correo_solicitante) {
+              this.notificaciones.enviarCorreoAceptacion(solicitud.correo_solicitante, solicitud);
+          }
+          this.cargarDatos();
+      },
+      error: (err) => this.showToast('Error al agendar el viaje.', 'danger')
+  });
+       
   }
   
   mostrarCampoMotivo(id: string) {
@@ -163,24 +173,29 @@ export class ViajesSolicitadosPage implements OnInit {
 
   async rechazarConMotivo() {
     if (!this.rechazandoId || !this.motivoRechazo.trim()) {
-      return this.showToast('Debe ingresar un motivo.', 'warning');
-    }
+    return this.showToast('Debe ingresar un motivo.', 'warning');
+  }
 
-    const solicitud = this.solicitudes.find(s => s.id === this.rechazandoId);
-    if (!solicitud) return;
+  const solicitud = this.solicitudes.find(s => s.id_viaje === this.rechazandoId);
+  if (!solicitud) return;
 
-    this.viajeServicio.updateEstado(this.rechazandoId.toString(), 'rechazado', this.motivoRechazo).subscribe({
-      next: () => {
-        this.showToast('Solicitud rechazada con motivo.', 'danger');
-        if (solicitud.correo_solicitante) {
-          const infoRechazo = { ...solicitud, motivoRechazo: this.motivoRechazo };
-          this.notificaciones.enviarCorreoRechazo(solicitud.correo_solicitante, infoRechazo);
-        }
-        this.rechazandoId = null;
-        this.cargarDatos();
-      },
-      error: (err) => this.showToast('Error al rechazar el viaje.', 'danger')
-    });
+    const datosActualizar = {
+    estado: 'rechazado',
+    motivo_rechazo: this.motivoRechazo
+  };
+
+  this.viajeServicio.updateViaje(this.rechazandoId.toString(), datosActualizar).subscribe({
+    next: () => {
+      this.showToast('Solicitud rechazada con motivo.', 'danger');
+      if (solicitud.correo_solicitante) {
+        const infoRechazo = { ...solicitud, motivoRechazo: this.motivoRechazo };
+        this.notificaciones.enviarCorreoRechazo(solicitud.correo_solicitante, infoRechazo);
+      }
+      this.rechazandoId = null;
+      this.cargarDatos();
+    },
+    error: (err) => this.showToast('Error al rechazar el viaje.', 'danger')
+  });
   }
   
   async abrirReagendar(solicitud: any) {
@@ -208,18 +223,24 @@ export class ViajesSolicitadosPage implements OnInit {
                return false;
              }
              const [nuevaFecha, nuevaHora] = data.nuevoDateTime.split('T');
+              const datosActualizar = {
+                          estado: 'reagendado',
+                          motivo_reagendamiento: data.motivo,
+                          fecha_viaje: nuevaFecha,
+                          hora_inicio: nuevaHora
+                        };
 
-             this.viajeServicio.updateEstado(solicitud.id, 'reagendado', data.motivo, solicitud.vehiculo_patente, nuevaFecha, nuevaHora).subscribe({
-                 next: () => {
-                     this.showToast('Viaje reagendado correctamente.', 'success');
-                     if (solicitud.correo_solicitante) {
-                         this.notificaciones.enviarCorreoReagendamiento(solicitud.correo_solicitante, {...solicitud, fecha_viaje: nuevaFecha, hora_inicio: nuevaHora});
-                     }
-                     this.cargarDatos();
-                 },
-                 error: (err) => this.showToast('Error al reagendar el viaje.', 'danger')
-             });
-             return true;
+            this.viajeServicio.updateViaje(solicitud.id_viaje, datosActualizar).subscribe({
+               next: () => {
+                   this.showToast('Viaje reagendado correctamente.', 'success');
+                   if (solicitud.correo_solicitante) {
+                       this.notificaciones.enviarCorreoReagendamiento(solicitud.correo_solicitante, {...solicitud, fecha_viaje: nuevaFecha, hora_inicio: nuevaHora});
+                   }
+                   this.cargarDatos();
+               },
+               error: (err) => this.showToast('Error al reagendar el viaje.', 'danger')
+           });
+           return true;
            }
          }
        ]

@@ -23,21 +23,21 @@ export const PlantillasCorreo = {
   `,
 
   solicitud: (viaje: any) => `
-    <p>Hemos recibido tu solicitud de viaje con destino a <b>${viaje.puntoDestino}</b>.</p>
+    <p>Hemos recibido tu solicitud de viaje con destino a <b>${viaje.punto_destino}</b>.</p>
     <p>Por favor, espere a que su solicitud se revise y apruebe.</p>
     <p>Recibirás una notificación cuando sea aceptada.</p>
   `,
 
   aceptacion: (viaje: any) => `
-    <p>Tu viaje para el día <b>${viaje.fecha}</b> a las <b>${viaje.hora}</b> ha sido aceptado.</p>
-    <p><b>Destino:</b> ${viaje.puntoDestino}</p>
-    <p><b>Vehículo Asignado:</b> ${viaje.vehiculo}</p>
+    <p>Tu viaje para el día <b>${viaje.fecha_viaje}</b> a las <b>${viaje.hora_inicio}</b> ha sido aceptado.</p>
+    <p><b>Destino:</b> ${viaje.punto_destino}</p>
+    <p><b>Vehículo Asignado:</b> ${viaje.patenteVehiculo}</p>
     <p>Por favor, no olvides marcar el viaje como "realizado" en la sección "Mis Viajes" una vez que haya concluido.</p>
   `,
 
   rechazo: (viaje: any) => `
-    <p>Se ha rechazado tu solicitud de viaje con destino a <b>${viaje.puntoDestino}</b>.</p>
-    <p>Por los siguientes motivos: <b>${viaje.motivoRechazo}</b>.</p>
+    <p>Se ha rechazado tu solicitud de viaje con destino a <b>${viaje.punto_destino}</b>.</p>
+    <p>Por los siguientes motivos: <b>${viaje.motivo_rechazo}</b>.</p>
     <p>Puedes agendar un viaje nuevamente en la sección "Solicitar viaje".</p>
     <p>Gracias por tu comprensión.</p>
   `,
@@ -45,17 +45,17 @@ export const PlantillasCorreo = {
   notificacionAdmin: (viaje: any) => `
     <p>El usuario <b>${viaje.solicitante}</b> ha creado una nueva solicitud de viaje.</p>
     <ul>
-      <li><b>ID de Solicitud:</b> ${viaje.id}</li>
-      <li><b>Destino:</b> ${viaje.puntoDestino}</li>
-      <li><b>Fecha:</b> ${viaje.fecha}</li>
-      <li><b>Hora:</b> ${viaje.hora}</li>
+      <li><b>ID de Solicitud:</b> ${viaje.id_viaje}</li>
+      <li><b>Destino:</b> ${viaje.punto_destino}</li>
+      <li><b>Fecha:</b> ${viaje.fecha_viaje}</li>
+      <li><b>Hora:</b> ${viaje.hora_inicio}</li>
     </ul>
     <p>Por favor, ingrese a la aplicación para revisar, aceptar o rechazar la solicitud en la sección de Viajes Solicitados.</p>
   `,
 
   reagendamiento: (viaje: any) => `
-    <p>Su solicitud #${viaje.id} con destino a <b>${viaje.puntoDestino}</b> ha sido reagendada.</p>
-    <p>Motivo del reagendamiento: <b>${viaje.motivoReagendamiento || 'Revisión de disponibilidad'}</b>.</p>
+    <p>Su solicitud #${viaje.id_viaje} con destino a <b>${viaje.punto_destino}</b> ha sido reagendada.</p>
+    <p>Motivo del reagendamiento: <b>${viaje.motivo_reagendamiento || 'Revisión de disponibilidad'}</b>.</p>
     <p>Por favor, revise la nueva fecha y hora en la aplicación y confirme si es favorable para usted.</p>
   `,
 
@@ -67,28 +67,28 @@ export const PlantillasCorreo = {
   `,
 
   viajeRealizado: (viaje: any ) => `
-    <h1>Gracias por Aceptar su viaje <b>#${viaje.id} </b> </h1>
+    <h1>Gracias por Aceptar su viaje <b>#${viaje.id_viaje} </b> </h1>
     <p>Nos alegra saber que su viaje fue realizado con exito.</p>
     <p>Gracias por su apoyo.</p>
   `,
 
   viajeNoRealizado: (viaje: any) => `
-    <h1>Viaje No Realizado #${viaje.id}</h1>
-    <p>Hemos registrado que el viaje con destino a <b>${viaje.puntoDestino}</b> 
+    <h1>Viaje No Realizado #${viaje.id_viaje}</h1>
+    <p>Hemos registrado que el viaje con destino a <b>${viaje.punto_destino}</b> 
     no fue realizado.</p>
     <p>No olvide que puede agendar su viaje en la sección "Solicitar Viaje".</p>
     <p>Gracias por su comprensión.</p>
   `,
 
   aceptacionReagendamiento: (viaje: any) => `
-    <p>Su solicitud #${viaje.id} ha sido reagendada y aceptada.</p>
-    <p>Nueva fecha es: <b>${viaje.fecha}</b>.</p>
-    <p>Nueva hora es: <b>${viaje.hora}</b>.</p>
+    <p>Su solicitud #${viaje.id_viaje} ha sido reagendada y aceptada.</p>
+    <p>Nueva fecha es: <b>${viaje.fecha_viaje}</b>.</p>
+    <p>Nueva hora es: <b>${viaje.hora_inicio}</b>.</p>
     <p>Por favor, revise la nueva fecha y hora en la aplicación y confirme si es favorable para usted.</p>
   `,
   rechazoReagendamiento: (viaje: any) => `
-    <p>Su solicitud #${viaje.id} ha sido reagendada y rechazada.</p>
-    <p>Motivo del rechazo: <b>${viaje.motivoRechazo}</b>.</p>
+    <p>Su solicitud #${viaje.id_viaje} ha sido reagendada y rechazada.</p>
+    <p>Motivo del rechazo: <b>${viaje.motivo_rechazo}</b>.</p>
     <p>Por favor, ingrese a la aplicación para agendar un nuevo viaje en la sección de "Solicitar Viaje".</p>
   `,
 

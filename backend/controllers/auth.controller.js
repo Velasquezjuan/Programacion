@@ -111,3 +111,15 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+// --- OBTENER TODOS LOS USUARIOS ---
+exports.getTodosLosUsuarios = async (req, res) => {
+  try {
+    const query = 'SELECT * FROM USUARIO';
+    const [usuarios] = await db.query(query);
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error('Error al obtener todos los usuarios:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};

@@ -13,7 +13,7 @@
 
     <ion-content [fullscreen]="true" class="ion-padding">
       <ion-col size="12" class="text-center">
-            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
+            <img src="assets/img/Logo cmpa 2.png" alt="Logo" class="logo-image">
           </ion-col>
       <ng-container *ngIf="solicitudes.length; else noHay">
         <ion-card
@@ -21,15 +21,15 @@
         >
           <ion-card-header>
             <ion-card-title>
-              Solicitud Nº {{ sol.id }} – {{ sol.estado | titlecase }}
+              Solicitud Nº {{ sol.id_viaje  }} – {{ sol.estado | titlecase }}
             </ion-card-title>
             <ion-card-subtitle>
-              Fecha: {{ sol.fecha }} – Hora: {{ sol.hora }}
+              Fecha: {{ sol.fecha_viaje | date:'dd/MM/yyyy' }} – Hora: {{ sol.hora_inicio }}
             </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            <p><strong>Solicitante:</strong> {{ sol.solicitante }}</p>
-
+            <p><strong>Solicitante:</strong> {{ sol.nombre_solicitante}} {{ sol.apellido_solicitante }}</p>
+            <p><strong>Programa:</strong> {{ sol.nombre_programa }}</p>
               <p>
               <strong>Punto de salida:</strong>
               {{ getSalidaLabel(sol) }}
@@ -42,8 +42,8 @@
 
             <p><strong>Vehículo Esperado:</strong> {{ sol.tipoVehiculo }}</p>
             <p><strong>Motivo:</strong> {{ sol.motivo }}</p>
-            <p><strong>necesita Carga:</strong> {{ sol.necesitaCarga }}</p>
-            <p><strong>Responsable:</strong> {{ sol.ocupante }}</p>
+            <p><strong>necesita Carga:</strong> {{ sol.necesita_carga === 'si' ? 'Sí' : 'No'  }}</p>
+            <p><strong>Responsable:</strong> {{ sol.responsable }}</p>
             <p><strong>Ocupantes:</strong> {{ sol.ocupantes }}</p>
 
             <!-- Botón Agendar que abre selector de vehículo -->
@@ -51,7 +51,7 @@
               fill="outline"
               color="success"
               expand="block"
-              (click)="abrirAgendar(sol.id)"
+              (click)="abrirAgendar(sol)"
             >
               <ion-icon slot="start" name="car-outline"></ion-icon>
               Agendar
@@ -59,11 +59,11 @@
 
             <!-- Rechazar -->
             <ion-button
-              *ngIf="rechazandoId !== sol.id"
+              *ngIf="rechazandoId !== sol.id_viaje"
               fill="outline"
               color="danger"
               expand="block"
-              (click)="mostrarCampoMotivo(sol.id)"
+              (click)="mostrarCampoMotivo(sol.id_viaje)"
             >
               <ion-icon slot="start" name="close-circle-outline"></ion-icon>
               Rechazar
@@ -73,7 +73,7 @@
                 fill="outline"
                 color="warning"
                 expand="block"
-                (click)="abrirReagendar(sol.id)"
+                (click)="abrirReagendar(sol)"
               >
                 <ion-icon slot="start" name="calendar-outline"></ion-icon>
                 Reagendar
@@ -81,7 +81,7 @@
 
 
             <!-- Campo y botón Confirmar Rechazo -->
-            <div *ngIf="rechazandoId === sol.id" class="rechazo-form">
+            <div *ngIf="rechazandoId === sol.id_viaje" class="rechazo-form">
               <ion-input
                 [(ngModel)]="motivoRechazo"
                 placeholder="Motivo de rechazo"

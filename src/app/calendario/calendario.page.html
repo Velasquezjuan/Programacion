@@ -9,7 +9,33 @@
 
 <ion-content>
   <ion-col size="12" class="text-center">
-            <img src="assets/img/Logo cmpa.png"  alt="Logo" class="logo-image">
+            <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
           </ion-col>
   <full-calendar [options]="calendarOptions"></full-calendar>
+
+  <!--<ion-button fill="solid"  (click)="exportarCSV()" class="ion-margin">
+    Exportar a CSV
+  </ion-button> --> 
+
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Exportar Reportes</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" (click)="exportarPDFNormales()" color="tertiary">
+            PDF Normales
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="block" (click)="exportarPDFMasivos()" color="dark">
+            PDF Masivos
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>
 </ion-content>

@@ -7,6 +7,8 @@ const nodemailer = require('nodemailer');
 const vehiculoRoutes = require('./routes/vehiculo.routes');
 const authRoutes = require('./routes/auth.routes');
 const viajeRoutes = require('./routes/viaje.routes'); 
+const viajeController = require('./controllers/viaje.controller');
+
 
 const app = express();
 app.use(cors());
@@ -14,6 +16,11 @@ app.use(express.json());
 app.use('/api/vehiculos', vehiculoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/viajes', viajeRoutes);
+app.use('/api/gestion', require('./routes/gestion.routes'));
+
+
+
+
 
 
 // --- Lógica de Notificaciones por Correo ---
@@ -26,8 +33,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-app.post('/enviar-notificacion', (req, res) => {
-  console.log('Petición recibida en /enviar-notificacion');
+app.post('/api/notificaciones', (req, res) => {
+  console.log('Petición recibida en /api/notificaciones');
 
   const { destinatario, asunto, cuerpoHtml } = req.body;
 
@@ -37,7 +44,7 @@ app.post('/enviar-notificacion', (req, res) => {
   }
 
   const mailOptions = {
-    from: `"CmpaMov" <${process.env.EMAIL_USER}>`, 
+    from: `"GECOVI" <${process.env.EMAIL_USER}>`, 
     to: destinatario,
     subject: asunto,
     html: cuerpoHtml,

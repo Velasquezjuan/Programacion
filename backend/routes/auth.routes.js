@@ -29,5 +29,6 @@ const validateUser = [
 
 router.post('/registro-usuario', validateUser, authController.register);
 router.post('/login', authController.login);
+router.get('/usuarios', authController.getTodosLosUsuarios);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
+//import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, 
   IonCardHeader, IonCardSubtitle, IonCardTitle, IonCardContent, IonButton,
   IonButtons, IonMenuButton, IonSearchbar
@@ -19,7 +19,7 @@ import { checkmarkDoneCircle, closeCircle, checkmarkCircle } from 'ionicons/icon
 import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 
 interface Solicitud {
-  id: string;
+  /*id: string;
   solicitante: string;
   fecha: string;
   hora: string;
@@ -48,8 +48,34 @@ interface Solicitud {
   fechaRegistro?: string;
   justificativo?: string; 
   motivoRechazoReagendamiento?: string;
+  motivoReagendamiento?: string;*/
+  id_viaje: string;
+  nombre_solicitante: string;
+  apellido_solicitante: string;
+  responsable: string;
+  nombre_programa: string;
+  fecha_viaje: string;
+  hora_inicio: string;
+  puntoSalida: string;
+  direccionSalida?: string;
+  centroSaludSalida?: string;
+  centroEducacionSalida?: string;
+  centroAtmSalida?: string;
+  puntoDestino?: string;
+  direccionDestino?: string;
+  centroSaludDestino?: string;
+  centroEducacionDestino?: string;
+  centroAtmDestino?: string;
+  motivo: string;
+  necesita_carga?: 'si' | 'no';
+  //ocupante: string;
+  ocupantes: number;
+  estado: string;
+  patenteVehiculo?: string;
+  tipoVehiculo?: string;
+  justificativo_no_realizado?: string;
   motivoReagendamiento?: string;
-  
+  correo_solicitante?: string;
 
 }
 
@@ -77,8 +103,8 @@ interface Usuario {
 export class MisViajesPage implements OnInit {
   
   todas: Solicitud[] = [];
-  filtro: 'todos'|'pendiente'|'aceptado'|'rechazado'|'reagendado' = 'pendiente';
-  usuarioActivo!: { usuario: string; correo?: string };
+  filtro: 'todos'|'pendiente'|'aceptado'|'rechazado'|'reagendado' = 'todos';
+  usuarioActivo!: { nombre: string; correo?: string };
   searchTerm: string = '';
 
   centros = {
@@ -120,13 +146,30 @@ export class MisViajesPage implements OnInit {
 
   async ngOnInit() {
 
-    this.centrosPrincipales = this.centroServicio.obtenerCentros();
+    /*this.centrosPrincipales = this.centroServicio.obtenerCentros();
   
-  const usr = await this.auth.obtenerUsuarioActivo();
-    this.usuarioActivo = usr ?? { usuario: '', correo: '' };
-    await this.cargarViajes();
+   const usr = await this.auth.obtenerUsuarioActivo();
+   this.usuarioActivo = usr ?? { usuario: '', correo: '' };
+    this.cargarViajes(); 
 
-    this.verificarViajesPasados();
+    this.verificarViajesPasados();*/
+     try {
+    console.log('1. ngOnInit iniciado.');
+
+    this.centrosPrincipales = this.centroServicio.obtenerCentros();
+    
+    console.log('2. Obteniendo usuario...');
+    const usr = await this.auth.obtenerUsuarioActivo();
+    console.log('3. Usuario obtenido:', usr);
+
+    this.usuarioActivo = usr ?? { usuario: '', correo: '' };
+
+    console.log('4. Llamando a cargarViajes...');
+    this.cargarViajes();
+
+  } catch (error) {
+    console.error('¡ERROR FATAL en ngOnInit!:', error);
+  }
   }
 
 
@@ -134,15 +177,15 @@ export class MisViajesPage implements OnInit {
     let list = [...this.todas];
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       list = list.filter(viaje => {
-      return viaje.id.toString().includes(this.searchTerm.trim());
+      return viaje.id_viaje.toString().includes(this.searchTerm.trim());
       });
     }
     if (this.filtro!=='todos') {
       list = list.filter(v => v.estado===this.filtro);
     }
     list.sort((a,b) => {
-       const fechaA = `${a.fecha}T${a.hora}`;
-      const fechaB = `${b.fecha}T${b.hora}`;
+       const fechaA = `${a.fecha_viaje}T${a.hora_inicio}`;
+      const fechaB = `${b.fecha_viaje}T${b.hora_inicio}`;
       return fechaB.localeCompare(fechaA);
     });
     return list;
@@ -161,55 +204,78 @@ export class MisViajesPage implements OnInit {
 }
 
   async cargarViajes() {
-    const all = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
+    /*const all = await Memorialocal.obtener<Solicitud>('viajesSolicitados');
     this.todas = all.filter(v =>
       v.solicitante === this.usuarioActivo.usuario &&
       (this.filtro === 'todos' || v.estado === this.filtro)
-    );
+    );*/ // metodo para viajes sin conexion --> dejar futura actualizacion
+   if (!this.usuarioActivo?.nombre) {
+    console.error('No se puede cargar viajes: El nombre de usuario está vacío o nulo.');
+    return;
+  }
+
+  console.log(`Iniciando carga de viajes para: ${this.usuarioActivo.nombre}`);
+  this.viajeServicio.getViajesPorUsuario(this.usuarioActivo.nombre).subscribe({
+    next: (data) => {
+      console.log('Datos recibidos del servidor:', data);
+      this.todas = data;
+      this.verificarViajesPasados();
+    },
+    error: (err) => {
+      console.error('¡ERROR! Falló la llamada al servicio de viajes:', err);
+      this.mostrarToast('No se pudieron cargar los viajes desde el servidor.', 'danger');
+    }
+  });
   }
 
   onFiltroChange(ev: any){
     this.filtro = ev.detail.value;
     this.cargarViajes();
   }
-   private async verificarViajesPasados() {
-    const ahora = new Date();
-    const viajesPendientesDeCierre = this.todas.filter(viaje => {
-      if (viaje.estado !== 'aceptado' && viaje.estado !== 'agendado') {
-        return false;
-      }
-      const fechaViaje = new Date(`${viaje.fecha}T${viaje.hora}`);
-      return fechaViaje < ahora;
-    });
 
-    if (viajesPendientesDeCierre.length > 0) {
-      viajesPendientesDeCierre.sort((a, b) => new Date(`${a.fecha}T${a.hora}`).getTime() - new Date(`${b.fecha}T${b.hora}`).getTime());
-      const viajeAPreguntar = viajesPendientesDeCierre[0];
-      
-        const alert = await this.alertController.create({
-        header: 'Viaje Pasado Pendiente',
-        message: `Detectamos que el viaje para "${viajeAPreguntar.motivo}" del día ${viajeAPreguntar.fecha} ya ocurrió. ¿Se realizó este viaje?`,
-        buttons: [
-          { text: 'No, no se realizó', handler: () => this.solicitarJustificativo(viajeAPreguntar) },
-          { text: 'Sí, se realizó', handler: async () => {
-              viajeAPreguntar.estado = 'finalizado';
-              await Memorialocal.guardar('viajesSolicitados', viajeAPreguntar);
-              this.mostrarToast('Viaje marcado como finalizado.', 'success');
-              if (this.usuarioActivo?.correo) {
-                this.notificaciones.enviarCorreoViajeRealizado(this.usuarioActivo.correo, viajeAPreguntar.motivo);
-              }
-              this.cargarViajes();
-            }
-          }
-        ],
-        backdropDismiss: false
-      });
-      await alert.present();
+
+private async verificarViajesPasados() {
+  const ahora = new Date();
+  const viajesPendientesDeCierre = this.todas.filter(viaje => {
+    if (viaje.estado !== 'aceptado' && viaje.estado !== 'agendado') {
+      return false;
     }
-  }
+    const fechaViaje = new Date(`${viaje.fecha_viaje}T${viaje.hora_inicio}`);
+    return fechaViaje < ahora;
+  });
 
+  if (viajesPendientesDeCierre.length > 0) {
+    viajesPendientesDeCierre.sort((a, b) => new Date(`${a.fecha_viaje}T${a.hora_inicio}`).getTime() - new Date(`${b.fecha_viaje}T${b.hora_inicio}`).getTime());
+    const viajeAPreguntar = viajesPendientesDeCierre[0];
+      
+    const alert = await this.alertController.create({
+      header: 'Viaje Pasado Pendiente',
+      message: `Detectamos que el viaje para "${viajeAPreguntar.motivo}" del día ${viajeAPreguntar.hora_inicio} ya ocurrió. ¿Se realizó este viaje?`,
+      buttons: [
+        { text: 'No, no se realizó', handler: () => this.solicitarJustificativo(viajeAPreguntar) },
+        { 
+          text: 'Sí, se realizó', 
+          handler: () => { 
+            this.viajeServicio.updateViaje(viajeAPreguntar.id_viaje, { estado: 'finalizado' }).subscribe({
+              next: () => {
+                this.mostrarToast('Viaje marcado como finalizado.', 'success');
+                if (this.usuarioActivo?.correo) {
+                  this.notificaciones.enviarCorreoViajeRealizado(this.usuarioActivo.correo, viajeAPreguntar.motivo);
+                }
+                this.cargarViajes();
+              },
+              error: (err) => this.mostrarToast('Error al actualizar el viaje.', 'danger')
+            });
+          }
+        }
+      ],
+      backdropDismiss: false
+    });
+    await alert.present();
+  }
+}
   async aceptarReagendamiento(viaje: Solicitud) {
-    viaje.estado = 'aceptado'; 
+    /*viaje.estado = 'aceptado'; 
     await Memorialocal.guardar('viajesSolicitados', viaje);
     
     const adminEmails = await this.getAdminEmails();
@@ -218,7 +284,18 @@ export class MisViajesPage implements OnInit {
     }
 
     this.mostrarToast('Has aceptado la nueva agenda del viaje.', 'success');
-    this.cargarViajes();
+    this.cargarViajes();*/ //futura actualizacion para viajes sin conexion
+    this.viajeServicio.updateViaje(viaje.id_viaje, { estado: 'aceptado' }).subscribe({
+    next: async () => {
+      const adminEmails = await this.getAdminEmails();
+      if (adminEmails.length > 0) {
+        this.notificaciones.enviarCorreoAceptacionReagendamiento(adminEmails[0], viaje);
+      }
+      this.mostrarToast('Has aceptado la nueva agenda del viaje.', 'success');
+      this.cargarViajes();
+    },
+    error: (err) => this.mostrarToast('Error al aceptar el reagendamiento.', 'danger')
+  });
   }
 
   async rechazarReagendamiento(viaje: Solicitud) {
@@ -243,8 +320,10 @@ export class MisViajesPage implements OnInit {
     });
     await alert.present();
   }
+
+
    private async procesarRechazoReagendamiento(viaje: Solicitud, motivo: string) {
-    viaje.estado = 'pendiente'; 
+    /*viaje.estado = 'pendiente'; 
     viaje.motivoRechazoReagendamiento = motivo;
     await Memorialocal.guardar('viajesSolicitados', viaje);
 
@@ -255,10 +334,26 @@ export class MisViajesPage implements OnInit {
     });
 
     this.mostrarToast('Has rechazado la nueva agenda. El administrador será notificado.', 'tertiary');
-    this.cargarViajes();
+    this.cargarViajes();*/ //futura actualizacion para viajes sin conexion
+     const datosActualizar = {
+    estado: 'pendiente',
+    motivo_rechazoReagendamiento: motivo
+  };
+  this.viajeServicio.updateViaje(viaje.id_viaje, datosActualizar).subscribe({
+    next: async () => {
+      const adminEmails = await this.getAdminEmails();
+      adminEmails.forEach(email => {
+        this.notificaciones.enviarCorreoRechazoReagendamiento(email, viaje);
+      });
+      this.mostrarToast('Has rechazado la nueva agenda. El administrador será notificado.', 'tertiary');
+      this.cargarViajes();
+    },
+    error: (err) => this.mostrarToast('Error al rechazar el reagendamiento.', 'danger')
+  });
   }
+  
 
-   private async getAdminEmails(): Promise<string[]> {
+  private async getAdminEmails(): Promise<string[]> {
     const todosLosUsuarios = await Memorialocal.obtener<Usuario>('usuarios');
     const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
     return todosLosUsuarios
@@ -266,131 +361,95 @@ export class MisViajesPage implements OnInit {
       .map(admin => admin.correo!);
   }
 
-  private formatLabelWithAddress(list: Array<{ value: string; label: string }>, code: string, address: string): string {
-    const found = list.find(i => i.value === code);
-    const label = found ? found.label : code;
-    return address ? `${label} – ${address}` : label;
+
+
+  getSalidaLabel(sol: any): string {
+    return sol.punto_salida || 'No especificado';
   }
 
-  getSalidaLabel(sol: Solicitud): string {
-  let list = this.centros.central;
-  let code = sol.puntoSalida;
-  let subCode = sol.direccionSalida;
-
-  switch (sol.puntoSalida) {
-    case 'salud':
-      list = this.centros.salud;
-      subCode = sol.centroSaludSalida || '';
-      break;
-    case 'educacion':
-      list = this.centros.educacion;
-      subCode = sol.centroEducacionSalida || '';
-      break;
-    case 'atm':
-      list = this.centros.atm;
-      subCode = sol.centroAtmSalida || '';
-      break;
+  getDestinoLabel(sol: any): string {
+    return sol.punto_destino || 'No especificado';
   }
-
-
-  return this.formatLabelWithAddress(list, sol.puntoSalida, sol.direccionSalida ?? '');
-}
-
-
-getDestinoLabel(sol: Solicitud): string {
-  let list = this.centros.central;
-  let code = sol.puntoDestino || '';
-  let sub  = sol.direccionDestino || '';
-
-  switch (code) {
-    case 'salud':
-      list = this.centros.salud;
-      sub  = sol.centroSaludDestino   || sub;
-      break;
-    case 'educacion':
-      list = this.centros.educacion;
-      sub  = sol.centroEducacionDestino || sub;
-      break;
-    case 'atm':
-      list = this.centros.atm;
-      sub  = sol.centroAtmDestino     || sub;
-      break;
-  }
-
- 
-  return this.formatLabelWithAddress( list, sol.puntoDestino || '', sol.direccionDestino || '');
-}
 
 async marcarViajeRealizado(viaje: Solicitud) {
-    const alert = await this.alertController.create({
-      header: 'Confirmación de Viaje',
-      message: `¿Se realizó el viaje para "${viaje.motivo}"?`,
-      buttons: [
-        {
-          text: 'No se realizó',
-          role: 'cancel',
-          handler: () => {
-    
-            this.solicitarJustificativo(viaje);
-          },
+     const alert = await this.alertController.create({
+    header: 'Confirmación de Viaje',
+    message: `¿Se realizó el viaje para "${viaje.motivo}"?`,
+    buttons: [
+      {
+        text: 'No se realizó',
+        role: 'cancel',
+        handler: () => {
+          this.solicitarJustificativo(viaje);
         },
-        {
-          text: 'Sí, se realizó',
-          handler: async () => {
-            
-            viaje.estado = 'finalizado';
-            await Memorialocal.guardar('viajesSolicitados', viaje);
-            this.mostrarToast('Viaje marcado como finalizado.', 'success');
-            this.ngOnInit(); 
-          },
+      },
+      {
+        text: 'Sí, se realizó',
+        handler: () => {
+        
+          this.viajeServicio.updateViaje(viaje.id_viaje, { estado: 'finalizado' }).subscribe({
+            next: () => {
+              this.mostrarToast('Viaje marcado como finalizado.', 'success');   
+              if (this.usuarioActivo?.correo) {
+                this.notificaciones.enviarCorreoViajeRealizado(this.usuarioActivo.correo, viaje.motivo);
+              }
+              this.cargarViajes();
+            },
+            error: (err) => this.mostrarToast('Error al actualizar el viaje.', 'danger')
+          });
         },
-      ],
-    });
+      },
+    ],
+  });
 
-    await alert.present();
-  }
+  await alert.present();
+}
 
-  private async solicitarJustificativo(viaje: Solicitud) {
-    const alert = await this.alertController.create({
-      header: 'Viaje No Realizado',
-      message: 'Por favor, ingrese un breve justificativo.',
-      inputs: [
-        {
-          name: 'justificativo',
-          type: 'textarea',
-          placeholder: 'Ej: El ocupante no se pudo presentó, el vehículo tuvo un problema, etc.',
-        },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Guardar',
-          handler: async (data) => {
-            if (!data.justificativo || data.justificativo.trim() === '') {
-              this.mostrarToast('El justificativo no puede estar vacío.', 'danger');
-              return false;
-            }
-            
-           
-            viaje.estado = 'no realizado';
-            viaje.justificativo = data.justificativo;
-            await Memorialocal.guardar('viajesSolicitados', viaje);
-            this.mostrarToast('El viaje ha sido marcado como no realizado.', 'tertiary');
-           if (this.usuarioActivo?.correo) {
-              this.notificaciones.enviarCorreoViajeNoRealizado(this.usuarioActivo.correo, viaje);
-            }
-            this.cargarViajes(); 
-            return true;
-          },
-        },
-      ],
-    });
+private async solicitarJustificativo(viaje: Solicitud) {
+  const alert = await this.alertController.create({
+    header: 'Viaje No Realizado',
+    message: 'Por favor, ingrese un breve justificativo.',
+    inputs: [
+      {
+        name: 'justificativo',
+        type: 'textarea',
+        placeholder: 'Ej: El ocupante no se presentó...',
+      },
+    ],
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+      },
+      {
+        text: 'Guardar',
+        handler: (data) => { 
+          if (!data.justificativo || data.justificativo.trim() === '') {
+            this.mostrarToast('El justificativo no puede estar vacío.', 'danger');
+            return false; 
+          }
 
-    await alert.present();
-  }
+          const datosActualizar = {
+            estado: 'no realizado',
+            justificativo_no_realizado: data.justificativo
+          };
+          this.viajeServicio.updateViaje(viaje.id_viaje, datosActualizar).subscribe({
+            next: () => {
+              this.mostrarToast('El viaje ha sido marcado como no realizado.', 'tertiary');
+              if (this.usuarioActivo?.correo) {
+                this.notificaciones.enviarCorreoViajeNoRealizado(this.usuarioActivo.correo, viaje);
+              }
+              this.cargarViajes();
+            },
+            error: (err) => this.mostrarToast('Error al actualizar el viaje.', 'danger')
+          });
+          return true; 
+        }
+      }
+    ]
+  });
+  await alert.present();
+}
 
     async mostrarToast(message: string, color: string) {
     const toast = await this.toastController.create({
