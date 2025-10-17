@@ -4,20 +4,18 @@ const db = require('../db');
 exports.getViajes = async (req, res) => {
 try {
     const query = `
-      SELECT 
-        v.id_viaje as id,
-        v.*, 
-        solicitante.nombre as nombre_solicitante,
-        solicitante.apellido_paterno as apellido_solicitante,
-        solicitante.correo as correo_solicitante,
+        SELECT 
+        v.*, v.id_viaje as id,
+        solicitante.nombre as nombre_solicitante, solicitante.apellido_paterno as apellido_solicitante, solicitante.correo as correo_solicitante,
         veh.patente as patente_vehiculo,
         prog.nombre_programa,
-        COALESCE(tv_asignado.nombre_tipoVehiculo, tv_deseado.nombre_tipoVehiculo ) as tipoVehiculo,
-      'normal' as tipo_origen 
-        FROM VIAJE v
+        COALESCE(tv_asignado.nombre_tipoVehiculo, tv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
+        veh.nombre_conductor as nombreConductor,
+        'normal' as tipo_origen
+      FROM VIAJE v
       JOIN USUARIO solicitante ON v.solicitante_rut_usuario = solicitante.rut_usuario
-      LEFT JOIN VEHICULO veh ON v.vehiculo_patente = veh.patente
       LEFT JOIN PROGRAMA prog ON v.PROGRAMA_id_programa = prog.id_programa
+      LEFT JOIN VEHICULO veh ON v.vehiculo_patente = veh.patente
       LEFT JOIN TIPO_VEHICULO tv_asignado ON veh.TIPO_VEHICULO_id_tipoVehiculo = tv_asignado.id_tipoVehiculo
       LEFT JOIN TIPO_VEHICULO tv_deseado ON v.vehiculo_deseado = tv_deseado.id_tipoVehiculo
       ORDER BY v.fecha_solicitud DESC;
@@ -261,22 +259,20 @@ exports.getViajesMasivos = async (req, res) => {
     const { rol, rut } = req.user;
     const isAdmin = ['adminSistema', 'its', 'coordinador'].includes(rol);
     let query = `
-      SELECT 
-        vm.id_viaje, vm.estado, vm.fecha_viaje, vm.hora_inicio, vm.punto_salida, vm.punto_destino,
-        vm.motivo, vm.ocupantes, vm.responsable,
-        solicitante.nombre as nombre_solicitante,
-        solicitante.apellido_paterno as apellido_solicitante,
-        solicitante.correo as correo_solicitante,
+     SELECT 
+        vm.*, vm.id_viaje as id,
+        solicitante.nombre as nombre_solicitante, solicitante.apellido_paterno as apellido_solicitante, solicitante.correo as correo_solicitante,
+        veh.patente as patente_vehiculo,
         prog.nombre_programa,
         COALESCE(tv_asignado.nombre_tipoVehiculo, tv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
-      'masivo' as tipo_origen
+        veh.nombre_conductor as nombreConductor,
+        'masivo' as tipo_origen
       FROM VIAJE_MASIVO vm
       JOIN USUARIO solicitante ON vm.solicitante_rut_usuario = solicitante.rut_usuario
       LEFT JOIN PROGRAMA prog ON vm.PROGRAMA_id_programa = prog.id_programa
       LEFT JOIN VEHICULO veh ON vm.vehiculo_patente = veh.patente
       LEFT JOIN TIPO_VEHICULO tv_asignado ON veh.TIPO_VEHICULO_id_tipoVehiculo = tv_asignado.id_tipoVehiculo
       LEFT JOIN TIPO_VEHICULO tv_deseado ON vm.vehiculo_deseado = tv_deseado.id_tipoVehiculo
-      ORDER BY vm.fecha_viaje DESC, vm.hora_inicio DESC;
     `;
 
     const params = [];

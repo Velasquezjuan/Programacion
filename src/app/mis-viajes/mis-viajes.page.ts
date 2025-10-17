@@ -103,7 +103,7 @@ interface Usuario {
 export class MisViajesPage implements OnInit {
   
   todas: Solicitud[] = [];
-  filtro: 'todos'|'pendiente'|'aceptado'|'rechazado'|'reagendado' = 'todos';
+  filtro: 'todos'|'pendiente'|'Agendado'|'rechazado'|'reagendado' = 'todos';
   usuarioActivo!: { nombre: string; correo?: string };
   searchTerm: string = '';
 
@@ -119,7 +119,7 @@ export class MisViajesPage implements OnInit {
  estados = [
   { value: 'todos',      label: 'Todos'       },
   { value: 'pendiente',  label: 'Pendientes'  },
-  { value: 'aceptado',   label: 'Aceptados'   },
+  { value: 'Agendado',   label: 'Agendado'   },
   { value: 'finalizado', label: 'Finalizados' }, 
   { value: 'no realizado', label: 'No Realizados' }, 
   { value: 'rechazado',  label: 'Rechazados'  },
@@ -194,7 +194,7 @@ export class MisViajesPage implements OnInit {
 
   getBorderClass(e: string){
   switch(e){
-    case 'aceptado':    return 'border-success';
+    case 'Agendado':    return 'border-success';
     case 'finalizado':  return 'border-tertiary'; 
     case 'rechazado':   return 'border-danger';
     case 'no realizado':return 'border-dark'; 
@@ -237,7 +237,7 @@ export class MisViajesPage implements OnInit {
 private async verificarViajesPasados() {
   const ahora = new Date();
   const viajesPendientesDeCierre = this.todas.filter(viaje => {
-    if (viaje.estado !== 'aceptado' && viaje.estado !== 'agendado') {
+    if (viaje.estado !== 'Agendado' && viaje.estado !== 'agendado') {
       return false;
     }
     const fechaViaje = new Date(`${viaje.fecha_viaje}T${viaje.hora_inicio}`);
@@ -285,7 +285,7 @@ private async verificarViajesPasados() {
 
     this.mostrarToast('Has aceptado la nueva agenda del viaje.', 'success');
     this.cargarViajes();*/ //futura actualizacion para viajes sin conexion
-    this.viajeServicio.updateViaje(viaje.id_viaje, { estado: 'aceptado' }).subscribe({
+    this.viajeServicio.updateViaje(viaje.id_viaje, { estado: 'Agendado' }).subscribe({
     next: async () => {
       const adminEmails = await this.getAdminEmails();
       if (adminEmails.length > 0) {

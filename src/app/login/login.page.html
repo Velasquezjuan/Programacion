@@ -31,11 +31,18 @@
       
       <ion-item class="ion-margin-bottom">
         <ion-icon slot="start" name="lock-closed" aria-hidden="true" color="primary"></ion-icon>
-        <ion-input
-          type="password" placeholder="Ingrese su Contraseña" label="Contraseña"
-          label-placement="floating" fill="outline"
-          formControlName="contrasena"
-        ></ion-input>
+            <ion-input
+            fill="outline"
+            [type]="showPassword ? 'text' : 'password'" 
+            placeholder="Ingrese su Contraseña" 
+            label="Contraseña"
+            label-placement="floating"
+            formControlName="contrasena"
+          ></ion-input>
+          <ion-button fill="clear" slot="end" (click)="togglePassword()" class="password-toggle-button">
+        <ion-icon slot="icon-only" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+      </ion-button>
+        
       </ion-item>
     </ion-list>
 
@@ -45,9 +52,9 @@
         <ion-icon slot="start" name="log-in-outline"></ion-icon>
         Iniciar sesión
       </ion-button>
-      <ion-button fill="clear" expand="block" (click)="goToRegistroUsuarioPage()">
+      <!--<ion-button fill="clear" expand="block" (click)="goToRegistroUsuarioPage()">
         Registro Usuario
-      </ion-button>
+      </ion-button>-->
       <ion-button fill="clear" expand="block" size="small" (click)="goToRecuperarContrasenaPage()">
         ¿Olvidó su Contraseña?
       </ion-button>

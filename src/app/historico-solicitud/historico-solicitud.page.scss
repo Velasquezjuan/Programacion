@@ -1,0 +1,50 @@
+.card-wrapper {
+  max-width: 600px;
+  margin: 1rem auto;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 8px;
+}
+
+.border-success {
+  border-color: var(--ion-color-success);
+}
+.border-warning {
+  border-color: var(--ion-color-warning);
+}
+.border-danger {
+  border-color: var(--ion-color-danger);
+}
+.border-primary {
+  border-color: var(--ion-color-primary);
+}
+.logo-image {
+  display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
+}
+// Contenedor para los filtros
+.contenedor-filtros {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; 
+  gap: 16px; 
+  margin-bottom: 16px;
+}
+
+// Estilo para la barra de búsqueda
+.search-by-id {
+  max-width: 300px;
+  flex-grow: 1; 
+}
+
+// Estilo para el filtro de estado
+.filtros-estado {
+  max-width: 250px;
+  flex-grow: 1;
+  --border-radius: 8px;
+  --border-color: var(--ion-color-step-200, #002cf1);
+  --border-width: 1px;
+}

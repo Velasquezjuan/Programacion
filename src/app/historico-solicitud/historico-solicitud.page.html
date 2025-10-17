@@ -1,0 +1,117 @@
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+    <ion-title>Historico Solicitudes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
+          </ion-col>
+
+  <!-- Select de filtro -->
+<div class="contenedor-filtros">
+  <ion-searchbar
+    class="search-by-id"
+    color="primary"
+    type="text" 
+    placeholder="Buscar por Usuario o Nº Solicitud"
+    [(ngModel)]="searchTerm"
+    (ionInput)="aplicarFiltros()"
+    (ionClear)="searchTerm = ''; aplicarFiltros()"
+    debounce="300">
+  </ion-searchbar>
+
+  <ion-item class="filtros-estado">
+    <ion-label>Estado:</ion-label>
+    <ion-select [value]="filtro" (ionChange)="onFiltroChange($event)">
+      <ion-select-option *ngFor="let e of estados" [value]="e.value">
+        {{e.label}}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item class="filtros-estado">
+    <ion-input 
+      label="Fecha Desde" 
+      label-placement="stacked" 
+      type="date" 
+      [value]="fechaInicioFiltro"
+      (ionChange)="fechaInicioFiltro = $event.detail.value ?? ''; aplicarFiltros()">
+    </ion-input>
+  </ion-item>
+  <ion-item class="filtros-estado">
+    <ion-input 
+      label="Fecha Hasta" 
+      label-placement="stacked" 
+      type="date" 
+      [value]="fechaFinFiltro"
+      (ionChange)="fechaFinFiltro = $event.detail.value ?? ''; aplicarFiltros()">
+    </ion-input>
+  </ion-item>
+  </div>
+
+
+  <ng-container *ngIf="viajesFiltrados.length; else noHay">
+    <ion-card *ngFor="let v of viajesFiltrados"
+              class="card-wrapper"
+              [ngClass]="getBorderClass(v.estado)">
+      <ion-card-header>
+        <ion-card-title>Solicitud Nº {{v.id_viaje}} – {{v.estado | titlecase}}</ion-card-title>
+        <ion-card-subtitle>Fecha: {{v.fecha_viaje}} – Hora: {{v.hora_inicio}}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Solicitante:</strong> {{v.nombre_solicitante}}</p>
+        <p><strong>Punto Salida:</strong> {{ getSalidaLabel(v) }}
+        </p>
+        <p><strong>Punto Destino:</strong> 
+         {{ getDestinoLabel(v) }} 
+        </p>
+        <p><strong>Vehículo:</strong> {{v.tipoVehiculo}}</p>
+        <p><strong>Ocupantes:</strong> {{v.ocupantes}}</p>
+        <p><strong>Motivo:</strong> {{v.motivo}}</p>
+        <p *ngIf="v.estado==='rechazado'">
+          <strong>Razón Rechazo:</strong> {{v.justificativo_no_realizado}}
+        </p>
+        <p><strong>¿Carga?</strong> {{v.necesita_carga === 'si' ? 'Sí' : 'No' }}</p>
+        <p><strong>Responsable:</strong> {{v.responsable}}</p>
+        <p *ngIf="v.estado === 'reagendado' && v.motivoReagendamiento">
+    <strong>Motivo Reagendamiento:</strong> {{v.motivoReagendamiento}}
+  </p>
+      </ion-card-content>
+      <ion-footer *ngIf="v.estado === 'Agendado' || v.estado === 'agendado'">
+      <ion-toolbar>
+       <!--  <ion-buttons slot="end">
+          <ion-button fill="outline" color="tertiary" (click)="marcarViajeRealizado(v)">
+            <ion-icon slot="start" name="checkmark-done-circle"></ion-icon>
+            Confirme su viaje
+          </ion-button>
+        </ion-buttons>-->
+      </ion-toolbar>
+    </ion-footer>
+    <ion-footer *ngIf="v.estado === 'reagendado'">
+  <ion-toolbar class="reagendado-toolbar">
+   <!-- <ion-buttons slot="start">
+      <ion-button fill="solid" color="danger" (click)="rechazarReagendamiento(v)">
+        <ion-icon slot="start" name="close-circle"></ion-icon>
+        Rechazar
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="success" (click)="aceptarReagendamiento(v)">
+        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+        Aceptar Agenda
+      </ion-button>
+    </ion-buttons>-->
+  </ion-toolbar>
+</ion-footer>
+    </ion-card>
+  </ng-container>
+
+  <ng-template #noHay>
+    <h2 class="ion-text-center ion-margin-top">No tienes viajes registrados.</h2>
+    <p class="ion-text-center">Puedes solicitar un viaje desde la sección "Solicitar Viaje".</p>
+  </ng-template>
+
+</ion-content>

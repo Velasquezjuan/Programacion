@@ -104,6 +104,10 @@ const routes: Routes = [
     path: 'viajes-masivos',
     loadComponent: () => import('./viajes-masivos/viajes-masivos.page').then( m => m.ViajesMasivosPage)
   },
+  {
+    path: 'historico-solicitud',
+    loadComponent: () => import('./historico-solicitud/historico-solicitud.page').then( m => m.HistoricoSolicitudPage)
+  },
 ];
 
 @NgModule({

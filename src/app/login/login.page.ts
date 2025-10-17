@@ -9,7 +9,10 @@ import { IonContent, IonHeader, IonTitle, IonToolbar,
 import { ToastController } from '@ionic/angular';
 import { Memorialocal } from '../almacen/memorialocal';
 import { addIcons } from 'ionicons';
-import { logInOutline, atSharp, lockClosed } from 'ionicons/icons'; 
+import { 
+  logInOutline, atSharp, lockClosed, eyeOutline, eyeOffOutline 
+
+} from 'ionicons/icons'; 
 import { Validadores } from '../validador/validadores';
 
 
@@ -36,8 +39,15 @@ export class LoginPage {
     private toastCtrl: ToastController,
     private fb: FormBuilder,
   ) {
-      addIcons({atSharp,lockClosed, logInOutline});}
+      addIcons({
+        atSharp,lockClosed,logInOutline, 'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline
+      });}
 
+  showPassword = false;
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
   
   ngOnInit() {
         this.loginForm = this.fb.group({

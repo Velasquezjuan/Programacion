@@ -87,6 +87,8 @@ export class CalendarioPage implements OnInit {
  
    rolUsuario: string | null = null;
    nombreUsuario: string = '';
+   fechaInicioFiltro: string = '';
+   fechaFinFiltro: string = '';
  
 
   calendarOptions: CalendarOptions = {
@@ -402,7 +404,9 @@ exportarPDF() {
 
       if (viajesNormales.length > 0) {
         doc.text("Viajes Normales", 14, finalY + 5);
-        const bodyNormal = viajesNormales.map(v => [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), v.hora_inicio, v.nombre_solicitante, v.punto_destino, v.tipoVehiculo || 'N/A' ]);
+        const bodyNormal = viajesNormales.map(v => 
+          [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
+            v.hora_inicio, v.nombre_solicitante, v.punto_destino, v.tipoVehiculo || 'N/A' ]);
         
         autoTable(doc, {
           head: head,
@@ -436,45 +440,99 @@ exportarPDF() {
     }
   });
 }
+
+
 exportarPDFNormales() {
   this.viajesServicio.getViajes().subscribe({
     next: (viajes) => {
-      if (viajes.length === 0) {
+      let viajesFiltrados = [...viajes];
+      if (this.fechaInicioFiltro && this.fechaFinFiltro) {
+        viajesFiltrados = viajes.filter(v => {
+          const fechaViaje = v.fecha_viaje.split('T')[0];
+          return fechaViaje >= this.fechaInicioFiltro && fechaViaje <= this.fechaFinFiltro;
+        });
+      }
+      if (viajesFiltrados.length === 0) {
         this.showToast('No hay viajes normales para exportar.', 'warning');
         return;
       }
+      viajesFiltrados.sort((a, b) => a.id_viaje - b.id_viaje);
       const doc = new jsPDF();
-      doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
-      doc.text("Reporte de Viajes Normales", 14, 15);
-      const head = [['ID', 'Fecha', 'Hora', 'Solicitante', 'Responsable' , 'Destino', 'Vehículo', 
-        'conductor', 'patente']];
-      const body = viajes.map(v => [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), v.hora_inicio, 
-        v.nombre_solicitante || v.apellido_solicitante , v.responsable_nombre, v.punto_destino, v.tipoVehiculo || 'N/A', v.conductorAsignado || 'N/A', v.patenteVehiculo || 'N/A'
+     // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
+      //doc.text("Reporte de Viajes Normales", 14, 15);
+      const head = [[
+        'ID', 'Fecha', 'Hora', 'Solicitante', 'Responsable' , 
+        'Destino', 'Vehículo', 'conductor', 'patente'
+      ]];
+      const body = viajesFiltrados.map(v => [ 
+        v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
+        v.hora_inicio, v.nombre_solicitante || v.apellido_solicitante , 
+        v.responsable, 
+        v.punto_destino, 
+        v.tipoVehiculo || 'N/A', 
+        v.nombreConductor || 'N/A', 
+        v.patente || 'N/A'
        ]);
-      autoTable(doc, { head, body, startY: 30 });
+
+      autoTable(doc, { head, body, startY: 30,
+        margin: { top: 30 }, 
+       didDrawPage: (data: any) => {
+          doc.setFontSize(18);
+          doc.text("Reporte de Viajes Normales", 14, 20);
+         // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
+
+        }
+        });
       doc.save('reporte_viajes_normales.pdf');
     },
     error: (err) => this.showToast('Error al cargar datos para PDF.', 'danger')
   });
 }
+
+
 exportarPDFMasivos() {
   this.viajesServicio.getViajesMasivos().subscribe({
-    next: (viajes) => {
-      if (viajes.length === 0) {
-        this.showToast('No hay viajes masivos para exportar.', 'warning');
+    next: (viajesMasivos) => {
+      let viajesFiltrados = [...viajesMasivos];
+      if (this.fechaInicioFiltro && this.fechaFinFiltro) {
+        viajesFiltrados = viajesMasivos.filter(v => {
+          const fechaViaje = v.fecha_viaje.split('T')[0];
+          return fechaViaje >= this.fechaInicioFiltro && fechaViaje <= this.fechaFinFiltro;
+        });
+      }
+      if (viajesFiltrados.length === 0) {
+        this.showToast('No hay viajes normales para exportar.', 'warning');
         return;
       }
       const doc = new jsPDF();
-      doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
-      doc.text("Reporte de Viajes Masivos", 14, 15);
-      const head = [['ID', 'Fecha', 'Hora', 'Solicitante','Responsable', 'Destino', 'Vehículo',
-        'conductor', 'patente']];
-      const body = viajes.map(v => [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), v.hora_inicio, v.nombre_solicitante, 
-         v.nombre_solicitante || v.apellido_solicitante , v.responsable_nombre,v.punto_destino, v.tipoVehiculo || 'N/A',
-        v.conductorAsignado || 'N/A', v.patenteVehiculo || 'N/A'
+      viajesFiltrados.sort((a, b) => a.id_viaje - b.id_viaje);
+      // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
+     // doc.text("Reporte de Viajes Masivos", 18, 20);
+      const head = [[
+        'ID', 'Fecha', 'Hora', 'Solicitante','Responsable', 'Destino',
+         'Vehículo','conductor', 'patente'
+        ]];
+      const body = viajesFiltrados.map(v => [ 
+        v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
+        v.hora_inicio, 
+        v.nombre_solicitante, 
+         v.responsable || v.apellido_solicitante , 
+         v.responsable_nombre,
+         v.punto_destino, 
+         v.tipoVehiculo || 'N/A',
+        v.nombreConductor || 'N/A', 
+        v.patente_vehiculo  || 'N/A'
        ]);
-      autoTable(doc, { head, body, startY: 30 });
-      doc.save('reporte_viajes_masivos.pdf');
+      autoTable(doc, { head, body, startY: 30,
+        margin: { top: 30 }, 
+       didDrawPage: (data: any) => {
+          doc.setFontSize(18);
+          doc.text("Reporte de Viajes Normales", 14, 20);
+          doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
+
+        }
+        });
+        doc.save('reporte_viajes_masivos.pdf');
     },
     error: (err) => this.showToast('Error al cargar datos para PDF.', 'danger')
   });

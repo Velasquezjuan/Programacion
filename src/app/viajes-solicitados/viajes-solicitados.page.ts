@@ -149,7 +149,7 @@ export class ViajesSolicitadosPage implements OnInit {
 
   private procesarAgendar(solicitud: any, patente: string) {
      const datosActualizar = {
-    estado: 'aceptado',
+    estado: 'Agendado',
     vehiculo_patente: patente
   };
 

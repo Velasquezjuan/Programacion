@@ -1,57 +1,242 @@
-<ion-app>
-  <!-- MENÚ LATERAL -->
-  <ion-menu contentId="main-content">
-    <ion-header>
-      <ion-toolbar color="tertiary">
-        <ion-title>CMPA</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <ion-list>
-        <ion-item routerLink="/home">Home</ion-item>
-        <ion-item routerLink="/cargar-planificacion">Cargar Planificación</ion-item>
-        <ion-item routerLink="/bitacora">Bitácora</ion-item>
-        <ion-item routerLink="/vehiculo">Vehículo</ion-item>
-      </ion-list>
-    </ion-content>
-  </ion-menu>
-</ion-app>
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+    <ion-title>Bitacora</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="ion-page" id="main-content">
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>bitacora</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    
-    <ion-content [fullscreen]="true" class="ion-padding">
-  <!-- Imagen centrada debajo del encabezado -->
-  <div class="container text-center mt-4 d-flex justify-content-center align-items-center">
-    <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="img-fluid auto-image" />
+<ion-content class="ion-padding">
+  <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
+          </ion-col>
+
+<ion-card-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-input 
+            label="Patente" 
+            label-placement="stacked" 
+            placeholder="AABB22"
+            [(ngModel)]="filtros.patente">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-select label="Centro" label-placement="stacked" (ionChange)="onCentroChange($event)" interface="popover">
+            <ion-select-option *ngFor="let centro of centrosPrincipales" [value]="centro.value">{{ centro.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="showSalud">
+          <ion-select [(ngModel)]="filtros.centro" label="Establecimiento de Salud" label-placement="stacked" interface="popover">
+            <ion-select-option *ngFor="let est of establecimientosSalud" [value]="est.label">{{ est.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="showEducacion">
+          <ion-select [(ngModel)]="filtros.centro" label="Establecimiento de Educación" label-placement="stacked" interface="popover">
+            <ion-select-option *ngFor="let est of establecimientosEducacion" [value]="est.label">{{ est.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+         <ion-item *ngIf="showAtm">
+          <ion-select [(ngModel)]="filtros.centro" label="Establecimiento ATM" label-placement="stacked" interface="popover">
+            <ion-select-option *ngFor="let est of establecimientosAtm" [value]="est.label">{{ est.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-input 
+            label="Proveedor" 
+            label-placement="stacked" 
+            placeholder="Movilizacion"
+            [(ngModel)]="filtros.proveedor">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-select [(ngModel)]="filtros.programa" label="Programa" label-placement="stacked" interface="popover">
+            <ion-select-option *ngFor="let p of programas" [value]="p.label">{{ p.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-input 
+            label="Fecha Inicio" 
+            label-placement="stacked" 
+            type="date"
+            [(ngModel)]="filtros.fechaInicio">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-input 
+            label="Fecha Fin" 
+            label-placement="stacked" 
+            type="date"
+            [(ngModel)]="filtros.fechaFin">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div class="ion-text-right ion-padding-top">
+    <ion-button fill="outline" color="medium" (click)="limpiarFiltros()">Limpiar</ion-button>
+    <ion-button (click)="buscarReporte()" class="ion-margin-start">Generar Reporte</ion-button>
   </div>
+</ion-card-content>
+  
 
-  <ion-list class="ion-text-center">
-    <!-- Campo de busqueda del movil -->
-    
-<ion-searchbar search-icon="search-circle" placeholder="Custom Search Icon"></ion-searchbar>
+<ng-container *ngIf="!reporteActivo">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Dashboard de Uso de Vehículos</ion-card-title>
+      <ion-card-subtitle>Datos generales de la bitácora</ion-card-subtitle>
+      </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header><ion-card-title>Centros que más usan vehículos</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <div style="height: 300px;">
+                <div *ngIf="centrosChartData">
+                  <canvas baseChart [data]="centrosChartData" [options]="barChartOptions" type="bar"></canvas>
+                </div>
+              </div>  
+              <ion-button (click)="exportarDashboard()" fill="clear" size="medium" slot="end">Exportar pdf
+                <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
 
-    <!-- Mensaje informativo -->
-    <ion-item>
-      <ion-label>
-        <p>Se debe modificar, hay que investigar como poder hacer la extraccion, esta vista debe ir 
-          al ultimo, para poder hacer la extraccion de la informacion de la bitacora.
-        </p>
-      </ion-label>
-    </ion-item>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header><ion-card-title>Vehículos más utilizados</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <div style="height: 300px;">
+                <div *ngIf="vehiculosChartData">
+                  <canvas baseChart [data]="vehiculosChartData" [options]="pieChartOptions" type="pie"></canvas>
+                </div>
+                </div>
+                <ion-button (click)="exportarDashboard()" fill="clear" size="medium" slot="end">Exportar pdf
+                <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
 
-    <!-- Botón para regresar a la página de inicio -->
-    <ion-item class="button-container">
-      <ion-button fill="outline" >Inicio</ion-button>
-    </ion-item>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header><ion-card-title>Programa con mayor uso</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <div style="height: 300px;">
+                <div *ngIf="programasChartData">
+                  <canvas baseChart [data]="programasChartData" [options]="barChartOptions" type="bar"></canvas>
+                </div>
+                </div>
+                <ion-button (click)="exportarDashboard()" fill="clear" size="medium" slot="end">Exportar pdf
+                <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
 
-  </ion-list>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header><ion-card-title>Usuarios que más solicitan</ion-card-title></ion-card-header>
+              <ion-card-content>
+                <div style="height: 300px;">
+                <div *ngIf="usuariosChartData">
+                  <canvas baseChart [data]="usuariosChartData" [options]="pieChartOptions" type="pie"></canvas>
+                </div>
+                </div>
+                <ion-button  (click)="exportarDashboard()" fill="clear" size="medium" slot="end">exportar pdf
+                <ion-icon  name="download-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ng-container>
+
+  <ng-container *ngIf="reporteActivo">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Resultados del Reporte</ion-card-title>
+        <ion-card-subtitle>
+          <ion-button size="small" (click)="exportarReporte()" fill="clear" color="primary">
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+            Exportar
+          </ion-button>
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid class="ion-padding-bottom">
+          <ion-row>
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item lines="none">
+                <ion-label>Total de Viajes:</ion-label>
+                <ion-text slot="end"><b>{{ resumenReporte.totalViajesRealizados }}</b></ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item lines="none">
+                <ion-label>Total Centros Visitados:</ion-label>
+                <ion-text slot="end"><b>{{ resumenReporte.totalCentrosVisitados }}</b></ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col *ngIf="filtros.proveedor" size="12" size-md="6" size-lg="3">
+              <ion-item lines="none">
+                <ion-label>Vehículos del Proveedor:</ion-label>
+                <ion-text slot="end"><b>{{ resumenReporte.vehiculosPorProveedor }}</b></ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col *ngIf="filtros.centro" size="12" size-md="6" size-lg="3">
+              <ion-item lines="none">
+                <ion-label>Vehículos del Centro:</ion-label>
+                <ion-text slot="end"><b>{{ resumenReporte.vehiculosPorCentro }}</b></ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <ion-list *ngIf="reporteResultados.length > 0">
+          <ion-item-divider color="light">
+            <ion-label>Detalle de Viajes</ion-label>
+          </ion-item-divider>
+          <ion-item *ngFor="let resultado of reporteResultados">
+            <ion-label>
+              <h2>Viaje #{{ resultado.id_viaje }} ({{ resultado.fecha_viaje | date:'shortDate' }} - {{ resultado.hora_inicio }})</h2>
+              <p>Vehículo: ({{ resultado.vehiculo_patente || 'N/A' }})</p>
+              <p>Conductor: {{ resultado.nombre_conductor || 'N/A' }}</p>
+              <p>Centro: {{ resultado.punto_destino }} | Programa: {{ resultado.nombre_programa }}</p>
+
+              <!--<p>Km Salida: {{ resultado.kilometro_salida }} | Km Llegada: {{ resultado.kilometro_llegada }}</p> 
+              implementar en una segunda fase con un perfil conductor con donde tengamos un dometro para medir los kilometros
+              no altiro porque no se sabe que vola-->
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        <ion-item *ngIf="reporteResultados.length === 0">
+          <ion-label class="ion-text-center">No se encontraron resultados para los filtros aplicados.</ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
 </ion-content>

@@ -7,10 +7,15 @@ import { IonContent, IonHeader, IonTitle, IonToolbar,
   IonItem, IonList, IonLabel, IonSearchbar, IonSelect,IonSelectOption,
   IonButton, IonIcon, IonApp,IonButtons, 
  } from '@ionic/angular/standalone';
+ import { HttpClient } from '@angular/common/http';
  import { HttpClientModule } from '@angular/common/http';
  import { addIcons } from 'ionicons';
-import { trash, sync } from 'ionicons/icons';
+import { trash, sync, createOutline, saveOutline, closeCircleOutline,
+  checkmarkDoneOutline, checkmarkOutline, trashOutline, checkmarkCircleOutline
+ } from 'ionicons/icons';
 import { Memorialocal } from '../almacen/memorialocal';
+import { Administracion } from '../servicio/administracion';
+import { ToastController } from '@ionic/angular';
 
 
 @Component({
@@ -29,43 +34,62 @@ export class GestionPage implements OnInit {
   tipoBusqueda: string = 'usuario';
   terminoBusqueda: string = '';
   criterioBusqueda: string = '';
+
   usuarios: any[] = [];
   usuariosFiltrados: any[] = [];
   vehiculos: any[] = [];
   vehiculosFiltrados: any[] = [];
+
+  usuarioEditandoRut: string | null = null;
+  vehiculoEditandoPatente: string | null = null;
   registroForm!: FormGroup;
   actividadActiva: boolean = true;
   requiereReemplazo: boolean = false;
 
   constructor(
     private router: Router, 
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private administracion: Administracion,
+    private toastController: ToastController
   ) {
-      addIcons({sync,trash});}
+      addIcons({
+        createOutline, saveOutline, closeCircleOutline, sync, trash,
+         checkmarkDoneOutline, checkmarkOutline, trashOutline, checkmarkCircleOutline
+         
+      });}
 
   rolUsuario: string = '';
 
   ngOnInit() {
-    this.cargarUsuarios();
-    this.cargarVehiculos();
+    this.cargarDatos();
+  }
 
-    this.registroForm = this.fb.group({
-      nuevoRol: [''],
-      patenteReemplazo: [''],
-      justificacionReemplazo: ['']
+    cargarDatos() {
+    this.administracion.getUsuarios().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.filtrarUsuarios();
+      },  
+      error: (err) => this.mostrarToast('Error al cargar usuarios.', 'danger')
+    });
+     this.administracion.getVehiculos().subscribe({
+      next: (data) => {
+        this.vehiculos = data;
+        this.filtrarVehiculos();
+      },
+      error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
     });
   }
 
-  async cargarUsuarios() {
-    const datos = await Memorialocal.obtener<any[]>('usuarios') || [];
-    this.usuarios = datos;
-    this.usuariosFiltrados = [...this.usuarios];
-  }
-
- async cargarVehiculos() {
-    const datos = await Memorialocal.obtener<any[]>('vehiculos') || [];
-    this.vehiculos = datos;
-    this.vehiculosFiltrados = [...this.vehiculos];
+  
+  async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning' | 'primary' = 'primary') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      color: color,
+      position: 'top'
+    });
+    toast.present();
   }
 
   filtrarUsuarios() {
@@ -80,21 +104,34 @@ export class GestionPage implements OnInit {
     }
   }
 
-  usuarioEditandoRut: string | null = null; 
 
-editarUsuario(usuario: any) {
-  this.usuarioEditandoRut = usuario.rut;
+editarUsuario(usuario: any) { this.usuarioEditandoRut = usuario.rut; }
+cancelarEdicionUsuario() { this.usuarioEditandoRut = null; this.cargarDatos(); }
+
+ guardarUsuario(usuario: any) {
+    this.administracion.updateUsuario(usuario.rut, 
+      { nombre: usuario.nombre, rol: usuario.rol }).subscribe({
+      next: () => {
+        this.mostrarToast('Usuario actualizado.', 'success');
+        this.usuarioEditandoRut = null;
+      },
+      error: (err) => this.mostrarToast('Error al guardar usuario.', 'danger')
+    });
+  }
+
+
+cambiarEstadoUsuario(usuario: any) {
+  const nuevoEstado = usuario.activo === 'si' ? 'no' : 'si';
+  this.administracion.updateUsuario(usuario.rut, { activo: nuevoEstado }).subscribe({
+    next: () => {
+      this.mostrarToast(`Usuario ${nuevoEstado === 'si' ? 'activado' : 'desactivado'}.`, 'success');
+      usuario.activo = nuevoEstado;
+      this.cargarDatos();
+    },
+    error: (err) => this.mostrarToast('Error al cambiar estado.', 'danger')
+  });
 }
 
-async guardarUsuario(usuarioEditado: any) {
-  await Memorialocal.actualizarPorCampo('usuarios', 'rut', usuarioEditado.rut, (usuario: any) => ({
-    ...usuario,
-    nombre: usuarioEditado.nombre,
-    rol: usuarioEditado.rol
-  }));
-  this.usuarioEditandoRut = null;
-  await this.cargarUsuarios();
-}
 
   filtrarVehiculos() {
     const termino = this.criterioBusqueda.trim().toLowerCase();
@@ -106,48 +143,62 @@ async guardarUsuario(usuarioEditado: any) {
       );
     }
   }
-
-  // Usuarios
-  async desactivarUsuario(rut: string) {
-    await Memorialocal.actualizarPorCampo('usuarios', 'rut', rut, (usuario: any) => {
-      usuario.activo = false;
-      return usuario;
+  
+  editarVehiculo(vehiculo: any) 
+  { this.vehiculoEditandoPatente = vehiculo.patente; }
+  cancelarEdicionVehiculo() 
+  { this.vehiculoEditandoPatente = null; this.cargarDatos(); }
+  
+    guardarVehiculo(vehiculo: any) {
+    const datosActualizar = {
+      marca: vehiculo.marca,
+      modelo: vehiculo.modelo,
+      nombre_conductor: vehiculo.nombre_conductor,
+      nombre_conductor_reemplazo: vehiculo.nombre_conductor_reemplazo,
+      necesita_reemplazo: vehiculo.necesita_reemplazo, 
+      patente_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.patente_reemplazo : null,
+      justificacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.justificacion_reemplazo : null,
+      autorizacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.autorizacion_reemplazo : null,
+     fecha_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazo : null,
+     revision_tecnica_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.revision_tecnica_reemplazo : null
+    };
+    this.administracion.updateVehiculo(vehiculo.patente, datosActualizar).subscribe({
+      next: () => {
+        this.mostrarToast('Vehículo actualizado.', 'success');
+        this.vehiculoEditandoPatente = null;
+        this.cargarDatos(); 
+      },
+      error: (err) => this.mostrarToast('Error al guardar vehículo.', 'danger')
     });
-    await this.cargarUsuarios();
   }
 
-  async activarUsuario(rut: string) {
-   await Memorialocal.actualizarPorCampo('usuarios', 'rut', rut, (usuario: any) => {
-      usuario.activo = true;
-      return usuario;
+cambiarEstadoVehiculo(vehiculo: any) {
+  const nuevoEstado = vehiculo.activo === 'si' ? 'no' : 'si';
+  this.administracion.updateVehiculo(vehiculo.patente, { activo: nuevoEstado }).subscribe({
+    next: () => {
+      this.mostrarToast(`Vehículo ${nuevoEstado === 'si' ? 'activado' : 'desactivado'}.`, 'success');
+      vehiculo.activo = nuevoEstado;
+      this.cargarDatos();
+    },
+    error: (err) => this.mostrarToast('Error al cambiar estado.', 'danger')
+  });
+}
+  
+  actualizarReemplazo(vehiculo: any) {
+    const datosActualizar = {
+      requiere_reemplazo: vehiculo.requiere_reemplazo,
+      patente_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.patente_reemplazo : null,
+      justificacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.justificacion_reemplazo : null,
+    };
+    this.administracion.updateVehiculo(vehiculo.patente, datosActualizar).subscribe({
+      next: () => {
+        this.mostrarToast('Información de reemplazo actualizada.', 'success');
+      },
+      error: (err) => this.mostrarToast('Error al actualizar reemplazo.', 'danger')
     });
-   await this.cargarUsuarios();
   }
 
-  async cambiarRolUsuario(rut: string, nuevoRol: string) {
-    await Memorialocal.actualizarPorCampo('usuarios', 'rut', rut, (usuario: any) => {
-      usuario.rol = nuevoRol;
-      return usuario;
-    });
-    await this.cargarUsuarios();
-  }
 
-  // Vehículos
-  async desactivarVehiculo(patente: string) {
-    await Memorialocal.actualizarPorCampo('vehiculos', 'patente', patente, (vehiculo: any) => {
-      vehiculo.activo = false;
-      return vehiculo;
-    });
-   await this.cargarVehiculos();
-  }
-
-  async activarVehiculo(patente: string) {
-   await Memorialocal.actualizarPorCampo('vehiculos', 'patente', patente, (vehiculo: any) => {
-      vehiculo.activo = true;
-      return vehiculo;
-    });
-   await this.cargarVehiculos();
-  }
 
   limpiarBusqueda() {
     this.terminoBusqueda = '';
@@ -155,37 +206,36 @@ async guardarUsuario(usuarioEditado: any) {
     this.cargarUsuarios();
     this.cargarVehiculos();
   }
-  vehiculoEditandoPatente: string | null = null;
 
-editarVehiculo(vehiculo: any) {
-  this.vehiculoEditandoPatente = vehiculo.patente;
+  cargarUsuarios() {
+    this.administracion.getUsuarios().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.filtrarUsuarios();
+      },
+      error: (err) => this.mostrarToast('Error al cargar usuarios.', 'danger')
+    });
+  }
+
+  cargarVehiculos() {
+    this.administracion.getVehiculos().subscribe({
+      next: (data) => {
+        this.vehiculos = data;
+        this.filtrarVehiculos();
+      },
+      error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
+    });
+  }
+
 }
 
-async guardarVehiculo(vehiculoEditado: any) {
-  await Memorialocal.actualizarPorCampo('vehiculos', 'patente', vehiculoEditado.patente, (vehiculo: any) => ({
-    ...vehiculo,
-    marca: vehiculoEditado.marca,
-    modelo: vehiculoEditado.modelo,
-    conductorTitular: vehiculoEditado.conductorTitular
-  }));
-  this.vehiculoEditandoPatente = null;
-  await this.cargarVehiculos();
+
+function filtrarUsuarios() {
+  throw new Error('Function not implemented.');
 }
 
-  // Navegaciones
-  goToHomePage() {
-    this.router.navigate(['/home']);
-  }
-  goToRegistroUsuarioPage() {
-    this.router.navigate(['/registro-usuario']);
-  }
-  goToRegistroVehiculoPage() {
-    this.router.navigate(['/registro-vehiculo']);
-  }
-  goToBitacoraPage() {
-    this.router.navigate(['/bitacora']);
-  }
-  goToViajesSolicitadosPage() {
-    this.router.navigate(['/viajes-solicitados']);
-  }
+
+function goToHomePage() {
+  throw new Error('Function not implemented.');
 }
+

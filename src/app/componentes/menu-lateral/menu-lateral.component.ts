@@ -51,13 +51,15 @@ export class MenuLateralComponent {
     { label: 'Inicio',              path: '/home',                           roles: ['adminSistema','conductor','its','solicitante','coordinador'] },
     { label: 'Viajes solicitados',  path: '/viajes-solicitados',             roles: ['adminSistema','its','coordinador'] },
     { label: 'Solicitar viaje',     path: '/solicitud-viaje',                roles: ['adminSistema','its','coordinador','solicitante'] },
-    { label: 'Carga de Viajes',     path: '/viajes-masivos' ,               roles: ['adminSistema','its','coordinador'] },
+    { label: 'Carga de Viajes',     path: '/viajes-masivos' ,                roles: ['adminSistema','its','coordinador'] },
     { label: 'Registro Usuario',    path: '/registro-usuario',               roles: ['adminSistema'] },
     { label: 'Registro Vehículo',   path: '/registro-vehiculo',              roles: ['adminSistema','its'] },
     { label: 'Bitácora',            path: '/bitacora',                       roles: ['adminSistema','its','conductor'] },
     { label: 'Gestión',             path: '/gestion',                        roles: ['adminSistema','coordinador'] },
     { label: 'Calendario',          path: '/calendario',                     roles: ['adminSistema','conductor','its','solicitante','coordinador'] },
-    { label: 'Mis Viajes',          path: '/mis-viajes',                     roles: ['adminSistema','conductor','its','solicitante','coordinador'] }, 
+    { label: 'Mis Viajes',          path: '/mis-viajes',                     roles: ['adminSistema','conductor','its','solicitante','coordinador'] },
+    { label: 'Historico de Solicitudes',          path: '/historico-solicitud',             roles: ['adminSistema','its'] },  
+
 
   ];
 
