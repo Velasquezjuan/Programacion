@@ -50,6 +50,8 @@ export class ViajesMasivosPage implements OnInit {
   maxOcupantes = 9;
   canAddHorario: boolean = true;
 
+  programasDisponibles: any[] = [];
+
     auto = {
     vehiculo: [] as { value:string; label:string }[]
   };
@@ -114,17 +116,23 @@ export class ViajesMasivosPage implements OnInit {
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
     if (this.usuarioActivo) {
         this.rolUsuario = this.usuarioActivo.rol;
-        this.planificacionForm.get('responsable')?.setValue(this.usuarioActivo.nombre);
+        this.planificacionForm.get('')?.setValue(this.usuarioActivo.nombre);
     } else {
         this.rolUsuario = '';
     }
     
     this.cargarVehiculos(); 
-    this.cargarProgramas(); 
+   // this.cargarProgramas(); 
     this.cargarCentros(); 
     this.agregarHorario();
 
-    this.planificacionForm.get('vehiculo')?.valueChanges.subscribe(() => this.updateOcupantesValidator());
+    const inicialVehiculo = this.planificacionForm.get('vehiculo')?.value || '';
+    this.cargarProgramasPorVehiculo(inicialVehiculo);
+
+    this.planificacionForm.get('vehiculo')?.valueChanges.subscribe((val: string) => {
+      this.updateOcupantesValidator();
+      this.cargarProgramasPorVehiculo(val || '');
+    });
   }
 
   updateOcupantesValidator() {
@@ -165,6 +173,35 @@ export class ViajesMasivosPage implements OnInit {
       this.canAddHorario = true;
     }
   }
+  cargarProgramasPorVehiculo(patente: string) {
+    if (!patente) {
+      this.programasDisponibles = [];
+      this.horarios.controls.forEach(control => {
+        control.get('programa')?.setValue(''); 
+      });
+      return;
+    }
+
+    const vehiculoSeleccionado = this.vehiculos.find(v => v.id === patente);
+    if (!vehiculoSeleccionado) return;
+
+    this.vehiculoServicio.getProgramasPorVehiculo(vehiculoSeleccionado.patente).subscribe({
+      next: (data) => {
+        this.programasDisponibles = data;
+     
+        this.horarios.controls.forEach(control => {
+          control.get('programa')?.setValue('');
+        });
+        if (data.length === 0) {
+          this.mostrarToast('Este vehículo no tiene programas asignados.', 'warning');
+        }
+      },
+      error: (err) => {
+        this.mostrarToast('Error al cargar programas para este vehículo.', 'danger');
+        this.programasDisponibles = [];
+      }
+    });
+  }
 
   isWeekday = (dateString: string): boolean => {
     const date = new Date(dateString);
@@ -179,9 +216,9 @@ export class ViajesMasivosPage implements OnInit {
     });
   }
   
-  cargarProgramas() {
+/* cargarProgramas() {
     this.programa = { prog: this.centroServicio.obtenerPrograma('prog') };
-  }
+  }*/
 
  
   cargarCentros() {
@@ -199,8 +236,8 @@ export class ViajesMasivosPage implements OnInit {
 
   nuevoHorario(): FormGroup {
     return this.fb.group({
-      inicio: ['08:00', Validators.required],
-      fin: ['17:00', Validators.required],
+      inicio: [ /*'08:00'*/, Validators.required],
+      fin: [/*'17:00'*/, Validators.required],
       programa: ['', Validators.required],
       puntoSalida: ['', Validators.required],
       direccionSalida: [''],

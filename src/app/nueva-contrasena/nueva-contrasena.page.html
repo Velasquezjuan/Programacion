@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Crear Nueva Contraseña</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="container text-center mt-4 d-flex justify-content-center align-items-center">
+    <img src="assets/img/Logo cmpa 2.png" alt="Logo" class="img-fluid auto-image" />
+  </div>
+
+  <div *ngIf="tokenValido; else tokenInvalido">
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title class="ion-text-center">Nueva Contraseña</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="ion-text-center">
+          Por favor, ingrese su nueva contraseña abajo. Asegúrese que cumpla con los requisitos de seguridad.
+        </p>
+        <p class="ion-margin-top">Asegúrese de tener:</p>
+        <ul>
+          <li>Al menos 6 caracteres.</li>
+          <li>Incluir letras mayúsculas y minúsculas.</li>
+          <li>Incluir números.</li>
+          <li>Incluir caracteres especiales (!"#$%").</li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-content>
+        <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()">
+          
+          <ion-item fill="outline" class="ion-margin-top">
+            <ion-label position="floating">Nueva Contraseña</ion-label>
+            <ion-input 
+              [type]="showPassword ? 'text' : 'password'" 
+              formControlName="contrasena">
+            </ion-input>
+            <ion-button fill="clear" slot="end" (click)="togglePassword()">
+              <ion-icon slot="icon-only" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <div *ngIf="passwordForm.get('contrasena')?.invalid && passwordForm.get('contrasena')?.touched" class="error-message">
+            <div *ngIf="passwordForm.get('contrasena')?.errors?.['required']">
+              La contraseña es obligatoria.
+            </div>
+            <div *ngIf="passwordForm.get('contrasena')?.errors?.['minlength']">
+              Debe tener al menos 6 caracteres.
+            </div>
+            </div>
+
+          <ion-item fill="outline" class="ion-margin-top">
+            <ion-label position="floating">Confirmar Contraseña</ion-label>
+            <ion-input 
+              [type]="showConfirmPassword ? 'text' : 'password'" 
+              formControlName="confirmarContrasena">
+            </ion-input>
+            <ion-button fill="clear" slot="end" (click)="toggleConfirmPassword()">
+              <ion-icon slot="icon-only" [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <div *ngIf="passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmarContrasena')?.touched" class="error-message">
+            Las contraseñas no coinciden.
+          </div>
+
+          <ion-button shape="round" type="submit" [disabled]="passwordForm.invalid" class="ion-margin-top" expand="block">
+            Guardar Nueva Contraseña
+          </ion-button>
+          
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+  </div> <ng-template #tokenInvalido>
+    <ion-text color="danger">
+      <h3 class="ion-text-center">{{ mensajeError || 'Cargando...' }}</h3>
+    </ion-text>
+    <ion-button fill="clear" shape="round" (click)="goTologinPage()">Volver al Inicio</ion-button>
+  </ng-template>
+
+</ion-content>

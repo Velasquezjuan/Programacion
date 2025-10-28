@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes');
 const viajeRoutes = require('./routes/viaje.routes'); 
 const viajeController = require('./controllers/viaje.controller');
 const bitacoraRoutes = require('./routes/bitacora.routes');
+const cambiocontraRoutes = require('./routes/cambiocontra.routes');
 
 const app = express();
 app.use(cors());
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/viajes', viajeRoutes);
 app.use('/api/gestion', require('./routes/gestion.routes'));
 app.use('/api/bitacora', bitacoraRoutes);
+app.use('/api/cambiocontra', cambiocontraRoutes);
 
 
 

@@ -4,31 +4,58 @@
     <img src="assets/img/Logo cmpa 2.png" alt="Logo" class="img-fluid auto-image" />
   </div>
 
-  <ion-list class="ion-text-center">
-    <!-- Campo de correo electrónico -->
-    <ion-item>
-      <ion-input id="emailInput" type="email" label="Ingrese su Correo" placeholder="nombre.apellido@cmpuentealto.cl"
-        label-placement="floating" fill="outline" [(ngModel)]="email" required></ion-input>
-      <!-- Ícono de envío con evento -->
-      <ion-icon src="assets/icon/mail-sharp.svg" class="large-icon" slot="end"  (click)="sendEmail()"
-        color="primary"></ion-icon>
-    </ion-item>
+<div *ngIf="paso === 'ingresarRUT'">
+    <ion-list class="ion-text-center">
+      <ion-item>
+        <ion-input 
+          id="rutInput" 
+          type="text" 
+          label="Ingrese su RUT" 
+          placeholder="Ej: 123456789"
+          label-placement="floating" 
+          fill="outline" 
+          [(ngModel)]="rut" 
+          required>
+        </ion-input>
+        <ion-icon name="person-outline" slot="end" color="primary"></ion-icon>
+      </ion-item>
+      <ion-item class="button-container">
+        <ion-button (click)="buscarCorreoPorRUT()">Buscar</ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
 
-    <!-- Mensaje informativo -->
-    <ion-item>
-      <ion-label>
-        <p>Se enviará un correo, el cual no debe responder, donde se le indicará la nueva contraseña para ingresar al sistema.
-        Si el correo supera los 2 días, comuníquese con: 22 - 1111 1111.</p>
-      </ion-label>
-    </ion-item>
+  <div *ngIf="paso === 'confirmarCorreo'">
+    <ion-list class="ion-text-center">
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">
+          <p>Hemos encontrado un correo asociado a este RUT:</p>
+          <h2>{{ correoMascarado }}</h2>
+          <p>¿Es este su correo electrónico?</p>
+        </ion-label>
+      </ion-item>
+      <ion-item class="button-container">
+        <ion-button fill="outline" color="danger" (click)="mostrarMensajeAdmin()">No</ion-button>
+        <ion-button color="success" (click)="confirmarEnvio()">Sí, enviar enlace</ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
 
-    <!-- Botón para regresar a la página de inicio -->
-    <ion-item class="button-container">
-      <ion-button fill="outline" (click)="goTohomePage()">Inicio</ion-button>
-    </ion-item>
+  <div *ngIf="paso === 'contactarAdmin'">
+    <ion-list class="ion-text-center">
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">
+          <p>Para recuperar su cuenta, por favor, póngase en contacto con el administrador del sistema.</p>
+        </ion-label>
+      </ion-item>
+      <ion-item class="button-container">
+        <ion-button fill="outline" (click)="volverAInicio()">Volver</ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
 
-    <!-- Alerta de confirmación -->
-    <ion-alert is-open="alertOpen" header="Correo Enviado"
-      message="Su contraseña será enviada en un plazo máximo de 2 días." buttons="['OK']"></ion-alert>
-  </ion-list>
+  <ion-item class="button-container ion-text-center">
+    <ion-button fill="clear" (click)="goTohomePage()">Volver al Inicio</ion-button>
+  </ion-item>
+  
 </ion-content>

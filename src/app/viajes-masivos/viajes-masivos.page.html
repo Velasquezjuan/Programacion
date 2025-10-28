@@ -40,11 +40,20 @@
               <ion-card-content formArrayName="horarios">
                 <div *ngFor="let horario of horarios.controls; let i = index" class="schedule-row">
                   <div [formGroupName]="i" class="schedule-inputs">
-                    <ion-item><ion-input label="Hora Inicio (08-17h)" label-placement="stacked" type="time" formControlName="inicio" min="08:00" max="17:00"></ion-input></ion-item>
-                    <ion-item><ion-input label="Hora Fin (08-17h)" label-placement="stacked" type="time" formControlName="fin" min="08:00" max="17:00"></ion-input></ion-item>
+                    <ion-item><ion-input label="Hora Inicio (08-17h)" label-placement="stacked" type="time" formControlName="inicio"
+                       min="08:00" max="17:00"
+                       ></ion-input></ion-item>
+                    <ion-item><ion-input label="Hora Fin (08-17h)" label-placement="stacked" type="time" formControlName="fin"
+                       min="08:00" max="17:00"
+                       ></ion-input></ion-item>
                     <ion-item>
-                      <ion-select formControlName="programa" label="Programa" label-placement="stacked">
-                        <ion-select-option *ngFor="let item of programa.prog" [value]="item.value">{{ item.label }}</ion-select-option>
+                      <ion-select 
+                        formControlName="programa" label="Programa" 
+                        label-placement="stacked" placeholder="Seleccione un programa"
+                        [disabled]="programasDisponibles.length === 0"> <ion-select-option *ngFor="let p of programasDisponibles" [value]="p.value">
+                          {{p.label}}
+                        </ion-select-option>
+                        
                       </ion-select>
                     </ion-item>
                     
@@ -122,9 +131,9 @@
                   <ion-input 
                     label="Cantidad de Ocupantes" 
                     label-placement="stacked" 
-                    type="number" 
+                    type="number" placeholder="ingrese con numeros la cantidad de ocupantes ej 2"
                     formControlName="ocupantes" 
-                    [max]="maxOcupantes">
+                    [max]="maxOcupantes"> 
                   </ion-input>
                 </ion-item>
 
@@ -140,9 +149,9 @@
                   </div>
                 </div>
                 <ion-item><ion-input label="Motivo del viaje" label-placement="stacked" 
-                  formControlName="motivo"></ion-input></ion-item>
+                  formControlName="motivo" placeholder="ingrese motivos del uso del vehiculo"></ion-input></ion-item>
                 <ion-item><ion-input label="Responsable" label-placement="stacked" 
-                  formControlName="responsable"></ion-input></ion-item>
+                  formControlName="responsable" placeholder="ingrese quien utilizara el movil "></ion-input></ion-item>
               </ion-card-content>
             </ion-card>
 

@@ -30,5 +30,5 @@ const validateUser = [
 router.post('/registro-usuario', validateUser, authController.register);
 router.post('/login', authController.login);
 router.get('/usuarios', authController.getTodosLosUsuarios);
-
+router.post('/buscar-por-rut', authController.buscarUsuarioPorRut);
 module.exports = router;

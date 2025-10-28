@@ -58,20 +58,22 @@ export class LoginPage {
 
 async login() {
     if (this.loginForm.invalid) {
-      return this.show('Debes ingresar correo y contraseña válidos', 'warning');
-    }
-    
-    const { correo, contrasena } = this.loginForm.value;
+    return this.show('Debes ingresar correo y contraseña válidos', 'warning');
+  }
+  
+  const { correo, contrasena } = this.loginForm.value;
 
-    this.auth.login(correo, contrasena).subscribe({
-      next: async (respuesta) => {
-        await this.show(`¡Bienvenido ${respuesta.usuario.nombre}!`, 'success');
-        this.router.navigate(['/home']);
-      },
+   this.auth.login(correo, contrasena).subscribe({
+    next: async (respuesta) => {
+      await this.show(`¡Bienvenido ${respuesta.usuario.nombre}!`, 'success');
+      this.router.navigate(['/home']);
+    },
       error: async (error) => {
-        console.error('Error en el proceso de login:', error);
-        await this.show(error.message || 'Error al iniciar sesión.', 'danger');
-      }
+      console.error('Error en el proceso de login:', error);
+      const mensaje = error.error?.message || 'Error en el proceso de login. Por favor, intenta nuevamente.';
+      
+      await this.show(mensaje, 'danger');
+    }
     });
   }
 

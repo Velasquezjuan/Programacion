@@ -63,4 +63,30 @@ private getAuthHeaders(): Observable<HttpHeaders> {
       })
     );
   }
+
+  getVehiculosPorPrograma(idPrograma: string): Observable<any[]> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.get<any[]>(`${this.apiUrl}/por-programa/${idPrograma}`, { headers });
+      })
+    );
+  }
+
+  getTiposVehiculoPorPrograma(idPrograma: string): Observable<any[]> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.get<any[]>(`${this.apiUrl}/tipos-por-programa/${idPrograma}`, { headers });
+      })
+    );
+  }
+  
+  getProgramasPorVehiculo(patente: string): Observable<any[]> {
+    return this.getAuthHeaders().pipe(
+      switchMap(headers => {
+        return this.http.get<any[]>(`${this.apiUrl}/programas-por-vehiculo/${patente}`, { headers });
+      })
+    );
+  }
+
+
 }

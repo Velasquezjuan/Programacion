@@ -22,154 +22,169 @@
         </ion-grid>
 
         <!-- Tipo de búsqueda -->
-    <ion-item>
+      <ion-item>
           <ion-select [(ngModel)]="tipoBusqueda" label="Tipo de Gestión" label-placement="stacked">
             <ion-select-option value="usuario">Usuarios</ion-select-option>
             <ion-select-option value="vehiculo">Vehículos</ion-select-option>
           </ion-select>
         </ion-item>
 
-        <ng-container *ngIf="tipoBusqueda === 'usuario'">
-          <ion-searchbar [(ngModel)]="terminoBusqueda" (ionInput)="filtrarUsuarios()" placeholder="Buscar por RUT o Nombre"></ion-searchbar>
-          <ion-list>
-            <ion-item *ngFor="let user of usuariosFiltrados">
-              <ion-label *ngIf="usuarioEditandoRut !== user.rut">
-                <h2>{{ user.nombre }} {{ user.apellido_paterno }}</h2>
-                <p>RUT: {{ user.rut }} | Rol: {{ user.rol }}</p>
-                <p>Correo: {{ user.correo }}</p>
-                <p>Estado: <b [class]="user.activo === 'si' ? 'activo' : 'inactivo'">{{ user.activo === 'si' ? 'Activo' : 'Inactivo' }}</b></p>
-              </ion-label>
+     <ng-container *ngIf="tipoBusqueda === 'usuario'">
+  <ion-searchbar [(ngModel)]="terminoBusqueda" (ionInput)="filtrarUsuarios()" placeholder="Buscar por RUT o Nombre"></ion-searchbar>
+  <ion-list>
+    
+    <ion-item *ngFor="let user of usuariosFiltrados">
+      
+      <ion-label *ngIf="usuarioEditandoRut !== user.rut">
+        <h2>{{ user.nombre }} {{ user.apellido_paterno }}</h2>
+        <p>RUT: {{ user.rut }} | Rol: {{ user.rol }}</p>
+        <p>Correo: {{ user.correo }}</p>
+        <p>Área: {{ user.area }} | Estab: {{ user.establecimiento }}</p>
+        <p>Estado: 
+          <ion-text [color]="user.activo === 'si' ? 'success' : 'danger'">
+            <b>{{ user.activo === 'si' ? 'Activo' : 'Inactivo' }}</b>
+          </ion-text>
+        </p>
+        <p *ngIf="user.bloqueado === 'si'">
+          <ion-text color="danger"><b>CUENTA BLOQUEADA</b></ion-text>
+        </p>
+      </ion-label>
 
-              <div *ngIf="usuarioEditandoRut === user.rut" class="edit-form">
-                <ion-input label="Nombre" label-placement="floating" [(ngModel)]="user.nombre"></ion-input>
-                <ion-select label="Rol" label-placement="stacked" [(ngModel)]="user.rol">
-                  <ion-select-option value="adminSistema">Administrador</ion-select-option>
-                  <ion-select-option value="solicitante">Solicitante</ion-select-option>
-                  <ion-select-option value="coordinador">Coordinador</ion-select-option>
-                  <ion-select-option value="conductor">Conductor</ion-select-option>
-                  <ion-select-option value="its">ITS</ion-select-option>
-                </ion-select>
-              </div>
+      <div *ngIf="usuarioEditandoRut === user.rut" class="edit-form">
+        <ion-item>
+          <ion-input label="Nombre" label-placement="floating" [value]="user.nombre" (ionInput)="user.nombre = $event.target.value"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Área" label-placement="floating" [value]="user.area" (ionInput)="user.area = $event.target.value"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Rol" label-placement="stacked" [value]="user.rol" (ionChange)="user.rol = $event.detail.value">
+            <ion-select-option value="adminSistema">Administrador</ion-select-option>
+            <ion-select-option value="solicitante">Solicitante</ion-select-option>
+            <ion-select-option value="coordinador">Coordinador</ion-select-option>
+            <ion-select-option value="conductor">Conductor</ion-select-option>
+            <ion-select-option value="its">ITS</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Establecimiento" label-placement="stacked" [value]="user.ESTABLECIMIENTO_idEstablecimiento" (ionChange)="user.ESTABLECIMIENTO_idEstablecimiento = $event.detail.value">
+            <ion-select-option *ngFor="let est of establecimientos" [value]="est.idEstablecimiento">
+              {{ est.nombre_establecimiento }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
 
-              <div slot="end" class="button-group">
-                <ng-container *ngIf="usuarioEditandoRut !== user.rut">
-                  <ion-button fill="clear" (click)="editarUsuario(user)"><ion-icon name="create-outline"></ion-icon></ion-button>
-                  <ion-button fill="clear" [color]="user.activo ? 'danger' : 'success'" (click)="cambiarEstadoUsuario(user)">
-                    <ion-icon [name]="user.activo ? 'trash-outline' : 'checkmark-circle-outline'"></ion-icon>
-                  </ion-button>
-                </ng-container>
-                <ng-container *ngIf="usuarioEditandoRut === user.rut">
-                  <ion-button fill="clear" color="success" (click)="guardarUsuario(user)"><ion-icon name="save-outline"></ion-icon></ion-button>
-                  <ion-button fill="clear" color="medium" (click)="cancelarEdicionUsuario()"><ion-icon name="close-circle-outline"></ion-icon></ion-button>
-                </ng-container>
-              </div>
-            </ion-item>
-          </ion-list>
+      <div slot="end" class="button-group">
+
+        <ion-button *ngIf="user.bloqueado === 'si'" fill="clear" color="warning" (click)="desbloquearUsuario(user)">
+          <ion-icon name="key-outline"></ion-icon>
+        </ion-button>
+
+        <ng-container *ngIf="usuarioEditandoRut !== user.rut">
+          <ion-button fill="clear" (click)="editarUsuario(user)"><ion-icon name="create-outline"></ion-icon></ion-button>
+          <ion-button fill="clear" [color]="user.activo === 'si' ? 'danger' : 'success'" (click)="cambiarEstadoUsuario(user)">
+            <ion-icon [name]="user.activo === 'si' ? 'trash-outline' : 'checkmark-circle-outline'"></ion-icon>
+          </ion-button>
         </ng-container>
+        
+        <ng-container *ngIf="usuarioEditandoRut === user.rut">
+          <ion-button fill="clear" color="success" (click)="guardarUsuario(user)"><ion-icon name="save-outline"></ion-icon></ion-button>
+          <ion-button fill="clear" color="medium" (click)="cancelarEdicionUsuario()"><ion-icon name="close-circle-outline"></ion-icon></ion-button>
+        </ng-container>
+      </div>
+    </ion-item>
+  </ion-list>
+</ng-container>
 
-        <ng-container *ngIf="tipoBusqueda === 'vehiculo'">
-          <ion-searchbar [(ngModel)]="criterioBusqueda" (ionInput)="filtrarVehiculos()" placeholder="Buscar por Patente"></ion-searchbar>
-          <ion-list>
-            <ion-item *ngFor="let v of vehiculosFiltrados" class="item-vehiculo">
-              <ion-label *ngIf="vehiculoEditandoPatente !== v.patente">
-                <h2>{{ v.marca }} {{ v.modelo }} ({{ v.ano }}) - <b>{{ v.patente }}</b></h2>
-                <p>Tipo: {{ v.tipoVehiculo }} | Capacidad: {{ v.capacidad ? 'Sí' : 'No' }}</p>
-                <p>Conductor: {{ v.nombre_conductor }} | Reemplazo: {{ v.nombre_conductor_reemplazo || 'N/A' }}</p>
-                <p>Responsable (Proveedor): {{ v.responsable || 'N/A' }}</p>
-                <p>Revisión Técnica: {{ v.revision_tecnica | date:'dd/MM/yyyy' }}</p>
-                 <p>Estado: <b [class]="v.activo === 'si' ? 'activo' : 'inactivo'">{{ v.activo === 'si' ? 'Activo' : 'Inactivo' }}</b></p>
-                <div *ngIf="v.requiere_reemplazo" class="reemplazo-info">
-                  <p><b>Requiere Reemplazo:</b> Sí</p>
-                  <p><b>Justificación:</b> {{ v.justificacion_reemplazo }}</p>
-                  <p><b>Patente Reemplazo:</b> {{ v.patente_reemplazo }}</p>
-                </div>
-              </ion-label>
+          <ng-container *ngIf="tipoBusqueda === 'vehiculo'">
+      <ion-searchbar [(ngModel)]="criterioBusqueda" (ionInput)="filtrarVehiculos()" placeholder="Buscar por Patente"></ion-searchbar>
+      <ion-list>
+        <ion-item *ngFor="let v of vehiculosFiltrados" class="item-vehiculo">
+          
+          <ion-label *ngIf="vehiculoEditandoPatente !== v.patente">
+            <h2>{{ v.marca }} {{ v.modelo }} ({{ v.ano }}) - <b>{{ v.patente }}</b></h2>
+            <p><b>Conductor:</b> {{ v.nombre_conductor }}</p>
+            <p><b>Tipo:</b> {{ v.tipoVehiculo }} | <b>Capacidad:</b> {{ v.capacidad ? 'Sí' : 'No' }}</p>
+            <p><b>Proveedor:</b> {{ v.responsable || 'N/A' }}</p>
+            <p><b>Estado:</b> <ion-text [color]="v.activo === 'si' ? 'success' : 'danger'"><b>{{ v.activo === 'si' ? 'Activo' : 'Inactivo' }}</b></ion-text></p>
+            
+            <ion-item lines="none" class="info-item">
+              <p><b>Rev. Técnica:</b> {{ v.revision_tecnica | date:'dd/MM/yyyy' }}</p>
+              <p><b>Permiso Circ.:</b> {{ v.permiso_circulacion | date:'dd/MM/yyyy' }}</p>
+              <p><b>Seg Oblig.:</b> {{ v.seguro_obligatorio | date:'dd/MM/yyyy' }}</p>
+              <p><b>Venc. Contrato:</b> {{ v.fecha_contrato | date:'dd/MM/yyyy' }}</p>
+            </ion-item>
+            
+            <div *ngIf="v.necesita_reemplazo === 'si'" class="reemplazo-info">
+              <p><b>REQUIERE REEMPLAZO</b></p>
+              <p><b>Justificación:</b> {{ v.justificacion_reemplazo }}</p>
+              <p><b>Patente Reemplazo:</b> {{ v.patente_reemplazo }} | <b>Conductor:</b> {{ v.nombre_conductor_reemplazo }}</p>
+            </div>
+          </ion-label>
 
-              <div *ngIf="vehiculoEditandoPatente === v.patente" class="edit-form">
+          <div *ngIf="vehiculoEditandoPatente === v.patente" class="edit-form">
+            <h2>{{ v.marca }} {{ v.modelo }} ({{ v.ano }}) - <b>{{ v.patente }}</b></h2>
+            <p><b>Conductor:</b> {{ v.nombre_conductor }}</p>
+            <p><b>Proveedor:</b> {{ v.responsable || 'N/A' }}</p>
+            
             <ion-item>
-              <ion-input label="Marca" label-placement="stacked" [value]="v.marca" (ionInput)="v.marca = $event.target.value"></ion-input>
+              <ion-input label="Revisión Técnica" label-placement="stacked" type="date"
+                [value]="v.revision_tecnica | date:'yyyy-MM-dd'" 
+                (ionInput)="v.revision_tecnica = $event.target.value">
+              </ion-input>
             </ion-item>
             
             <ion-item>
-              <ion-input label="Modelo" label-placement="stacked" [value]="v.modelo" (ionInput)="v.modelo = $event.target.value"></ion-input>
+              <ion-input label="Permiso Circulación" label-placement="stacked" type="date"
+                [value]="v.permiso_circulacion | date:'yyyy-MM-dd'" 
+                (ionInput)="v.permiso_circulacion = $event.target.value">
+              </ion-input>
             </ion-item>
 
             <ion-item>
-              <ion-input label="Conductor Titular" label-placement="stacked" [value]="v.nombre_conductor" (ionInput)="v.nombre_conductor = $event.target.value"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input label="Conductor Reemplazo" label-placement="stacked" [value]="v.nombre_conductor_reemplazo" (ionInput)="v.nombre_conductor_reemplazo = $event.target.value"></ion-input>
-            </ion-item>
-
-            <ion-item>
-              <ion-toggle 
-                [checked]="v.necesita_reemplazo === 'si'" 
-                (ionChange)="v.necesita_reemplazo = $event.detail.checked ? 'si' : 'no'">
+              <ion-toggle [checked]="v.necesita_reemplazo === 'si'" (ionChange)="v.necesita_reemplazo = $event.detail.checked ? 'si' : 'no'">
                 Requiere Reemplazo
               </ion-toggle>
             </ion-item>
 
             <ng-container *ngIf="v.necesita_reemplazo === 'si'">
               <ion-item>
-                <ion-input 
-                  label="Patente Reemplazo" 
-                  label-placement="stacked" 
-                  [value]="v.patente_reemplazo" 
-                  (ionInput)="v.patente_reemplazo = $event.target.value">
-                </ion-input>
+                <ion-input label="Conductor Reemplazo" label-placement="stacked" [value]="v.nombre_conductor_reemplazo" (ionInput)="v.nombre_conductor_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
-                <ion-textarea 
-                  label="Justificación" 
-                  label-placement="stacked" 
-                  [value]="v.justificacion_reemplazo" 
-                  (ionInput)="v.justificacion_reemplazo = $event.target.value">
-                </ion-textarea>
+                <ion-input label="Patente Reemplazo" label-placement="stacked" [value]="v.patente_reemplazo" (ionInput)="v.patente_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
-                <ion-textarea 
-                  label="Autorizacion del reemplazo" 
-                  label-placement="stacked" 
-                  [value]="v.autorizacion_reemplazo" 
-                  (ionInput)="v.autorizacion_reemplazo = $event.target.value">
-                </ion-textarea>
+                <ion-input label="Fecha Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
-                <ion-input
-                  label="Fecha que se realiza el reemplazo"
-                  label-placement="stacked"
-                  type="date"
-                  [value]="v.fecha_reemplazo | date:'yyyy-MM-dd'"
-                  (ionInput)="v.fecha_reemplazo = $event.target.value">
-                </ion-input>
+                <ion-input label="Rev. Téc. Reemplazo" label-placement="stacked" type="date" [value]="v.revision_tecnica_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.revision_tecnica_reemplazo = $event.target.value"></ion-input>
               </ion-item>
-
               <ion-item>
-                <ion-input
-                  label="Revisión Técnica del Reemplazo"
-                  label-placement="stacked"
-                  type="date"
-                  [value]="v.revision_tecnica_reemplazo | date:'yyyy-MM-dd'"
-                  (ionInput)="v.revision_tecnica_reemplazo = $event.target.value">
-                </ion-input>
+                <ion-textarea label="Justificación Reemplazo" label-placement="stacked" [value]="v.justificacion_reemplazo" (ionInput)="v.justificacion_reemplazo = $event.target.value"></ion-textarea>
+              </ion-item>
+              <ion-item>
+                <ion-textarea label="Autorización Reemplazo" label-placement="stacked" [value]="v.autorizacion_reemplazo" (ionInput)="v.autorizacion_reemplazo = $event.target.value"></ion-textarea>
               </ion-item>
             </ng-container>
           </div>
-              <div slot="end" class="button-group">
-                <ng-container *ngIf="vehiculoEditandoPatente !== v.patente">
-                  <ion-button fill="clear" (click)="editarVehiculo(v)"><ion-icon name="create-outline"></ion-icon></ion-button>
-                  <ion-button fill="clear" [color]="v.activo ? 'danger' : 'success'" (click)="cambiarEstadoVehiculo(v)">
-                    <ion-icon [name]="v.activo ? 'trash-outline' : 'checkmark-circle-outline'"></ion-icon>
-                  </ion-button>
-                </ng-container>
-                <ng-container *ngIf="vehiculoEditandoPatente === v.patente">
-                  <ion-button fill="clear" color="success" (click)="guardarVehiculo(v)"><ion-icon name="save-outline"></ion-icon></ion-button>
-                  <ion-button fill="clear" color="medium" (click)="cancelarEdicionVehiculo()"><ion-icon name="close-circle-outline"></ion-icon></ion-button>
-                </ng-container>
-              </div>
-            </ion-item>
-          </ion-list>
-        </ng-container>
+
+          <div slot="end" class="button-group">
+            <ng-container *ngIf="vehiculoEditandoPatente !== v.patente">
+              <ion-button fill="clear" (click)="editarVehiculo(v)"><ion-icon name="create-outline"></ion-icon></ion-button>
+              <ion-button fill="clear" [color]="v.activo === 'si' ? 'danger' : 'success'" (click)="cambiarEstadoVehiculo(v)">
+                <ion-icon [name]="v.activo === 'si' ? 'trash-outline' : 'checkmark-circle-outline'"></ion-icon>
+              </ion-button>
+            </ng-container>
+            <ng-container *ngIf="vehiculoEditandoPatente === v.patente">
+              <ion-button fill="clear" color="success" (click)="guardarVehiculo(v)"><ion-icon name="save-outline"></ion-icon></ion-button>
+              <ion-button fill="clear" color="medium" (click)="cancelarEdicionVehiculo()"><ion-icon name="close-circle-outline"></ion-icon></ion-button>
+            </ng-container>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ng-container>
       </div>
     </ion-content>
   </div>

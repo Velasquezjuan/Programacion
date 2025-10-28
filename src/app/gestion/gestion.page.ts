@@ -5,17 +5,16 @@ import { Router, RouterModule } from '@angular/router';
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 import { IonContent, IonHeader, IonTitle, IonToolbar, 
   IonItem, IonList, IonLabel, IonSearchbar, IonSelect,IonSelectOption,
-  IonButton, IonIcon, IonApp,IonButtons, 
+  IonButton, IonIcon, IonApp,IonButtons,IonText,
  } from '@ionic/angular/standalone';
  import { HttpClient } from '@angular/common/http';
  import { HttpClientModule } from '@angular/common/http';
  import { addIcons } from 'ionicons';
 import { trash, sync, createOutline, saveOutline, closeCircleOutline,
-  checkmarkDoneOutline, checkmarkOutline, trashOutline, checkmarkCircleOutline
- } from 'ionicons/icons';
+  checkmarkDoneOutline, checkmarkOutline, trashOutline, checkmarkCircleOutline, keyOutline } from 'ionicons/icons';
 import { Memorialocal } from '../almacen/memorialocal';
 import { Administracion } from '../servicio/administracion';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 
 
 @Component({
@@ -26,7 +25,7 @@ import { ToastController } from '@ionic/angular';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [IonContent, IonHeader,HttpClientModule, IonTitle, RouterModule, MenuLateralComponent, IonToolbar, CommonModule, 
     FormsModule, ReactiveFormsModule , IonItem, IonList, IonLabel, IonSearchbar,
-    IonSelect, IonSelectOption, IonButton, IonIcon, IonApp ,IonButtons, 
+    IonSelect, IonSelectOption, IonButton, IonIcon, IonApp ,IonButtons, IonText,
   ]
 })
 export class GestionPage implements OnInit {
@@ -46,17 +45,17 @@ export class GestionPage implements OnInit {
   actividadActiva: boolean = true;
   requiereReemplazo: boolean = false;
 
+  establecimientos: any[] = [];
+  
+
   constructor(
     private router: Router, 
     private fb: FormBuilder,
     private administracion: Administracion,
+    private alertCtrl: AlertController,
     private toastController: ToastController
   ) {
-      addIcons({
-        createOutline, saveOutline, closeCircleOutline, sync, trash,
-         checkmarkDoneOutline, checkmarkOutline, trashOutline, checkmarkCircleOutline
-         
-      });}
+      addIcons({keyOutline,createOutline,saveOutline,closeCircleOutline,sync,trash,checkmarkDoneOutline,checkmarkOutline,trashOutline,checkmarkCircleOutline});}
 
   rolUsuario: string = '';
 
@@ -79,6 +78,12 @@ export class GestionPage implements OnInit {
       },
       error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
     });
+    this.administracion.getEstablecimientos().subscribe({
+    next: (data) => {
+      this.establecimientos = data;
+    },
+    error: (err) => this.mostrarToast('Error al cargar establecimientos.', 'danger')
+  });
   }
 
   
@@ -109,14 +114,21 @@ editarUsuario(usuario: any) { this.usuarioEditandoRut = usuario.rut; }
 cancelarEdicionUsuario() { this.usuarioEditandoRut = null; this.cargarDatos(); }
 
  guardarUsuario(usuario: any) {
-    this.administracion.updateUsuario(usuario.rut, 
-      { nombre: usuario.nombre, rol: usuario.rol }).subscribe({
+  
+  const datosActualizar = {
+    nombre: usuario.nombre,
+    rol: usuario.rol,
+    area: usuario.area,
+    ESTABLECIMIENTO_idEstablecimiento: usuario.ESTABLECIMIENTO_idEstablecimiento
+  };
+    this.administracion.updateUsuario(usuario.rut, datosActualizar).subscribe({
       next: () => {
         this.mostrarToast('Usuario actualizado.', 'success');
         this.usuarioEditandoRut = null;
       },
       error: (err) => this.mostrarToast('Error al guardar usuario.', 'danger')
     });
+
   }
 
 
@@ -151,25 +163,27 @@ cambiarEstadoUsuario(usuario: any) {
   
     guardarVehiculo(vehiculo: any) {
     const datosActualizar = {
-      marca: vehiculo.marca,
-      modelo: vehiculo.modelo,
-      nombre_conductor: vehiculo.nombre_conductor,
-      nombre_conductor_reemplazo: vehiculo.nombre_conductor_reemplazo,
-      necesita_reemplazo: vehiculo.necesita_reemplazo, 
-      patente_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.patente_reemplazo : null,
-      justificacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.justificacion_reemplazo : null,
-      autorizacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.autorizacion_reemplazo : null,
-     fecha_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazo : null,
-     revision_tecnica_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.revision_tecnica_reemplazo : null
+     necesita_reemplazo: vehiculo.necesita_reemplazo,
+    nombre_conductor_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.nombre_conductor_reemplazo : null,
+    patente_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.patente_reemplazo : null,
+    fecha_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazo : null,
+    revision_tecnica_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.revision_tecnica_reemplazo : null,
+    justificacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.justificacion_reemplazo : null,
+    autorizacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.autorizacion_reemplazo : null,
+    
+    // Campos de Documentación
+    revision_tecnica: vehiculo.revision_tecnica,
+    permiso_circulacion: vehiculo.permiso_circulacion,
+    seguro_obligatorio: vehiculo.seguro_obligatorio,
     };
     this.administracion.updateVehiculo(vehiculo.patente, datosActualizar).subscribe({
-      next: () => {
-        this.mostrarToast('Vehículo actualizado.', 'success');
-        this.vehiculoEditandoPatente = null;
-        this.cargarDatos(); 
-      },
-      error: (err) => this.mostrarToast('Error al guardar vehículo.', 'danger')
-    });
+    next: () => {
+      this.mostrarToast('Vehículo actualizado con éxito.', 'success');
+      this.vehiculoEditandoPatente = null;
+      this.cargarDatos(); 
+    },
+    error: (err) => this.mostrarToast('Error al guardar el vehículo.', 'danger')
+  });
   }
 
 cambiarEstadoVehiculo(vehiculo: any) {
@@ -227,7 +241,31 @@ cambiarEstadoVehiculo(vehiculo: any) {
     });
   }
 
+  async desbloquearUsuario(usuario: any) {
+  const alert = await this.alertCtrl.create({
+    header: 'Confirmar Desbloqueo',
+    message: `¿Estás seguro de que deseas desbloquear la cuenta de ${usuario.nombre}?`,
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Desbloquear',
+        handler: () => {
+          this.administracion.desbloquearUsuario(usuario.rut).subscribe({
+            next: () => {
+              this.mostrarToast('Usuario desbloqueado.', 'success');
+              this.cargarDatos(); 
+            },
+            error: (err) => this.mostrarToast('Error al desbloquear.', 'danger')
+          });
+        }
+      }
+    ]
+  });
+  await alert.present();
 }
+
+}
+
 
 
 function filtrarUsuarios() {

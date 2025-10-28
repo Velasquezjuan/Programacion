@@ -20,6 +20,10 @@ export class Administracion {
   updateUsuario(rut: string, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/usuarios/${rut}`, data);
   }
+  
+  getEstablecimientos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/establecimientos`);
+  }
 
   getVehiculos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/vehiculos`);
@@ -28,5 +32,9 @@ export class Administracion {
   updateVehiculo(patente: string, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/vehiculos/${patente}`, data);
   }
+  
+  desbloquearUsuario(rut: string): Observable<any> {
+  return this.http.put(`${this.apiUrl}/usuarios/${rut}/desbloquear`, {});
+}
 
 }

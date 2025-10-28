@@ -13,6 +13,8 @@ exports.getUsuarios = async (req, res) => {
         u.rol, 
         u.activo, 
         u.area,
+        u.ESTABLECIMIENTO_idEstablecimiento,
+        u.bloqueado,
         e.nombre_establecimiento as establecimiento
       FROM USUARIO u
       LEFT JOIN ESTABLECIMIENTO e ON u.ESTABLECIMIENTO_idEstablecimiento = e.idEstablecimiento;
@@ -28,7 +30,9 @@ exports.getUsuarios = async (req, res) => {
 exports.updateUsuario = async (req, res) => {
   try {
     const { rut } = req.params;
-    const { nombre, rol, activo } = req.body;
+    const { 
+      nombre, rol, activo, area,ESTABLECIMIENTO_idEstablecimiento
+      } = req.body;
 
    
     let query = 'UPDATE USUARIO SET ';
@@ -36,6 +40,9 @@ exports.updateUsuario = async (req, res) => {
     if (nombre !== undefined) { query += 'nombre = ?, '; params.push(nombre); }
     if (rol !== undefined) { query += 'rol = ?, '; params.push(rol); }
     if (activo !== undefined) { query += 'activo = ?, '; params.push(activo); }
+    if (area !== undefined) { query += 'area = ?, '; params.push(area); }
+    if (ESTABLECIMIENTO_idEstablecimiento !== undefined) { query += 'ESTABLECIMIENTO_idEstablecimiento = ?, '; params.push(ESTABLECIMIENTO_idEstablecimiento); }
+
      if (params.length === 0) {
       return res.status(200).json({ message: 'Nada que actualizar.' });
     }
@@ -78,7 +85,10 @@ exports.getVehiculosConDetalles = async (req, res) => {
   try {
     const query = `
      SELECT 
-        v.patente, v.marca, v.modelo, v.ano, v.capacidad, v.revision_tecnica,
+        v.patente, v.marca, v.modelo, v.ano, v.capacidad, 
+        v.revision_tecnica,
+        v.permiso_circulacion,
+        v.seguro_obligatorio,
         v.nombre_conductor, v.nombre_conductor_reemplazo, v.activo,
         v.necesita_reemplazo, 
         v.patente_reemplazo, 
@@ -87,7 +97,8 @@ exports.getVehiculosConDetalles = async (req, res) => {
         v.autorizacion_reemplazo, 
         v.fecha_reemplazo,
         tv.nombre_tipoVehiculo as tipoVehiculo,
-        c.nombre_proveedor as responsable
+        c.nombre_proveedor as responsable,
+        c.fecha_termino as fecha_contrato
       FROM VEHICULO v
       LEFT JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo 
       LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente;
@@ -134,4 +145,27 @@ exports.updateVehiculo = async (req, res) => {
     console.error('Error al actualizar vehículo:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
-}
+};
+
+exports.desbloquearUsuario = async (req, res) => {
+  try {
+    const { rut } = req.params;
+    await db.query("UPDATE USUARIO SET bloqueado = 'no', intentos_fallidos = 0 WHERE rut_usuario = ?", [rut]);
+    res.status(200).json({ message: 'Usuario desbloqueado con éxito.' });
+  } catch (error) {
+    console.error('Error al desbloquear usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+exports.getEstablecimientos = async (req, res) => {
+  try {
+    const query = 'SELECT idEstablecimiento, nombre_establecimiento FROM ESTABLECIMIENTO';
+    const [rows] = await db.query(query);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error('Error al obtener establecimientos:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+

@@ -104,3 +104,78 @@ exports.getVehiculos = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+// --- OBTENER VEHICULOS POR PROGRAMA ---
+exports.getVehiculosPorPrograma = async (req, res) => {
+  try {
+    const { id_programa } = req.params;
+
+    const query = `
+      SELECT 
+        v.patente as id,
+        v.patente,
+        v.capacidad,
+        tv.nombre_tipoVehiculo as tipoVehiculo,
+        v.nombre_conductor as nombreConductor
+      FROM VEHICULO v
+      JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo
+      JOIN VEHICULO_has_PROGRAMA vhp ON v.patente = vhp.VEHICULO_patente
+      WHERE vhp.PROGRAMA_id_programa = ? AND v.activo = 'si';
+    `;
+    
+    const [vehiculos] = await db.query(query, [id_programa]);
+    res.status(200).json(vehiculos);
+
+  } catch (error) {
+    console.error('Error al obtener vehículos por programa:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+
+// --- OBTENER TIPOS DE VEHÍCULO POR PROGRAMA ---
+exports.getTiposVehiculoPorPrograma = async (req, res) => {
+  try {
+    const { id_programa } = req.params;
+
+    const query = `
+      SELECT DISTINCT 
+        tv.id_tipoVehiculo as value, 
+        tv.nombre_tipoVehiculo as label
+      FROM VEHICULO v
+      JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo
+      JOIN VEHICULO_has_PROGRAMA vhp ON v.patente = vhp.VEHICULO_patente
+      WHERE vhp.PROGRAMA_id_programa = ? AND v.activo = 'si';
+    `;
+    
+    const [tipos] = await db.query(query, [id_programa]);
+    res.status(200).json(tipos);
+
+  } catch (error) {
+    console.error('Error al obtener tipos de vehículo por programa:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// --- OBTENER PROGRAMAS ASOCIADOS A UN VEHÍCULO ---
+exports.getProgramasPorVehiculo = async (req, res) => {
+  try {
+    const { patente } = req.params;
+
+    const query = `
+      SELECT DISTINCT
+        p.id_programa as value,
+        p.nombre_programa as label
+      FROM PROGRAMA p
+      JOIN VEHICULO_has_PROGRAMA vhp ON p.id_programa = vhp.PROGRAMA_id_programa
+      WHERE vhp.VEHICULO_patente = ?;
+    `;
+    
+    const [programas] = await db.query(query, [patente]);
+    res.status(200).json(programas);
+
+  } catch (error) {
+    console.error('Error al obtener programas por vehículo:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};

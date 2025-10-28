@@ -65,6 +65,8 @@ export class RegistroVehiculoPage implements OnInit {
 
     isAnoPickerOpen = false;
     isRevPickerOpen = false;
+    isPermisoPickerOpen = false; 
+    isSeguroPickerOpen = false;
     
     //vaiables para mostrar los select de los establecimientos
     showEstablecimiento = false;
@@ -124,6 +126,8 @@ export class RegistroVehiculoPage implements OnInit {
       tipo_vehiculo: formValue.tipoVehiculo,
       capacidad: formValue.capacidad ? 1 : 0, 
       revision_tecnica: new Date(formValue.fechaRevision).toISOString().split('T')[0],
+      permiso_circulacion: new Date(formValue.permisoCirculacion).toISOString().split('T')[0],
+      seguro_obligatorio: new Date(formValue.seguroObligatorio).toISOString().split('T')[0],
       nombre_conductor: formValue.conductorTitular,
       conductor_reemplazo: formValue.conductorReemplazo,
 
@@ -182,9 +186,11 @@ export class RegistroVehiculoPage implements OnInit {
       programa: ['',Validators.required],
       contrato: ['',Validators.required],
       fechaRevision: ['',Validators.required],
-      //fechaSeguro: ['',Validators.required], futuras actualizaciones
-      //fechaContrato: ['',Validators.required],futuras actualizaciones
-      //fechaCirculacion: ['',Validators.required],futuras actualizaciones
+      permisoCirculacion: ['',Validators.required],
+      seguroObligatorio: ['',Validators.required],
+      //fechaContrato: ['',Validators.required],futuras actualizaciones, considerar tambien el tema de las horas contratadas
+      // para forzar el uso del vehiculo solamente en horarios maximo establecido segun el contratos
+
     });
 
   this.centrosPrincipales = this.centroServicio.obtenerCentros();
@@ -207,13 +213,24 @@ onRevSelected(ev: any) {
   this.registroForm.patchValue({ fechaRevision: ev.detail.value });
 }
 
- onDateChange(event: any, controlName: string, pickerToClose: 'ano' | 'rev') {
+onRevSelectedPermiso(ev: any) {
+  this.registroForm.patchValue({ permisoCirculacion: ev.detail.value });
+}
+onRevSelectedSeguro(ev: any) {
+  this.registroForm.patchValue({ seguroObligatorio: ev.detail.value });
+}
+
+ onDateChange(event: any, controlName: string, pickerToClose: 'ano' | 'rev'| 'permiso' | 'seguro') {
         this.registroForm.get(controlName)?.setValue(event.detail.value);
-        if (pickerToClose === 'ano') {
-            this.isAnoPickerOpen = false;
-        } else {
-            this.isRevPickerOpen = false;
-        }
+          if (pickerToClose === 'ano') {
+                this.isAnoPickerOpen = false;
+            } else if (pickerToClose === 'rev') {
+                this.isRevPickerOpen = false;
+            } else if (pickerToClose === 'permiso') {
+                this.isPermisoPickerOpen = false; 
+            } else if (pickerToClose === 'seguro') {
+                this.isSeguroPickerOpen = false; 
+            }
     }
   
 onCentroChange(event: any) {
@@ -247,7 +264,7 @@ onCentroChange(event: any) {
     }
     /*
     considerar que los centros estan guardados segun su id para la 
-    conversacion entren el front, backend y bd 
+    conversacion entren el front, backend y la bd
     */
   }
 

@@ -28,5 +28,8 @@ const validateVehiculo = [
 
 router.get('/', verifyToken, vehiculoController.getVehiculos);
 router.post('/registro-vehiculo', verifyToken, validateVehiculo, vehiculoController.createVehiculo);
+router.get('/por-programa/:id_programa', vehiculoController.getVehiculosPorPrograma);
+router.get('/tipos-por-programa/:id_programa', vehiculoController.getTiposVehiculoPorPrograma);
+router.get('/programas-por-vehiculo/:patente', vehiculoController.getProgramasPorVehiculo);
 
 module.exports = router;

@@ -115,7 +115,7 @@
                 <!--
                 <ion-item>
                   <ion-input label="N° de horas" label-placement="stacked" formControlName="numHoras"></ion-input>
-                </ion-item>-->
+                </ion-item> futura actualizacion por contrato -->
 
                   <ion-item>
                   <ion-label>Vencimiento Revisión Técnica</ion-label>
@@ -126,26 +126,26 @@
                     </ion-button>
                   </div>
                 </ion-item>
-                <!--
+                
                 <ion-item>
                   <ion-label>Vencimiento Permiso Circulacion</ion-label>
                   <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('fechaCirculacion')?.value | date:'dd/MM/yyyy' }}</ion-text>
-                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
+                    <ion-text>{{ registroForm.get('permisoCirculacion')?.value | date:'dd/MM/yyyy' }}</ion-text>
+                    <ion-button fill="clear" (click)="isPermisoPickerOpen = true">
                       <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
                     </ion-button>
                   </div>
                 </ion-item>
-                  esto cambiara al subir la version de entrega
+
                 <ion-item>
                   <ion-label>Vencimiento Seguro Obligatorio</ion-label>
                   <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('fechaSeguro')?.value | date:'dd/MM/yyyy' }}</ion-text>
-                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
+                    <ion-text>{{ registroForm.get('seguroObligatorio')?.value | date:'dd/MM/yyyy' }}</ion-text>
+                    <ion-button fill="clear" (click)="isSeguroPickerOpen = true">
                       <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
                     </ion-button>
                   </div>
-                </ion-item>-->
+                </ion-item>
               </ion-card-content>
             </ion-card>
 
@@ -158,7 +158,7 @@
       </ion-grid>
     </form>
 
-    <!-- ¡¡¡CORRECCIÓN AQUÍ!!! Se restauran los ion-modal para que los calendarios estén ocultos -->
+
     <ion-modal [isOpen]="isAnoPickerOpen" (didDismiss)="isAnoPickerOpen = false">
       <ng-template>
         <ion-datetime
@@ -173,6 +173,32 @@
         <ion-datetime
           presentation="date"
           (ionChange)="onDateChange($event, 'fechaRevision', 'rev')">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+    <ion-modal [isOpen]="isRevPickerOpen" (didDismiss)="isRevPickerOpen = false">
+      <ng-template>
+        <ion-datetime
+          presentation="date"
+          (ionChange)="onDateChange($event, 'fechaRevision', 'rev')">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+<ion-modal [isOpen]="isPermisoPickerOpen" (didDismiss)="isPermisoPickerOpen = false">
+      <ng-template>
+        <ion-datetime
+          presentation="date"
+          (ionChange)="onDateChange($event, 'permisoCirculacion', 'permiso')">
+        </ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal [isOpen]="isSeguroPickerOpen" (didDismiss)="isSeguroPickerOpen = false">
+      <ng-template>
+        <ion-datetime
+          presentation="date"
+          (ionChange)="onDateChange($event, 'seguroObligatorio', 'seguro')">
         </ion-datetime>
       </ng-template>
     </ion-modal>

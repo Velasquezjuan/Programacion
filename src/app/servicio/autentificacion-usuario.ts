@@ -38,9 +38,11 @@ export interface NuevoUsuario {
   }
 
   public getUsuarios(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/usuarios`);
+  return this.http.get<any[]>(`${this.apiUrl}/usuarios`);  
 }
-
+  buscarUsuarioPorRut(rut: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/buscar-por-rut`, { rut });
+}
     async cargarUsuarioInicial() {
     const token = await Memorialocal.obtenerValor<string>('token');
     if (token && this.tokenEsValido(token)) {
@@ -62,8 +64,8 @@ export interface NuevoUsuario {
         return response;
       }),
       catchError(error => {
-        console.warn('Falló el login con la API, intentando login local...', error);
-        return from(this.loginLocal(correo, contrasena));
+        console.error('Error en el login de la API:', error);
+        return throwError(() => error);
       })
     );
   }

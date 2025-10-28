@@ -96,23 +96,23 @@ export class ViajesSolicitadosPage implements OnInit {
     this.cargarDatos();
   }
 
-  ionViewDidEnter() {
-    this.cargarDatos();
-  }
+  //ionViewDidEnter() {
+    //.cargarDatos();
+//  }
 
   cargarDatos() {
     this.viajeServicio.getViajes().subscribe({  
       next: (data) => {
-        this.solicitudes = data.filter(s => s.estado === 'pendiente');
+        this.solicitudes = data.filter(s => s.estado === 'pendiente' || s.estado === 'reagendado');
       },      
       error: (err) => this.showToast('Error al cargar solicitudes.', 'danger'),
       
     });
 
-    this.vehiculoServicio.getVehiculos().subscribe({
+    /*this.vehiculoServicio.getVehiculos().subscribe({
       next: (data) => this.vehiculosDisponibles = data,
       error: (err) => this.showToast('Error al cargar vehículos.', 'danger')
-    });
+    });*/
   }
   
   trackByFn(index: number, item: any): any {
@@ -120,31 +120,58 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
   async abrirAgendar(solicitud: any) {
-    const inputs = this.vehiculosDisponibles.map(v => ({
-      type: 'radio' as const,
-      label: `${v.tipoVehiculo || 'Vehículo'} – ${v.patente} - ${v.conductor || 'Sin asignar'}`,
-      value: v.patente
-    }));
 
-    const alert = await this.alertCtrl.create({
-      header: 'Seleccione vehículo',
-      inputs,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Confirmar',
-          handler: (patente: string) => {
-            if (!patente) {
-              this.showToast('Debe elegir un vehículo.', 'warning');
-              return false;
-            }
-            this.procesarAgendar(solicitud, patente);
-            return true;
-          }
-        }
-      ]
+    if (!solicitud.PROGRAMA_id_programa) {
+      this.showToast('Error: Esta solicitud no tiene un programa asociado.', 'danger');
+      return;
+    }
+
+    const loading = await this.alertCtrl.create({
+      header: 'Cargando Vehículos...'
     });
-    await alert.present();
+    await loading.present();
+
+    this.vehiculoServicio.getVehiculosPorPrograma(solicitud.PROGRAMA_id_programa).subscribe({
+      next: async (vehiculosFiltrados) => {
+        await loading.dismiss();
+
+        if (vehiculosFiltrados.length === 0) {
+          this.showToast('No hay vehículos disponibles asignados a este programa.', 'warning');
+          return;
+        }
+
+        const inputs = vehiculosFiltrados.map(v => ({
+          type: 'radio' as const,
+          label: `${v.tipoVehiculo || 'Vehículo'} – ${v.patente} - ${v.nombreConductor || 'Sin asignar'}`,
+          value: v.patente
+        }));
+
+        const alert = await this.alertCtrl.create({
+          header: 'Seleccione un vehículo',
+          message: `Para el programa: ${solicitud.nombre_programa}`,
+          inputs,
+          buttons: [
+            { text: 'Cancelar', role: 'cancel' },
+            {
+              text: 'Confirmar',
+              handler: (patente: string) => {
+                if (!patente) {
+                  this.showToast('Debe elegir un vehículo.', 'warning');
+                  return false;
+                }
+                this.procesarAgendar(solicitud, patente);
+                return true;
+              }
+            }
+          ]
+        });
+        await alert.present();
+      },
+      error: async (err) => {
+        await loading.dismiss();
+        this.showToast('Error al cargar los vehículos para este programa.', 'danger');
+      }
+    });
   }
 
   private procesarAgendar(solicitud: any, patente: string) {
