@@ -32,7 +32,7 @@ interface NuevoUsuario {
   styleUrls: ['./registro-usuario.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [IonContent,  IonHeader, IonToolbar, IonInput,  MenuLateralComponent,
+  imports: [IonContent,  IonHeader, IonToolbar, IonInput,  
     IonGrid, IonRow, ReactiveFormsModule, IonCol, IonButton, IonItem, IonLabel, IonSelect, IonSelectOption,
     CommonModule, FormsModule, 
   ]
@@ -69,6 +69,7 @@ export class RegistroUsuarioPage implements OnInit {
   establecimientosSalud: { value: number, label: string }[] = [];
   establecimientosEducacion: { value: number, label: string }[] = [];
   establecimientosAtm: { value: number, label: string }[] = [];
+  establecimientosDisponibles: { value: number; label: string }[] = []; 
 
 
    //Variables para mostrar campos dinámicamente
@@ -157,7 +158,7 @@ export class RegistroUsuarioPage implements OnInit {
       next: () => {
         this.notificaciones.enviarCorreoBienvenida(nuevoUsuario.correo, nuevoUsuario.nombre);
         this.mostrarToast('¡Usuario registrado con éxito!', 'success');
-        this.router.navigate(['/login']);
+        this.registroForm.reset();
       },
       error: (error) => {
         console.error('Error en el proceso de registro:', error);
@@ -215,7 +216,6 @@ onCentroChange(event: any) {
         control?.updateValueAndValidity();
     });
 
-    // dejamos los 4 centros por si se solicitan cambios de regla con el registro.
     if (centroId === 2) { // Salud
       this.showSalud = true;
       this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
@@ -233,6 +233,22 @@ onCentroChange(event: any) {
     considerar que los centros estan guardados segun su id para la 
     conversacion entren el front, backend y bd 
     */
+
+   /* this.showSalud = false;
+    this.showEducacion = false;
+    this.showAtm = false;
+    
+    const estControl = this.registroForm.get('establecimiento');
+    estControl?.setValue(''); 
+    estControl?.clearValidators(); 
+
+
+    if (centroId === 2) { 
+      this.showSalud = true;
+      this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
+      estControl?.setValidators([Validators.required]);
+    }
+    estControl?.updateValueAndValidity();*/
   }
 
 

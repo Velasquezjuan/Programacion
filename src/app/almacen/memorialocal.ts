@@ -15,7 +15,7 @@ export class Memorialocal {
   private static initDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
     
-      this.dbPromise = openDB('AppDB', 16, {
+      this.dbPromise = openDB('AppDB', 20, {
         upgrade(db) {
 
           if (!db.objectStoreNames.contains('keyval')) {
@@ -23,7 +23,7 @@ export class Memorialocal {
           }
           const store = [
             'usuarios',
-            'usuarioActivo',
+            //'usuarioActivo',
             'usuarioDesactivado',
             'vehiculos',
             'viajesSolicitados',
@@ -80,25 +80,33 @@ export class Memorialocal {
 
   static async desactivarUsuario(id: string): Promise<void> {
     const db = await this.initDB();
-    const tx = db.transaction(['usuarioActivo','usuarioDesactivado'], 'readwrite');
-  const act = tx.objectStore('usuarios');
+    const tx = db.transaction(['usuarios', 'usuarioDesactivado', 'keyval'], 'readwrite');
+    const act = tx.objectStore('usuarios');
     const des = tx.objectStore('usuarioDesactivado');
-   const usuario = await act.get(id);
+    const keyval_store = tx.objectStore('keyval');
+   
+    const usuario = await act.get(id);
     if (usuario) {
       await act.delete(id);
       await des.put(usuario);
     }
-    await this.eliminarValor('usuarioActivo');
+    await keyval_store.delete('usuarioActivo');
+    
     await tx.done;
   }
 
-  static async activarUsuario(id: string): Promise<void> {
+ static async activarUsuario(id: string): Promise<void> {
     const db = await this.initDB();
-    const tx = db.transaction(['usuarioDesactivado','usuarioActivo'], 'readwrite');
+    const tx = db.transaction(['usuarioDesactivado', 'keyval'], 'readwrite');
     const des = tx.objectStore('usuarioDesactivado');
-    const act = tx.objectStore('usuarioActivo');
-    const u = await des.get(id);
-    if (u) { await des.delete(id); await act.put(u); }
+    const keyval_store = tx.objectStore('keyval');
+    
+    const u = await des.get(id); 
+    if (u) { 
+      await des.delete(id); 
+      await keyval_store.put({ key: 'usuarioActivo', value: u });
+     }
+     
     await tx.done;
   }
 

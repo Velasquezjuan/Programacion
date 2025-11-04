@@ -111,7 +111,7 @@ export class CalendarioPage implements OnInit {
     events: [],
     displayEventTime: true,
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-    eventContent: (arg) => {
+    /*eventContent: (arg) => {
       const p = (arg.event.extendedProps as any);
       const div = document.createElement('div');
       div.style.fontSize = '0.75em';
@@ -126,7 +126,7 @@ export class CalendarioPage implements OnInit {
         <i>${arg.timeText}</i>
       `;
       return { domNodes: [div] };
-    },
+    },*/
     
     eventClick: (info) => this.handleEventClick(info),
   };
@@ -168,13 +168,26 @@ export class CalendarioPage implements OnInit {
           (isAdmin || viaje.nombre_solicitante === this.nombreUsuario)
         );
 
-     this.calendarOptions.events = viajesVisibles.map(viaje => ({
-        id: viaje.id_viaje.toString(),
+     this.calendarOptions.events = viajesVisibles.map(viaje => {
+      const color = this.getColorPorViaje(viaje);
+      const textColor = (color === '#ffc409') ? '#000000' : '#ffffff';
+        
+      /*id: viaje.id_viaje.toString(),
         title: `Viaje de ${viaje.nombre_solicitante}`,
         start: `${viaje.fecha_viaje.split('T')[0]}T${viaje.hora_inicio}`,
         allDay: false,
         color: this.getColorPorViaje(viaje), 
-        extendedProps: viaje
+        extendedProps: viaje*/
+      return {
+       id: viaje.id_viaje.toString(),
+       title: `Viaje: ${viaje.punto_destino || 'N/A'}`, 
+       start: `${viaje.fecha_viaje.split('T')[0]}T${viaje.hora_inicio}`,
+       allDay: false,
+       color: color,        
+       textColor: textColor, 
+       extendedProps: viaje
+        };
+        });
       /*{
         puntoSalida: s.punto_salida ? this.getSalidaLabel(s) : s.origen,
         puntoDestino: s.punto_destino ? this.getDestinoLabel(s) : s.destino,
@@ -185,7 +198,7 @@ export class CalendarioPage implements OnInit {
         fecha: s.fecha,
         hora: s.hora_inicio || s.hora
       }*/
-    }));
+   // }));
 
     if (isAdmin) {
       this.calendarOptions.editable = true;
@@ -372,13 +385,13 @@ export class CalendarioPage implements OnInit {
 
 getColorPorViaje(s: any): string {
   if (s.tipo_origen === 'masivo') {
-    return '#2be2e2ff'; // color viaje masivo
+    return '#7b1df5e8'; // color viaje masivo
   }
   // colores  viajes normales segun estados
   switch(s.estado) {
     case 'aceptado': return '#2dd36f'; // Verde
     case 'agendado': return '#ffc409'; // Amarillo
-    default: return '#38ffc3ff'; // Azul por defecto
+    default: return '#0059fdff'; // Azul 
   }
 }
 

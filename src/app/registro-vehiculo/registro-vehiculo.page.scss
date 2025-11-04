@@ -56,7 +56,13 @@ ion-col[size="12"] {
     gap: 10px;   /* Espaciado entre botones */
     margin-top: 20px; /* Ajusta el margen superior según lo necesites */
   }
-
+  .date-button-container {
+     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;   /* Espaciado entre botones */
+    margin-top: 20px; /* Ajusta el margen superior según lo necesites */
+  }
   
   ion-menu::part(backdrop) {
     background-color: rgba(0, 60, 255, 0.644);
@@ -68,3 +74,11 @@ ion-col[size="12"] {
     box-shadow: 4px 0px 16px rgba(0, 68, 255, 0.733);
   }
   
+  ion-item.ion-invalid.ion-touched {
+  --highlight-color: var(--ion-color-danger);
+}
+
+/* Pone el color del label en rojo */
+ion-item.ion-invalid.ion-touched ion-label {
+  color: var(--ion-color-danger);
+}

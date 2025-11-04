@@ -11,43 +11,34 @@
   <ion-col size="12" class="text-center">
             <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
           </ion-col>
-  <full-calendar [options]="calendarOptions"></full-calendar>
-
-  <!--<ion-button fill="solid"  (click)="exportarCSV()" class="ion-margin">
-    Exportar a CSV
-  </ion-button> --> 
 
 <ion-card>
   <ion-card-header>
-    <ion-card-title>Exportar Reportes</ion-card-title>
+    <ion-card-title>Exportar Calendario</ion-card-title>
   </ion-card-header>
   <ion-card-content>
    <ion-item>
   <ion-input 
-    label="Fecha Desde" 
-    type="date" 
-    [value]="fechaInicioFiltro" 
+    label="Fecha Desde" type="date"  [value]="fechaInicioFiltro" 
     (ionChange)="fechaInicioFiltro = $event.detail.value ?? ''">
   </ion-input>
 </ion-item>
 
 <ion-item>
   <ion-input 
-    label="Fecha Hasta" 
-    type="date" 
-    [value]="fechaFinFiltro" 
+    label="Fecha Hasta" type="date" [value]="fechaFinFiltro" 
     (ionChange)="fechaFinFiltro = $event.detail.value ?? ''">
   </ion-input>
 </ion-item>
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ion-button expand="block" (click)="exportarPDFNormales()" color="tertiary">
+          <ion-button expand="fill"  fill="outline" (click)="exportarPDFNormales()" color="tertiary">
             PDF Normales
           </ion-button>
         </ion-col>
         <ion-col>
-          <ion-button expand="block" (click)="exportarPDFMasivos()" color="dark">
+          <ion-button expand="fill"  fill="outline" (click)="exportarPDFMasivos()" color="dark">
             PDF Masivos
           </ion-button>
         </ion-col>
@@ -55,4 +46,8 @@
     </ion-grid>
   </ion-card-content>
 </ion-card>
+
+<full-calendar [options]="calendarOptions"></full-calendar>
+
+
 </ion-content>

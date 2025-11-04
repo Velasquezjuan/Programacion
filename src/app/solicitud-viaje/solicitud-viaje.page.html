@@ -192,7 +192,7 @@
             </ion-col>
             <ion-col size="12">
             <ion-item>
-                  <ion-select formControlName="programa" label="Programa(s) Asignado(s)" label-placement="stacked" [multiple]="true">
+                  <ion-select formControlName="programa" label="Programa Asignado" label-placement="stacked" [multiple]="false">
                     <ion-select-option *ngFor="let p of programa.prog" [value]="p.value">{{p.label}}</ion-select-option>
                   </ion-select>
                 </ion-item>

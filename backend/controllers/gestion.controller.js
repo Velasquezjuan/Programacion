@@ -121,6 +121,15 @@ exports.updateVehiculo = async (req, res) => {
     if (fields.revision_tecnica_reemplazo) {
       fields.revision_tecnica_reemplazo = new Date(fields.revision_tecnica_reemplazo).toISOString().split('T')[0];
     }
+    if (fields.revision_tecnica) {
+      fields.revision_tecnica = new Date(fields.revision_tecnica).toISOString().split('T')[0];
+    }
+    if (fields.permiso_circulacion) {
+      fields.permiso_circulacion = new Date(fields.permiso_circulacion).toISOString().split('T')[0];
+    }
+    if (fields.seguro_obligatorio) {
+      fields.seguro_obligatorio = new Date(fields.seguro_obligatorio).toISOString().split('T')[0];
+    }
 
     let query = 'UPDATE VEHICULO SET ';
     const params = [];

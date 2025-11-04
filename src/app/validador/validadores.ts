@@ -32,7 +32,7 @@ export class Validadores {
     // Validador de texto (solo letras y espacios)
     static soloTexto(control: AbstractControl): ValidationErrors | null {
       if (!control.value) return null;
-      const regex = /^[a-zAZ-ñÑ]/;
+      const regex = /^[a-zA-ZñÑ]/;
       return regex.test(control.value) ? null : { textoInvalido: true };
     }
 

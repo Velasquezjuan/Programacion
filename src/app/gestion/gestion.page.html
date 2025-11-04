@@ -143,6 +143,13 @@
             </ion-item>
 
             <ion-item>
+              <ion-input label="Seguro Obligatorio" label-placement="stacked" type="date"
+                [value]="v.seguro_obligatorio | date:'yyyy-MM-dd'" 
+                (ionInput)="v.seguro_obligatorio = $event.target.value">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
               <ion-toggle [checked]="v.necesita_reemplazo === 'si'" (ionChange)="v.necesita_reemplazo = $event.detail.checked ? 'si' : 'no'">
                 Requiere Reemplazo
               </ion-toggle>

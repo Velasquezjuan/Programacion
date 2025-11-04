@@ -14,9 +14,8 @@ const validateUser = [
   body('rol').notEmpty().withMessage('El rol es obligatorio.'),
   body('area').notEmpty().withMessage('El área es obligatoria.'),
   body('centro').isInt({ min: 1 }).withMessage('Debe seleccionar un centro válido.'),
-  body('establecimiento').if(body('centro').not().equals('1'))
-    .isInt({ min: 1 }).withMessage('Debe seleccionar un establecimiento válido.'),
-
+  body('establecimiento').if(body('centro').equals('2'))
+    .isInt({ min: 1 }).withMessage('Debe seleccionar un establecimiento de Salud válido.'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

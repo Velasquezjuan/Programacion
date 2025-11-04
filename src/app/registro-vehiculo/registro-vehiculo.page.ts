@@ -1,5 +1,5 @@
 import { Component, OnInit,CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
@@ -7,8 +7,9 @@ import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } 
 import {  IonMenuButton, IonHeader, IonTitle, IonToolbar, IonDatetimeButton, IonContent,
     IonInput, IonDatetime, IonGrid, IonRow, IonCol, IonModal, IonCard, IonCardHeader,
     IonCardTitle, IonCardContent, IonButton, IonItem, IonLabel, IonSelect,
-    IonSelectOption, IonText, IonButtons, IonToggle, IonIcon
-      } from '@ionic/angular/standalone';
+    IonSelectOption, IonText, IonButtons, IonToggle, IonIcon, 
+
+   } from '@ionic/angular/standalone';
 import { Validadores } from '../validador/validadores';
 import { ToastController } from '@ionic/angular';
 import { Memorialocal } from '../almacen/memorialocal';
@@ -18,6 +19,8 @@ import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 import  { HttpErrorResponse } from '@angular/common/http';
 import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+
+import { IonicModule } from '@ionic/angular';
 
 import { addIcons  } from 'ionicons';
 import { calendarOutline } from 'ionicons/icons';
@@ -30,14 +33,16 @@ import { calendarOutline } from 'ionicons/icons';
   styleUrls: ['./registro-vehiculo.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [  CommonModule,
+  imports: [ 
+    //IonicModule,
+        CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        MenuLateralComponent,
+      //  MenuLateralComponent,
         IonMenuButton, IonHeader, IonTitle, IonToolbar,  IonContent,
-    IonInput, IonDatetime, IonGrid, IonRow, IonCol, IonModal, IonCard, IonCardHeader,
-    IonCardTitle, IonCardContent, IonButton, IonItem, IonLabel, IonSelect,
-    IonSelectOption, IonText, IonButtons, IonToggle, IonIcon
+    IonInput,  IonGrid, IonRow, IonCol,  IonCard, IonCardHeader,
+    IonCardTitle, IonCardContent, IonButton, IonItem,  IonSelect,
+    IonSelectOption,  IonButtons, IonToggle, 
   ]
 })
 export class RegistroVehiculoPage implements OnInit {
@@ -48,6 +53,8 @@ export class RegistroVehiculoPage implements OnInit {
     todayIso = new Date().toISOString();
     endYearNum = new Date().getFullYear();
     endYear = new Date().getFullYear().toString();
+    minDate: string;
+    maxDate: string;
   
   programa: { prog: any[] } = { prog: [] };
   auto: { vehiculo: any[] } = { vehiculo: [] };
@@ -63,10 +70,10 @@ export class RegistroVehiculoPage implements OnInit {
   maxOcupantes = 9;
 
 
-    isAnoPickerOpen = false;
-    isRevPickerOpen = false;
-    isPermisoPickerOpen = false; 
-    isSeguroPickerOpen = false;
+    //isAnoPickerOpen = false;
+    //isRevPickerOpen = false;
+   // isPermisoPickerOpen = false; 
+   // isSeguroPickerOpen = false;
     
     //vaiables para mostrar los select de los establecimientos
     showEstablecimiento = false;
@@ -87,6 +94,16 @@ export class RegistroVehiculoPage implements OnInit {
     ) {
       addIcons({ calendarOutline
       });
+      const today = new Date();
+
+      // 1. Fecha Mínima = Hoy
+      // (Formato YYYY-MM-DD)
+      this.minDate = today.toISOString().split('T')[0];
+
+      // 2. Fecha Máxima = 1 año desde Hoy
+      const maxYear = new Date();
+      maxYear.setFullYear(today.getFullYear() + 1);
+      this.maxDate = maxYear.toISOString().split('T')[0];
     }
 
 
@@ -185,9 +202,9 @@ export class RegistroVehiculoPage implements OnInit {
       //Documentación
       programa: ['',Validators.required],
       contrato: ['',Validators.required],
-      fechaRevision: ['',Validators.required],
-      permisoCirculacion: ['',Validators.required],
-      seguroObligatorio: ['',Validators.required],
+      fechaRevision: ['',[Validators.required, Validators.min(2025)]],
+      permisoCirculacion: ['',[Validators.required, Validators.min(2025)]],
+      seguroObligatorio: ['',[Validators.required, Validators.min(2025)]],
       //fechaContrato: ['',Validators.required],futuras actualizaciones, considerar tambien el tema de las horas contratadas
       // para forzar el uso del vehiculo solamente en horarios maximo establecido segun el contratos
 
@@ -220,19 +237,29 @@ onRevSelectedSeguro(ev: any) {
   this.registroForm.patchValue({ seguroObligatorio: ev.detail.value });
 }
 
- onDateChange(event: any, controlName: string, pickerToClose: 'ano' | 'rev'| 'permiso' | 'seguro') {
-        this.registroForm.get(controlName)?.setValue(event.detail.value);
-          if (pickerToClose === 'ano') {
+ /*onDateChange(event: any, controlName: string, pickerToClose: 'ano' | 'rev'| 'permiso' | 'seguro') {
+ this.registroForm.get(controlName)?.setValue(event.detail.value);
+          /*if (pickerToClose === 'ano') {
                 this.isAnoPickerOpen = false;
-            } else if (pickerToClose === 'rev') {
+            } else 
+              if (pickerToClose === 'rev') {
                 this.isRevPickerOpen = false;
             } else if (pickerToClose === 'permiso') {
                 this.isPermisoPickerOpen = false; 
             } else if (pickerToClose === 'seguro') {
                 this.isSeguroPickerOpen = false; 
             }
-    }
-  
+    }*/
+
+    onAnoChange(event: any) {
+  const dateString = event.detail.value; 
+  if (dateString) {
+    const year = dateString.split('-')[0]; 
+    this.registroForm.get('anoVehiculo')?.setValue(year);
+  } else {
+    this.registroForm.get('anoVehiculo')?.setValue(null);
+  }
+}
 onCentroChange(event: any) {
      const centroId = event.detail.value;
 

@@ -11,7 +11,7 @@ export const PlantillasCorreo = {
         ${contenido}
       </div>
       <div style="background-color: #f4f4f4; color: #555; padding: 10px; text-align: center; font-size: 0.8em;">
-        <p>Este es un correo generado automáticamente por la aplicación cmpamov by juanVelasquez.</p>
+        <p>Este es un correo generado automáticamente por la aplicación GECOVI by juanVelasquez.</p>
       </div>
     </div>
   `,
@@ -32,6 +32,7 @@ export const PlantillasCorreo = {
     <p>Tu viaje para el día <b>${viaje.fecha_viaje}</b> a las <b>${viaje.hora_inicio}</b> ha sido aceptado.</p>
     <p><b>Destino:</b> ${viaje.punto_destino}</p>
     <p><b>Vehículo Asignado:</b> ${viaje.patenteVehiculo}</p>
+    <p><b>Conductor:</b> ${viaje.nombreConductor}</p>
     <p>Por favor, no olvides marcar el viaje como "realizado" en la sección "Mis Viajes" una vez que haya concluido.</p>
   `,
 
@@ -43,12 +44,13 @@ export const PlantillasCorreo = {
   `,
   
   notificacionAdmin: (viaje: any) => `
-    <p>El usuario <b>${viaje.solicitante}</b> ha creado una nueva solicitud de viaje.</p>
+    <p>El usuario <b>${viaje.nombre}</b> ha creado una nueva solicitud de viaje.</p>
     <ul>
       <li><b>ID de Solicitud:</b> ${viaje.id_viaje}</li>
       <li><b>Destino:</b> ${viaje.punto_destino}</li>
       <li><b>Fecha:</b> ${viaje.fecha_viaje}</li>
       <li><b>Hora:</b> ${viaje.hora_inicio}</li>
+      <li><b>Responsable:</b> ${viaje.responsable}</li>
     </ul>
     <p>Por favor, ingrese a la aplicación para revisar, aceptar o rechazar la solicitud en la sección de Viajes Solicitados.</p>
   `,

@@ -33,10 +33,13 @@ exports.register = async (req, res) => {
  let establecimientoIdFinal;
     const centroId = parseInt(centro, 10);
 
-    if (centroId === 1) { 
-      establecimientoIdFinal = 1; 
+  if (centroId === 2) { 
+      if (!establecimiento) {
+        return res.status(400).json({ message: 'Debe seleccionar un establecimiento de Salud válido.' });
+      }
+      establecimientoIdFinal = establecimiento; 
     } else {
-      establecimientoIdFinal = establecimiento;
+      establecimientoIdFinal = centroId; 
     }
 
     const salt = await bcrypt.genSalt(10);

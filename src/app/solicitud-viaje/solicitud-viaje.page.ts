@@ -71,7 +71,7 @@ export class SolicitudViajePage implements OnInit {
   programa: { prog: any[] } = { prog: [] };
 
   rolUsuario = '';
-  usuarioActivo: { usuario: string; rol: string; correo?: string; rut_usuario?: string } | null = null;
+  usuarioActivo: { nombre: string; rol: string; correo?: string; rut_usuario?: string } | null = null;
 
   maxOcupantes = 9;
   minDate: string = '';
@@ -203,7 +203,7 @@ export class SolicitudViajePage implements OnInit {
   }
 
   actualizarMaxOcupantes(tipo: string) {
-    this.maxOcupantes = tipo === 'minivan' ? 9 : 5;
+    this.maxOcupantes = tipo === 'minivan' ? 4 : 9;
 
     this.registroForm.get('ocupantes')!.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
     this.registroForm.get('ocupantes')!.updateValueAndValidity();
@@ -230,7 +230,7 @@ export class SolicitudViajePage implements OnInit {
     const solicitud = {
       id: Date.now().toString(),
 
-      solicitante: this.usuarioActivo?.usuario||'desconocido',
+      //solicitante: this.usuarioActivo?.usuario||'desconocido',
       /*fecha: v.fecha,
       hora:  v.hora,
       puntoSalida: v.puntoSalida,
@@ -281,12 +281,13 @@ export class SolicitudViajePage implements OnInit {
 
       this.auth.getUsuarios().subscribe({
         next: (todosLosUsuarios) => {
-          const rolesAdmin = ['adminSistema', 'its', 'coordinador'];
+          const rolesAdmin = ['adminSistema', 'its', ];
           const correosDeAdmins = todosLosUsuarios
             .filter(usuario => rolesAdmin.includes(usuario.rol) && usuario.correo)
             .map(admin => admin.correo);
           
           if (correosDeAdmins.length > 0) {
+            viajeConfirmado.nombre = this.usuarioActivo?.nombre || 'Usuario Desconocido';
             this.notificaciones.enviarNotificacionAdmin(correosDeAdmins, viajeConfirmado);
           } else {
             console.warn('No se encontraron administradores con correo para notificar.');

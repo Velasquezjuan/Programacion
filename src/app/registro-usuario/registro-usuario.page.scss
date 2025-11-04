@@ -28,11 +28,11 @@ ion-col[size="12"] {
   }
   
   .auto-image {
-    max-width: 100%; /* O un valor específico en píxeles como 500px */
+    max-width: 100%;
     height: auto;
     object-fit: contain;
-    display: block; /* Evita un pequeño espacio debajo de la imagen */
-    margin: 0 auto; /* Centra la imagen horizontalmente */
+    display: block; 
+    margin: 0 auto; 
   }
   .text-center {
     text-align: center;

@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { searchCircle, downloadOutline } from 'ionicons/icons';
 
-import { BaseChartDirective } from 'ng2-charts';
+import { NgChartsModule } from 'ng2-charts';
 import { ChartOptions, ChartData, ChartType, Chart, registerables } from 'chart.js';
 
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -34,7 +34,7 @@ import { VehiculoServicio }       from '../servicio/vehiculo-servicio';
     FormsModule, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,
     IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonGrid,
     IonRow, IonCol, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonText,
-    IonList, IonItemDivider, BaseChartDirective, IonSelect, IonSelectOption
+    IonList, IonItemDivider,  NgChartsModule,   IonSelect, IonSelectOption
   ]
 })
 export class BitacoraPage implements OnInit {
@@ -57,7 +57,7 @@ export class BitacoraPage implements OnInit {
   showAtm       = false;
 
 
-  public barChartOptions: ChartOptions = { responsive: true,
+ public barChartOptions: ChartOptions = { responsive: true,
     maintainAspectRatio: false, 
     plugins: {
       legend: {
@@ -116,7 +116,7 @@ export class BitacoraPage implements OnInit {
 
   ) {
       addIcons({downloadOutline});
-     Chart.register(...registerables);
+    Chart.register(...registerables);
       this.addIcons();
 
      }
@@ -128,25 +128,6 @@ export class BitacoraPage implements OnInit {
    this.centrosPrincipales = this.centroServicio.obtenerCentros();
   }
 
-  /*async cargarDashboardData() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando datos del dashboard...',
-      spinner: 'crescent'
-    });
-    await loading.present();
-
-    this.bitacora.getDashboardData().subscribe({
-      next: (data) => {
-        this.dashboardData = data;
-        loading.dismiss();
-      },
-      error: (err) => {
-        console.error('Error al cargar datos del dashboard', err);
-        this.mostrarToast('Error al cargar datos del dashboard.', 'danger');
-        loading.dismiss();
-      }
-    });
-  }*/
 
   async buscarReporte() {
     const loading = await this.loadingController.create({
@@ -244,7 +225,7 @@ export class BitacoraPage implements OnInit {
     });
   }
 
-  async cargarDashboardData() {
+async cargarDashboardData() { 
   const loading = await this.loadingController.create({ 
     message: 'Cargando datos del dashboard...',
     spinner: 'crescent'
