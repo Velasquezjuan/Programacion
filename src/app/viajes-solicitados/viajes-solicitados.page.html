@@ -1,7 +1,5 @@
 <ion-app>
-  <app-menu-lateral [rol]="rolUsuario"></app-menu-lateral>
-
-  <div class="ion-page" id="main-content">
+    <div class="ion-page" id="main-content">
     <ion-header [translucent]="true">
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
@@ -15,6 +13,39 @@
       <ion-col size="12" class="text-center">
             <img src="assets/img/Logo cmpa 2.png" alt="Logo" class="logo-image">
           </ion-col>
+
+<div class="contenedor-filtros">
+    <ion-searchbar
+      class="search-by-id" color="primary" type="text" 
+      placeholder="Buscar por Usuario o Nº Solicitud"
+      [(ngModel)]="searchTerm"
+      (ionInput)="aplicarFiltros()"
+      (ionClear)="searchTerm = ''; aplicarFiltros()"
+      debounce="300">
+    </ion-searchbar>
+
+  <ion-item class="filtros-estado">
+    <ion-input 
+      label="Fecha Realización de Viaje" 
+      label-placement="stacked" 
+      type="date" 
+      [value]="fechaFiltro"
+      (ionChange)="fechaFiltro = $event.detail.value ?? ''; aplicarFiltros()">
+    </ion-input>
+  </ion-item>
+
+ <ion-item class="filtros-estado">
+      <ion-input 
+        label="Fecha de Creación Solicitud" 
+        label-placement="stacked" 
+        type="date" 
+        [(ngModel)]="fechaSolicitudFiltro"
+        name="fechaSolicitudFiltro" (ionChange)="aplicarFiltros()">
+      </ion-input>
+    </ion-item>
+
+  </div>
+
       <ng-container *ngIf="solicitudes.length; else noHay">
         <ion-card
           *ngFor="let sol of solicitudes; trackBy: trackByFn"

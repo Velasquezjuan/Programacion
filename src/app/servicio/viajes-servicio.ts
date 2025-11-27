@@ -62,6 +62,7 @@ export class ViajesServicio {
       })
     );
   }
+  
 getViajesPorUsuario(nombreUsuario: string): Observable<any[]> {
     return this.getAuthHeaders().pipe(
       switchMap(headers => {

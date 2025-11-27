@@ -136,29 +136,40 @@ export class ViajesMasivosPage implements OnInit {
   }
 
   updateOcupantesValidator() {
-  const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
+const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
   const vehiculoSeleccionado = this.vehiculos.find(v => v.id === vehiculoId);
   
   if (vehiculoSeleccionado) {
-    switch (vehiculoSeleccionado.tipoVehiculo.toLowerCase()) {
-      case 'suv':
-      case 'camioneta':
-        this.maxOcupantes = 4;
-        break;
-      case 'minivan':
-        this.maxOcupantes = 9;
-        break;
-      case 'camion':
-        this.maxOcupantes = 2;
-        break;
-      default:
-        this.maxOcupantes = 4; 
-    }
+    const tipoStr = String(vehiculoSeleccionado.tipoVehiculo).toLowerCase();
 
-    this.planificacionForm.get('ocupantes')?.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
+    console.log('Tipo de vehículo (normalizado):', tipoStr); 
+
+    switch (tipoStr) {
+       case 'minivan': 
+         this.maxOcupantes = 9;
+         break;
+       case 'camioneta':
+       case 'suv':
+         this.maxOcupantes = 4;
+         break;
+       case 'camion':
+         this.maxOcupantes = 2;
+         break;
+       default:
+         this.maxOcupantes = 4;
+         break;
+    }
+    
+    console.log('Max ocupantes asignado:', this.maxOcupantes);
+
+    this.planificacionForm.get('ocupantes')?.setValidators([
+      Validators.required, 
+      Validators.min(1), 
+      Validators.max(this.maxOcupantes)
+    ]);
     this.planificacionForm.get('ocupantes')?.updateValueAndValidity();
   }
-  }
+}
 
   checkTimeRestrictions() {
     const diasSeleccionados = this.planificacionForm.get('diasSeleccionados')?.value || [];
@@ -327,7 +338,7 @@ export class ViajesMasivosPage implements OnInit {
         necesita_carga: 'no',
         vehiculo_deseado: vehiculoSeleccionado.tipoVehiculo || 'No especificado',
         vehiculo_patente: vehiculoSeleccionado.patente,
-        estado: 'aceptado'
+        estado: 'Agendado'
         };
 
         viajesParaCrear.push(nuevoViaje);

@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonApp, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput,
-  IonButton, AlertController, ToastController } from '@ionic/angular/standalone';
+  IonButton, AlertController, ToastController, IonSearchbar,
+  IonItem } from '@ionic/angular/standalone';
 import { MenuLateralComponent } from '../componentes/menu-lateral/menu-lateral.component';
 import { Memorialocal } from '../almacen/memorialocal';
 import { addIcons } from 'ionicons';
-import { calendarOutline, carOutline, personOutline, closeCircleOutline } from 'ionicons/icons';
+import { calendarOutline, carOutline, personOutline, closeCircleOutline,
+  checkmarkDoneCircle,closeCircle,checkmarkCircle
+ } from 'ionicons/icons';
 
 // import servicios
 import { CentroServicio } from '../servicio/centro-servicio';
@@ -23,6 +26,7 @@ interface Solicitud {
   apellido_solicitante: string;
   responsable: string;
   nombre_programa: string;
+  fecha_solicitud?: string;
   fecha_viaje: string;
   hora_inicio: string;
   puntoSalida: string;
@@ -56,12 +60,22 @@ interface Usuario { id: string; usuario: string; rol: string; correo: string; }
   styleUrls: ['./viajes-solicitados.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [ IonApp, MenuLateralComponent, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,  IonContent, 
+  imports: [ IonApp,  IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,  IonContent, 
     IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput, IonButton,
-    CommonModule, FormsModule ]
+    CommonModule, FormsModule, IonSearchbar,
+  IonItem ]
 })
 
 export class ViajesSolicitadosPage implements OnInit {
+ 
+  todas: Solicitud[] = [];
+  viajesFiltrados: Solicitud[] = [];
+ 
+  searchTerm: string = '';
+  fechaFiltro: string = '';
+  
+  fechaSolicitudFiltro: string = '';
+
   solicitudes: Solicitud[] = [];
   vehiculos: Vehiculo[] = [];
   vehiculosDisponibles: Vehiculo[] = [];
@@ -86,7 +100,10 @@ export class ViajesSolicitadosPage implements OnInit {
     private centroServicio: CentroServicio,
     private auth: AutentificacionUsuario,
   ) {
-    addIcons({ calendarOutline, carOutline, personOutline, closeCircleOutline });
+    addIcons({ calendarOutline, carOutline, 
+      personOutline, closeCircleOutline,
+    checkmarkDoneCircle,closeCircle,checkmarkCircle
+   });
   }
 
    async ngOnInit() {
@@ -95,15 +112,49 @@ export class ViajesSolicitadosPage implements OnInit {
     this.rolUsuario = usuario?.rol || '';
     this.cargarDatos();
   }
+  
+  aplicarFiltros() {
 
-  //ionViewDidEnter() {
-    //.cargarDatos();
-//  }
+  let list = [...this.todas];
+
+  if (this.searchTerm && this.searchTerm.trim() !== '') {
+    const term = this.searchTerm.trim().toLowerCase();
+    list = list.filter(viaje => 
+      viaje.id_viaje.toString().toLowerCase().includes(term)||
+      viaje.nombre_solicitante.toLowerCase().includes(term)
+    );
+  }
+
+  if (this.fechaFiltro ) {
+    list = list.filter(v => {
+      const fechaViaje = v.fecha_viaje.split('T')[0];
+      return fechaViaje === this.fechaFiltro;
+    });
+  }
+  if (this.fechaSolicitudFiltro) {
+      list = list.filter(v => {
+        if (!v.fecha_solicitud) return false; 
+        
+        const fechaSolicitud = v.fecha_solicitud.split('T')[0];
+        return fechaSolicitud === this.fechaSolicitudFiltro;
+    });
+  }
+ 
+
+ 
+ list.sort((a, b) => new Date(b.fecha_viaje).getTime() - new Date(a.fecha_viaje).getTime());
+  
+  //this.viajesFiltrados = list; 
+  this.solicitudes = list;
+}
+
 
   cargarDatos() {
     this.viajeServicio.getViajes().subscribe({  
       next: (data) => {
-        this.solicitudes = data.filter(s => s.estado === 'pendiente' || s.estado === 'reagendado');
+        const pendientes = data.filter(s => s.estado === 'pendiente');
+        this.todas = pendientes;
+        this.solicitudes = [...pendientes];
       },      
       error: (err) => this.showToast('Error al cargar solicitudes.', 'danger'),
       

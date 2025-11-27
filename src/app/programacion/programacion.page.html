@@ -1,0 +1,143 @@
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Programacion Diaria</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-col size="12" class="text-center">
+            <img src="assets/img/Logo cmpa 2.png"  alt="Logo" class="logo-image">
+          </ion-col>
+
+<!--<ion-card>
+  <ion-card-header>
+    <ion-card-title>Exportar Proramación</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+   <ion-item>
+  <ion-input 
+    label="Fecha Desde" type="date"  [value]="fechaInicioFiltro" 
+    (ionChange)="fechaInicioFiltro = $event.detail.value ?? ''">
+  </ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-input 
+    label="Fecha Hasta" type="date" [value]="fechaFinFiltro" 
+    (ionChange)="fechaFinFiltro = $event.detail.value ?? ''">
+  </ion-input>
+</ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="fill"  fill="outline" (click)="exportarPDFNormales()" color="tertiary">
+            PDF Normales
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>-->
+
+<form> 
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Filtros de Programación Diaria</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-input 
+                  label="Patente" 
+                  label-placement="stacked" 
+                  placeholder="AABB22"
+                  [(ngModel)]="filtros.patente" 
+                  name="filtro_patente"> </ion-input>
+              </ion-item>
+            </ion-col>
+
+            <!--<ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-select label="Centro" label-placement="stacked" (ionChange)="onCentroChange($event)" interface="popover">
+                  <ion-select-option *ngFor="let centro of centrosPrincipales" [value]="centro.value">{{ centro.label }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item *ngIf="showSalud">
+                <ion-select [(ngModel)]="filtros.centro" name="filtro_centro_salud" label="Establecimiento de Salud" label-placement="stacked" interface="popover">
+                  <ion-select-option *ngFor="let est of establecimientosSalud" [value]="est.label">{{ est.label }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item *ngIf="showEducacion">
+                <ion-select [(ngModel)]="filtros.centro" name="filtro_centro_edu" label="Establecimiento de Educación" label-placement="stacked" interface="popover">
+                  <ion-select-option *ngFor="let est of establecimientosEducacion" [value]="est.label">{{ est.label }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item *ngIf="showAtm">
+                <ion-select [(ngModel)]="filtros.centro" name="filtro_centro_atm" label="Establecimiento ATM" label-placement="stacked" interface="popover">
+                  <ion-select-option *ngFor="let est of establecimientosAtm" [value]="est.label">{{ est.label }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>-->
+
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-input 
+                  label="Proveedor" 
+                  label-placement="stacked" 
+                  placeholder="Movilizacion SPA"
+                  [(ngModel)]="filtros.proveedor"
+                  name="filtro_proveedor"> </ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-select [(ngModel)]="filtros.programa" name="filtro_programa" label="Programa" label-placement="stacked" interface="popover">
+                  <ion-select-option *ngFor="let p of programas" [value]="p.label">{{ p.label }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-input 
+                  label="Fecha Inicio" 
+                  label-placement="stacked" 
+                  type="date"
+                  [(ngModel)]="filtros.fechaInicio"
+                  name="filtro_fecha_inicio"> </ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6" size-lg="3">
+              <ion-item>
+                <ion-input 
+                  label="Fecha Fin" 
+                  label-placement="stacked" 
+                  type="date"
+                  [(ngModel)]="filtros.fechaFin"
+                  name="filtro_fecha_fin"> </ion-input>
+              </ion-item>
+            </ion-col>
+            
+          </ion-row>
+        </ion-grid>
+
+        <div class="ion-text-right ion-padding-top">
+          <ion-button fill="outline" color="medium" (click)="limpiarFiltros()">Limpiar</ion-button>
+          <ion-button fill="outline" color="medium" (click)="aplicarFiltros()">Aplicar Filtros</ion-button>
+         <ion-button expand="fill"  fill="outline" (click)="exportarPDFNormales()" color="tertiary">
+            Exportar Programacion
+          </ion-button>
+        </div>
+       
+      </ion-card-content>
+    </ion-card>
+ 
+<full-calendar [options]="calendarOptions"></full-calendar>
+ </form> </ion-content>

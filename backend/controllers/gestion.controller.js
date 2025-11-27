@@ -80,7 +80,6 @@ exports.getVehiculosConConductores = async ( req, res ) => {
 };
 
 // --- GESTIÓN DE VEHÍCULOS ---
-
 exports.getVehiculosConDetalles = async (req, res) => {
   try {
     const query = `
@@ -94,6 +93,13 @@ exports.getVehiculosConDetalles = async (req, res) => {
         v.patente_reemplazo, 
         v.justificacion_reemplazo, 
         v.revision_tecnica_reemplazo, 
+        v.permiso_circulacion_reemplazo, 
+        v.seguro_obligatorio_reemplazo, 
+        v.marca_reemplazo,
+        v.modelo_reemplazo,
+        v.ano_reemplazo,
+        v.capacidad_reemplazo,
+        v.fecha_reemplazoFin,
         v.autorizacion_reemplazo, 
         v.fecha_reemplazo,
         tv.nombre_tipoVehiculo as tipoVehiculo,
@@ -130,6 +136,16 @@ exports.updateVehiculo = async (req, res) => {
     if (fields.seguro_obligatorio) {
       fields.seguro_obligatorio = new Date(fields.seguro_obligatorio).toISOString().split('T')[0];
     }
+    if (fields.permiso_circulacion_reemplazo) {
+      fields.permiso_circulacion_reemplazo = new Date(fields.permiso_circulacion_reemplazo).toISOString().split('T')[0];
+    }
+    if (fields.seguro_obligatorio_reemplazo) {
+      fields.seguro_obligatorio_reemplazo = new Date(fields.seguro_obligatorio_reemplazo).toISOString().split('T')[0];
+    }
+    if (fields.fecha_reemplazoFin) {
+      fields.fecha_reemplazoFin = new Date(fields.fecha_reemplazoFin).toISOString().split('T')[0];
+    }
+ 
 
     let query = 'UPDATE VEHICULO SET ';
     const params = [];

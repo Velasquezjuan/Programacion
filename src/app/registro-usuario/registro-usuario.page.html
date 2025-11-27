@@ -167,7 +167,7 @@
 
         <ion-col size="12" *ngIf="showCoordinadorFields || showItsFields || showAdminSistemaFields || showSolicitanteFields">
           <ion-item>
-            <ion-label position="floating">Centro</ion-label>
+            <ion-label position="floating">Unidad</ion-label>
             <ion-input formControlName="areaDesempeno" type="text"></ion-input>
           </ion-item>
           <ion-text color="danger" *ngIf="registroForm.get('areaDesempeno')?.invalid && (registroForm.get('areaDesempeno')?.touched || registroForm.get('areaDesempeno')?.dirty)">

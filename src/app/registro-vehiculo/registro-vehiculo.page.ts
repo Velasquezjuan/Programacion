@@ -128,13 +128,17 @@ export class RegistroVehiculoPage implements OnInit {
 
     const formValue = this.registroForm.value;
     
-    // Preparar el objeto para enviar a la API
+    // lista de objeto a alamcenar
     const nuevoVehiculo = {
       // Proveedor / Contrato
       rut_proveedor: formValue.rutEncVehiculo,
       nombre_proveedor: `${formValue.nombreEncVehiculo} ${formValue.apellidoEncVehiculo}`,
       id_contrato: formValue.contrato,
-      
+      fecha_inicio: formValue.inicioContrato,
+      fecha_termino: formValue.terminoContrato,
+      horas_contratadas: formValue.horasContratadas,
+
+
       // Vehículo
       patente: formValue.patente.toUpperCase(),
       marca: formValue.marca,
@@ -142,25 +146,25 @@ export class RegistroVehiculoPage implements OnInit {
       ano: new Date(formValue.anoVehiculo).getFullYear(),
       tipo_vehiculo: formValue.tipoVehiculo,
       capacidad: formValue.capacidad ? 1 : 0, 
-      revision_tecnica: new Date(formValue.fechaRevision).toISOString().split('T')[0],
-      permiso_circulacion: new Date(formValue.permisoCirculacion).toISOString().split('T')[0],
-      seguro_obligatorio: new Date(formValue.seguroObligatorio).toISOString().split('T')[0],
+      revision_tecnica: formValue.fechaRevision,
+      permiso_circulacion: formValue.permisoCirculacion,
+      seguro_obligatorio: formValue.seguroObligatorio,
       nombre_conductor: formValue.conductorTitular,
       conductor_reemplazo: formValue.conductorReemplazo,
 
       // Asignaciones
       programa: formValue.programa,
-      establecimientos: formValue.establecimiento,
-     // /centro: formValue.centro,
-     // centroSalud1: formValue.centroSalud1,
-     // centroSalud2: formValue.centroSalud2,
-     // centroEducacion: formValue.centroEducacion,
-     // centroAtm: formValue.centroAtm
+      centro: formValue.centro,
+      centroSalud1: formValue.centroSalud1,
+      centroSalud2: formValue.centroSalud2,
+      centroEducacion: formValue.centroEducacion,
+      centroAtm: formValue.centroAtm
     };
 
     this.VehiculoServicio.registrarVehiculo(nuevoVehiculo).subscribe({
       next: () => {
         this.mostrarToast('Vehículo registrado con éxito.', 'success');
+        console.log('Vehículo registrado:', nuevoVehiculo);
         if (this.usuarioActivo?.correo) {
           this.notificaciones.enviarCorreoVehiculoRegistrado(this.usuarioActivo.correo, nuevoVehiculo.patente);
         }
@@ -171,6 +175,7 @@ export class RegistroVehiculoPage implements OnInit {
         const errorMsg = err.error?.message || 'Error de conexión con el servidor.';
         this.mostrarToast(errorMsg, 'danger');
       }
+
     });
   }
 
@@ -202,6 +207,9 @@ export class RegistroVehiculoPage implements OnInit {
       //Documentación
       programa: ['',Validators.required],
       contrato: ['',Validators.required],
+      inicioContrato: ['',[Validators.required]],
+      terminoContrato: ['',[Validators.required]],
+      horasContratadas: ['',[Validators.required, Validators.min(1), Validators.max(44)]],
       fechaRevision: ['',[Validators.required, Validators.min(2025)]],
       permisoCirculacion: ['',[Validators.required, Validators.min(2025)]],
       seguroObligatorio: ['',[Validators.required, Validators.min(2025)]],
@@ -224,6 +232,14 @@ export class RegistroVehiculoPage implements OnInit {
  onYearSelected(ev: any) {
   const year = new Date(ev.detail.value).getFullYear();
   this.registroForm.patchValue({ anoVehiculo: year });
+}
+
+onRevSelectedContrato(ev: any) {
+  this.registroForm.patchValue({ inicioContrato: ev.detail.value });
+}
+
+onRevSelectedFinContrato(ev: any) {
+  this.registroForm.patchValue({ terminoContrato: ev.detail.value });
 }
 
 onRevSelected(ev: any) {
@@ -251,7 +267,7 @@ onRevSelectedSeguro(ev: any) {
             }
     }*/
 
-    onAnoChange(event: any) {
+onAnoChange(event: any) {
   const dateString = event.detail.value; 
   if (dateString) {
     const year = dateString.split('-')[0]; 

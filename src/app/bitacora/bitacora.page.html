@@ -86,6 +86,14 @@
           </ion-input>
         </ion-item>
       </ion-col>
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-item>
+          <ion-select [(ngModel)]="filtros.Movimiento" label="Tipo de Movimiento" label-placement="stacked" interface="popover">
+            <ion-select-option value="SinMovmiento">Sin Movimiento</ion-select-option>
+            <ion-select-option value="ConMovimiento">Movilizado</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
     </ion-row>
   </ion-grid>
 
@@ -216,13 +224,57 @@
         </ion-grid>
 
         <ion-list *ngIf="reporteResultados.length > 0">
+
+          <ion-item-divider color="light">
+            <ion-label>
+                {{ filtros.Movimiento === 'SinMovmiento' ? 'Vehículos Sin Uso en el Periodo' : 'Detalle de Viajes' }}
+            </ion-label>
+          </ion-item-divider>
+
+          <ng-container *ngIf="filtros.Movimiento !== 'SinMovmiento'">
+              <ion-item *ngFor="let resultado of reporteResultados">
+                <ion-label>
+                  <h2>
+                      <ion-badge [color]="resultado.tipo_origen === 'Masivo' ? 'tertiary' : 'success'" slot="end" class="ion-margin-end">
+                          {{ resultado.tipo_origen }}
+                      </ion-badge>
+                      Viaje N°{{ resultado.id_viaje }} 
+                      ({{ resultado.fecha_viaje | date:'dd/MM' }} - {{ resultado.hora_inicio }})
+                  </h2>
+                  <p>Vehículo: <b>{{ resultado.vehiculo_patente || 'N/A' }}</b></p>
+                  <p>Conductor: {{ resultado.nombre_conductor || 'N/A' }}</p>
+                  <p>Centro: {{ resultado.punto_destino }} | Programa: {{ resultado.nombre_programa }}</p> 
+                  <p>Estado: <ion-text [color]="resultado.estado === 'finalizado' ? 'success' : 'danger'">{{ resultado.estado | titlecase }}</ion-text></p>
+                </ion-label>
+              </ion-item>
+          </ng-container>
+
+          <ng-container *ngIf="filtros.Movimiento === 'SinMovmiento'">
+              <ion-item *ngFor="let vehiculo of reporteResultados">
+                  <ion-icon name="warning-outline" slot="start" color="warning"></ion-icon>
+                  <ion-label>
+                      <h2>Patente: <b>{{ vehiculo.vehiculo_patente }}</b></h2>
+                      <h3>{{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
+                      <p>Conductor: {{ vehiculo.nombre_conductor || 'Sin asignar' }}</p>
+                      <p>Proveedor: {{ vehiculo.nombre_proveedor || 'N/A' }}</p>
+                      
+                      <ion-text color="danger">
+                        <p style="font-weight: bold; font-size: 1.1em;">
+                           Inactivo por {{ diasInactivosReporte }} días
+                        </p>
+                      </ion-text>
+                  </ion-label>
+              </ion-item>
+          </ng-container>
+
           <ion-item-divider color="light">
             <ion-label>Detalle de Viajes</ion-label>
           </ion-item-divider>
           <ion-item *ngFor="let resultado of reporteResultados">
             <ion-label>
-              <h2>Viaje #{{ resultado.id_viaje }} ({{ resultado.fecha_viaje | date:'shortDate' }} - {{ resultado.hora_inicio }})</h2>
-              <p>Vehículo: ({{ resultado.vehiculo_patente || 'N/A' }})</p>
+              <h2>Viaje N°{{ resultado.id_viaje }} 
+                Solicitado Con Fecha {{ resultado.fecha_viaje | date:'shortDate' }} - {{ resultado.hora_inicio }}</h2>
+              <p>Vehículo: {{ resultado.vehiculo_patente || 'N/A' }}</p>
               <p>Conductor: {{ resultado.nombre_conductor || 'N/A' }}</p>
               <p>Centro: {{ resultado.punto_destino }} | Programa: {{ resultado.nombre_programa }}</p>
 

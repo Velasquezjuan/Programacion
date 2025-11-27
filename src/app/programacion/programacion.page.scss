@@ -1,0 +1,44 @@
+.logo-image {
+  display: block;
+  margin: 16px auto;
+  max-height: 120px;
+  width: auto;
+}
+::ng-deep {
+
+  /* Estilo base para cada "evento" en el calendario */
+  .fc-event {
+    border-radius: 4px !important; 
+    border: none !important;       
+    padding: 2px 5px !important;   
+    cursor: pointer;
+    
+    // Mejora la legibilidad
+    font-size: 0.8em !important;
+    line-height: 1.4 !important;
+    
+    // Anima el color al pasar el mouse
+    transition: filter 0.2s ease;
+  }
+  
+  .fc-event:hover {
+    filter: brightness(1.2); 
+  }
+
+  /* Oculta la hora en la vista de Mes (es muy denso) */
+  .fc-daygrid-month-view .fc-event-time {
+    display: none !important;
+  }
+
+  /* Estilos para la hora en vistas de Semana/Día */
+  .fc-event-time {
+    font-weight: 600;
+  }
+  
+  /* Título del evento */
+  .fc-event-title {
+    white-space: nowrap;      
+    overflow: hidden;        
+    text-overflow: ellipsis;  
+  }
+}

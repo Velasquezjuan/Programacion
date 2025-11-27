@@ -25,32 +25,34 @@ exports.createVehiculo = async (req, res) => {
     await connection.beginTransaction();
 
     const {
-      patente, marca, modelo, ano, capacidad, tipo_vehiculo, revision_tecnica,
+      patente, marca, modelo, ano, capacidad, tipo_vehiculo, revision_tecnica,permiso_circulacion, seguro_obligatorio,
       nombre_conductor, conductor_reemplazo, rut_proveedor, nombre_proveedor,
-      id_contrato, programa, centro, centroSalud1, centroSalud2, centroEducacion, centroAtm
+      id_contrato, programa, centro, centroSalud1, centroSalud2, centroEducacion, centroAtm,
+      fecha_inicio, fecha_termino, horas_contratadas
     } = req.body;
 
     const capacidadInt = capacidad ? 1 : 0;
 
     const sqlVehiculo = `
       INSERT INTO VEHICULO (
-        patente, marca, modelo, ano, capacidad, revision_tecnica,
+        patente, marca, modelo, ano, capacidad, revision_tecnica, permiso_circulacion, seguro_obligatorio,
         nombre_conductor, nombre_conductor_reemplazo, TIPO_VEHICULO_id_tipoVehiculo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);
     `;
     await connection.query(sqlVehiculo, [
-      patente, marca, modelo, ano, capacidadInt, revision_tecnica,
+      patente, marca, modelo, ano, capacidadInt, revision_tecnica, permiso_circulacion, seguro_obligatorio,
       nombre_conductor, conductor_reemplazo, tipo_vehiculo
     ]);
 
     const sqlContrato = `
       INSERT INTO CONTRATO (
         id_contrato, rut_proveedor, nombre_proveedor, 
-        fecha_inicio, fecha_termino, VEHICULO_patente
-      ) VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR), ?);
+        fecha_inicio, fecha_termino, horas_contratadas, VEHICULO_patente
+      ) VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
     await connection.query(sqlContrato, [
-      id_contrato, rut_proveedor, nombre_proveedor, patente
+      id_contrato, rut_proveedor, nombre_proveedor, fecha_inicio,     
+      fecha_termino, horas_contratadas, patente
     ]);
 
     if (programa && programa.length > 0) {

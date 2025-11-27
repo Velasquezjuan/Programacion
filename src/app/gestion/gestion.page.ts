@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule,FormGroup, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -172,6 +172,13 @@ cambiarEstadoUsuario(usuario: any) {
     autorizacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.autorizacion_reemplazo : null,
     
     // Campos de Documentación
+    marca_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.marca_reemplazo : null,
+    modelo_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.modelo_reemplazo : null,
+    ano_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.ano_reemplazo : null,
+    capacidad_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.capacidad_reemplazo : 0, // Usar 0 para 'no'
+    permiso_circulacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.permiso_circulacion_reemplazo : null,
+    seguro_obligatorio_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.seguro_obligatorio_reemplazo : null,
+    fecha_reemplazoFin: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazoFin : null,
     revision_tecnica: vehiculo.revision_tecnica,
     permiso_circulacion: vehiculo.permiso_circulacion,
     seguro_obligatorio: vehiculo.seguro_obligatorio,
@@ -202,7 +209,17 @@ cambiarEstadoVehiculo(vehiculo: any) {
     const datosActualizar = {
       requiere_reemplazo: vehiculo.requiere_reemplazo,
       patente_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.patente_reemplazo : null,
+      modelo_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.modelo_reemplazo : null,
+      marca_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.marca_reemplazo : null,
+      ano_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.ano_reemplazo : null,
+      capacidad_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.capacidad_reemplazo : null,
+      permiso_circulacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.permiso_circulacion_reemplazo : null,
+      seguro_obligatorio_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.seguro_obligatorio_reemplazo : null,
+      revicion_tecnica_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.revision_tecnica_reemplazo : null,
+      fecha_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.fecha_reemplazo : null,
+      fecha_reemplazoFin: vehiculo.requiere_reemplazo ? vehiculo.fecha_reemplazoFin : null,
       justificacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.justificacion_reemplazo : null,
+      autorizacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.autorizacion_reemplazo : null,
     };
     this.administracion.updateVehiculo(vehiculo.patente, datosActualizar).subscribe({
       next: () => {

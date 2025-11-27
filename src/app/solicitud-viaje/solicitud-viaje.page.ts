@@ -203,11 +203,38 @@ export class SolicitudViajePage implements OnInit {
   }
 
   actualizarMaxOcupantes(tipo: string) {
-    this.maxOcupantes = tipo === 'minivan' ? 4 : 9;
+    const tipoMin = tipo.toLowerCase();
 
-    this.registroForm.get('ocupantes')!.setValidators([Validators.required, Validators.min(1), Validators.max(this.maxOcupantes)]);
-    this.registroForm.get('ocupantes')!.updateValueAndValidity();
+  switch (tipoMin) {
+    case '4': //Minivan
+      this.maxOcupantes = 9;
+      break;
+    case '1': //suv
+    case '2': //camioneta
+      this.maxOcupantes = 4;
+      break;
+    case '3':// camion
+      this.maxOcupantes = 2;
+      break;
+    default:
+      this.maxOcupantes = 4 ;
+      break;
   }
+
+  //console.log('Tipo seleccionado:', tipo, '| Max ocupantes:', this.maxOcupantes); // <-- Agrega esto para depurar
+
+  const ocupantesControl = this.registroForm.get('ocupantes');
+  if (ocupantesControl) {
+    ocupantesControl.setValidators([
+      Validators.required,
+      Validators.min(1),
+      Validators.max(this.maxOcupantes)
+    ]);
+    ocupantesControl.updateValueAndValidity();
+  }
+}
+
+
   private async showToast(msg: string, color: 'success'|'warning'|'danger'='success') {
     const t = await this.toast.create({ message: msg, color, duration: 15000 });
     await t.present();

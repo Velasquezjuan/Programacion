@@ -108,6 +108,14 @@ const routes: Routes = [
     path: 'historico-solicitud',
     loadComponent: () => import('./historico-solicitud/historico-solicitud.page').then( m => m.HistoricoSolicitudPage)
   },
+   {
+    path: 'nueva-contrasena',
+    loadComponent: () => import('./nueva-contrasena/nueva-contrasena.page').then( m => m.NuevaContrasenaPage)
+  },
+  {
+    path: 'programacion',
+    loadComponent: () => import('./programacion/programacion.page').then( m => m.ProgramacionPage)
+  },
 ];
 
 @NgModule({

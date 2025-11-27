@@ -56,7 +56,7 @@ export class Validadores {
       return null;
     }
   
-    // Validador de número de teléfono chileno (formato general)
+    // Validador de número de teléfono chileno
     static telefono(control: any): ValidationErrors  | null {
       if (!control.value) return null;
       const regex = /^(\+?56)?(\s?9\s?)?[98765432]\d{8}$/;
@@ -66,7 +66,7 @@ export class Validadores {
     // Validador de correo electrónico para que tenga el dominio @cmpuentealto.cl
     static correoValido(control: any): ValidationErrors  | null {
       if (!control.value) return null;
-      const regex = /^[a-zA-Z]+\.[a-zA-Z]+@cmpuentealto.cl$/;
+    const regex = /^[a-zA-Z0-9._%+-]+@(cmpuentealto\.cl|gmail\.com|puenteeduca\.cl|gmail\.cl)$/i;
       return regex.test(control.value) ? null : { correoInvalido: true };
     }
 

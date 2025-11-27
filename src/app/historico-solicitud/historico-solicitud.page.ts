@@ -7,11 +7,11 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard,
   IonButtons, IonMenuButton, IonSearchbar
  } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
-import { Memorialocal }            from '../almacen/memorialocal';
-import { AutentificacionUsuario }  from '../servicio/autentificacion-usuario';
-import { CentroServicio }         from '../servicio/centro-servicio';
-import { ViajesServicio }         from '../servicio/viajes-servicio';
-import { VehiculoServicio }       from '../servicio/vehiculo-servicio';
+import { Memorialocal } from '../almacen/memorialocal';
+import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+import { CentroServicio } from '../servicio/centro-servicio';
+import { ViajesServicio } from '../servicio/viajes-servicio';
+import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 import { AlertController, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { checkmarkDoneCircle, closeCircle, checkmarkCircle } from 'ionicons/icons';

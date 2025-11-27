@@ -1,14 +1,14 @@
 import { Component, OnInit,CUSTOM_ELEMENTS_SCHEMA  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonLabel, IonSearchbar, 
+import { IonContent, IonLabel, IonSearchbar, IonToggle,
   IonList, IonItem, IonInput,IonButton, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonGrid, IonRow, IonCol, IonIcon, IonText,
   IonItemDivider,IonSelect, IonSelectOption
  } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { searchCircle, downloadOutline } from 'ionicons/icons';
+import { searchCircle, downloadOutline, warningOutline } from 'ionicons/icons';
 
 import { NgChartsModule } from 'ng2-charts';
 import { ChartOptions, ChartData, ChartType, Chart, registerables } from 'chart.js';
@@ -34,26 +34,21 @@ import { VehiculoServicio }       from '../servicio/vehiculo-servicio';
     FormsModule, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle,
     IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonGrid,
     IonRow, IonCol, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonText,
-    IonList, IonItemDivider,  NgChartsModule,   IonSelect, IonSelectOption
+    IonList, IonItemDivider,  NgChartsModule,   IonSelect, IonSelectOption,
   ]
 })
 export class BitacoraPage implements OnInit {
 
   centrosPrincipales: { value: number; label: string }[] = [];
-
   programas: { value: string; label: string }[] = [];
-
   establecimientosSalud: { value: number; label: string }[] = [];
-
   establecimientosEducacion: { value: number; label: string }[] = [];
-
   establecimientosAtm: { value: number; label: string }[] = [];
-
+  
+  diasInactivosReporte: number = 0;
  
   showSalud     = false;
-
   showEducacion = false;
-
   showAtm       = false;
 
 
@@ -90,13 +85,14 @@ export class BitacoraPage implements OnInit {
   resumenReporte: any = {};
   reporteActivo: boolean = false;
 
-   filtros = {
+  filtros = {
     patente: '',
     centro: '',
     proveedor: '',
     programa: '',
     fechaInicio: '',
-    fechaFin: ''
+    fechaFin: '',
+    Movimiento: ''
   };
 
   filtro: 'todos'|'pendiente'|'Agendado'|'rechazado'|'reagendado' = 'todos';
@@ -115,7 +111,7 @@ export class BitacoraPage implements OnInit {
     private centroServicio: CentroServicio,
 
   ) {
-      addIcons({downloadOutline});
+      addIcons({downloadOutline,warningOutline});
     Chart.register(...registerables);
       this.addIcons();
 
@@ -140,6 +136,7 @@ export class BitacoraPage implements OnInit {
       next: (data) => {
         this.reporteResultados = data.resultados;
         this.resumenReporte = data.resumen;
+        this.diasInactivosReporte = data.diasInactivos;
         this.reporteActivo = true; 
         loading.dismiss();
         this.mostrarToast('Reporte generado con éxito.', 'success');
@@ -159,7 +156,8 @@ export class BitacoraPage implements OnInit {
       proveedor: '',
       programa: '',
       fechaInicio: '',
-      fechaFin: ''
+      fechaFin: '',
+      Movimiento: ''
     };
     this.reporteActivo = false; 
     this.reporteResultados = [];
@@ -207,6 +205,7 @@ export class BitacoraPage implements OnInit {
       'search-circle': searchCircle
     });
   }
+
   exportarDashboard() {
     this.bitacora.exportarDashboard().subscribe({
       next: (data: Blob) => {
@@ -273,6 +272,7 @@ async cargarDashboardData() {
        }
   });
 }
+
 onCentroChange(event: any) {
   const centroId = event.detail.value;
 
@@ -300,6 +300,7 @@ onCentroChange(event: any) {
       break;
   }
 }
+
 
 }
 

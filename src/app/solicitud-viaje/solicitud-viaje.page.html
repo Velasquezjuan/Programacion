@@ -131,9 +131,9 @@
           </ion-col>
           <ion-col size="12" *ngIf="showAtmDestino">
             <ion-item>
-              <ion-select formControlName="centroAtmDestino">
               <ion-label>Atención Menores (Destino)</ion-label>
-              <ion-select-option *ngFor="let est of establecimientosAtmDestino" [value]="est.label">{{ est.label }}</ion-select-option> 
+              <ion-select formControlName="centroAtmDestino">
+                <ion-select-option *ngFor="let est of establecimientosAtmDestino" [value]="est.label">{{ est.label }}</ion-select-option>
               </ion-select>
             </ion-item>
           </ion-col>
@@ -162,7 +162,7 @@
           <ion-col size="12">
             <ion-item>
               <ion-label position="floating">Tiempo Uso</ion-label>
-              <ion-input type= "number" formControlName="tiempoUso"></ion-input>
+              <ion-input placeholder="Horas estimadas de uso" type= "number" formControlName="tiempoUso"></ion-input>
             </ion-item>
              <div *ngIf="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched" class="error-message">
             <div *ngIf="registroForm.get('tiempoUso')?.errors?.['required']">
@@ -178,7 +178,7 @@
           </ion-col>
           <ion-col size="12">
             <ion-item>
-              <ion-label>Necesitsa carga?</ion-label>
+              <ion-label>Necesita carga?</ion-label>
               <ion-toggle type ="boolean" formControlName="necesita_carga" ></ion-toggle>
             </ion-item>
           </ion-col>

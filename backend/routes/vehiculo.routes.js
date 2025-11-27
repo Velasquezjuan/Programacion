@@ -23,7 +23,12 @@ const validateVehiculo = [
       return res.status(400).json({ message: errors.array()[0].msg });
     }
     next();
-  }
+  },
+  body('fecha_inicio').isISO8601().withMessage('La fecha de inicio del contrato no es válida.'),
+  body ('fecha_termino').isISO8601().withMessage('La fecha de término del contrato no es válida.'),
+  body ('permiso_circulacion').isISO8601().withMessage('La fecha de permiso de circulación no es válida.'),
+  body ('seguro_obligatorio').isISO8601().withMessage('La fecha de seguro obligatorio no es válida.'),
+  body ('horas_contratadas').isInt({ min: 1, max: 44 }).withMessage('Las horas contratadas deben ser entre 1 y 168 horas semanales.'),
 ];
 
 router.get('/', verifyToken, vehiculoController.getVehiculos);

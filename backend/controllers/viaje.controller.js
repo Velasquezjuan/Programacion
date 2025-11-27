@@ -214,7 +214,7 @@ exports.createViajeMasivo = async (req, res) => {
     `;
     const [result] = await db.query(query, [
       fecha_viaje, hora_inicio, punto_salida, punto_destino,vehiculo_patente,
-      motivo, ocupantes, programa, solicitante_rut, responsable, necesita_carga, vehiculo_deseado, estado // <-- Y LO AÑADIMOS AQUÍ
+      motivo, ocupantes, programa, solicitante_rut, responsable, necesita_carga, vehiculo_deseado, estado 
     ]);
 
  const nuevoViajeId = result.insertId;

@@ -118,8 +118,16 @@
             
             <div *ngIf="v.necesita_reemplazo === 'si'" class="reemplazo-info">
               <p><b>REQUIERE REEMPLAZO</b></p>
+              <p><b>Fecha Reemplazo:</b> {{ v.fecha_reemplazo | date:'dd/MM/yyyy' }}</p>
+              <p><b>Rev. Téc. Reemplazo:</b> {{ v.revision_tecnica_reemplazo | date:'dd/MM/yyyy' }}</p>
+              <p><b>Marca Reemplazo:</b> {{ v.marca_reemplazo }} | <b>Modelo Reemplazo:</b> {{ v.modelo_reemplazo }} | <b>Año Reemplazo:</b> {{ v.ano_reemplazo }} | <b>Capacidad Reemplazo:</b> {{ v.capacidad_reemplazo ? 'Sí' : 'No' }}</p>
               <p><b>Justificación:</b> {{ v.justificacion_reemplazo }}</p>
               <p><b>Patente Reemplazo:</b> {{ v.patente_reemplazo }} | <b>Conductor:</b> {{ v.nombre_conductor_reemplazo }}</p>
+              <p><b>Autorización Reemplazo:</b> {{ v.autorizacion_reemplazo }}</p>
+              <p><b>Permiso Circ. Reemplazo:</b> {{ v.permiso_circulacion_reemplazo | date:'dd/MM/yyyy' }}</p>
+              <p><b>Seg Oblig. Reemplazo:</b> {{ v.seguro_obligatorio_reemplazo | date:'dd/MM/yyyy' }}</p>
+              <p><b>Venc. Contrato Reemplazo:</b> {{ v.fecha_reemplazoFin | date:'dd/MM/yyyy' }}</p>
+
             </div>
           </ion-label>
 
@@ -163,10 +171,32 @@
                 <ion-input label="Patente Reemplazo" label-placement="stacked" [value]="v.patente_reemplazo" (ionInput)="v.patente_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
+                <ion-input label="Marca Reemplazo" label-placement="stacked" [value]="v.marca_reemplazo" (ionInput)="v.marca_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-input label="Modelo Reemplazo" label-placement="stacked" [value]="v.modelo_reemplazo" (ionInput)="v.modelo_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-input label="Año Reemplazo" label-placement="stacked" type="number" [value]="v.ano_reemplazo" (ionInput)="v.ano_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-toggle [checked]="v.capacidad_reemplazo == 1" (ionChange)="v.capacidad_reemplazo = $event.detail.checked ? 1 : 0" label="Capacidad Reemplazo"> Capacidad Reemplazo</ion-toggle>
+                <!--<ion-input label="Capacidad Reemplazo" label-placement="stacked" type="toggle" [value]="v.capacidad_reemplazo" (ionInput)="v.capacidad_reemplazo = $event.target.value"></ion-input>-->
+              </ion-item>
+              <ion-item>
                 <ion-input label="Fecha Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
+                <ion-input label="Fecha Termino de Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazoFin | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
                 <ion-input label="Rev. Téc. Reemplazo" label-placement="stacked" type="date" [value]="v.revision_tecnica_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.revision_tecnica_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-input label="Permiso Circ. Reemplazo" label-placement="stacked" type="date" [value]="v.permiso_circulacion_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.permiso_circulacion_reemplazo = $event.target.value"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-input label="Seguro Oblig. Reemplazo" label-placement="stacked" type="date" [value]="v.seguro_obligatorio_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.seguro_obligatorio_reemplazo = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
                 <ion-textarea label="Justificación Reemplazo" label-placement="stacked" [value]="v.justificacion_reemplazo" (ionInput)="v.justificacion_reemplazo = $event.target.value"></ion-textarea>

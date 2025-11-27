@@ -20,7 +20,7 @@ const validateViaje = [
     body ('programa'),
 ];
 
-/* const validateViajeMasivo = [
+const validateViajeMasivo = [
     
     body( 'fecha_viaje').notEmpty().withMessage('La fecha del viaje es obligatoria.'),
     body ('hora_inicio').notEmpty().withMessage('La hora de inicio es obligatoria.'),
@@ -32,13 +32,13 @@ const validateViaje = [
     body ('necesita_carga').isBoolean().withMessage('el campo necesita carga debe ser booleano.'),
     body ('vehiculo_deseado').notEmpty().withMessage('el tipo de vehiculo deseado es obligatorio.'),
     body ('programa'),
-];*/
+];
 
 router.use(verifyToken);
 
 router.get('/', viajeController.getViajes);
 router.post('/solicitar', validateViaje, viajeController.createViaje);
-router.post('/masivo', viajeController.createViajeMasivo);
+router.post('/masivo', validateViajeMasivo, viajeController.createViajeMasivo);
 router.put('/:id_viaje', viajeController.updateEstadoViaje);
 router.get('/bitacora/:patente', viajeController.getBitacoraByVehiculo);
 router.get('/usuario/:nombre', viajeController.getViajesPorUsuario);

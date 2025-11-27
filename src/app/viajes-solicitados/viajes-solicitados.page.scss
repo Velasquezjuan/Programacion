@@ -4,6 +4,35 @@
   margin: 0 auto;
   padding: 16px;
 }
+.card-wrapper {
+  max-width: 600px;
+  margin: 1rem auto;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 8px;
+}
+.contenedor-filtros {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; 
+  gap: 16px; 
+  margin-bottom: 16px;
+}
+.search-by-id {
+  max-width: 300px;
+  flex-grow: 1; 
+}
+
+// Estilo para el filtro de estado
+.filtros-estado {
+  max-width: 250px;
+  flex-grow: 1;
+  --border-radius: 8px;
+  --border-color: var(--ion-color-step-200, #002cf1);
+  --border-width: 1px;
+}
+
 
 /* Fija el grid para ocupar todo el ancho disponible */
 ion-grid {

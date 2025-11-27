@@ -166,6 +166,39 @@
 
                 <ion-item>
                     <ion-input
+                      label="Inicio de Contrato"
+                      label-placement="stacked"
+                      type="date" 
+                       [min]="minDate"
+                       [max]="maxDate"
+                      formControlName="inicioContrato">
+                    </ion-input>
+                  </ion-item>
+
+                    <ion-item>
+                    <ion-input
+                      label="Termino de Contrato"
+                      label-placement="stacked"
+                      type="date" 
+                       [min]="minDate"
+                       [max]="maxDate"
+                      formControlName="terminoContrato">
+                    </ion-input>
+                  </ion-item>
+
+                  <ion-item>
+                    <ion-input
+                      label="Horas Contratadas por Semana"
+                      label-placement="stacked"
+                      type="number" 
+                      formControlName="horasContratadas"
+                      min="1"
+                      max="44">
+                    </ion-input>
+                  </ion-item>
+
+                <ion-item>
+                    <ion-input
                       label="Vencimiento Revisión Técnica"
                       label-placement="stacked"
                       type="date" 

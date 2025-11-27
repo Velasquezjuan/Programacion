@@ -1,6 +1,11 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { 
+  IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonInput,
+  IonGrid, IonRow, IonCol, IonButton, IonSelect, IonSelectOption
+} from '@ionic/angular/standalone';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventClickArg } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -17,25 +22,10 @@ import autoTable from 'jspdf-autotable';
 import { Memorialocal } from '../almacen/memorialocal';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
 import { CentroServicio } from '../servicio/centro-servicio';
+import { VehiculoServicio } from '../servicio/vehiculo-servicio';
 import { ViajesServicio } from '../servicio/viajes-servicio';
 import { NotificacionesCorreo } from '../servicio/notificaciones-correo';
 
-
-/*interface ViajeAPI {
-  id_viaje: number;
-  solicitante_nombre: string;
-  correo_solicitante: string;
-  fecha_viaje: string;
-  hora_inicio: string;
-  hora_fin: string | null;
-  punto_salida: string;
-  punto_destino: string;
-  motivo: string;
-  ocupantes: number;
-  estado: string;
-  vehiculo_patente: string | null;
-  responsable_nombre: string;
-}*/
 
 interface viaje {
   id_viaje: string;
@@ -60,13 +50,12 @@ interface viaje {
   //ocupante: string;
   ocupantes: number;
   estado: string;
-  patenteVehiculo?: string;
+  patente?: string;
   tipoVehiculo?: string;
   motivoRechazo?: string;
   motivoReagendamiento?: string;
   correo_solicitante?: string;
 }
-
 
 interface Usuario {
   rut: string;
@@ -76,15 +65,44 @@ interface Usuario {
 }
 
 @Component({
-  selector: 'app-calendario',
-  templateUrl: './calendario.page.html',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  styleUrls: ['./calendario.page.scss'],
+  selector: 'app-programacion',
+  templateUrl: './programacion.page.html',
+  styleUrls: ['./programacion.page.scss'],
+   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   standalone: true,
-  imports: [ CommonModule, FormsModule,FullCalendarModule ]
+  imports: [CommonModule, FormsModule,FullCalendarModule,
+    IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonInput,
+  IonGrid, IonRow, IonCol, IonButton, IonSelect, IonSelectOption
+  ]
 })
-export class CalendarioPage implements OnInit {
+export class ProgramacionPage implements OnInit {
+
+
+  viajesNormalesCargados: any[] = []; 
+  _todosLosViajes: any[] = [];
  
+  centrosPrincipales: { value: number; label: string }[] = [];
+  programas: { value: string; label: string }[] = [];
+  establecimientosSalud: { value: number; label: string }[] = [];
+  establecimientosEducacion: { value: number; label: string }[] = [];
+  establecimientosAtm: { value: number; label: string }[] = [];
+
+ 
+  showSalud     = false;
+  showEducacion = false;
+  showAtm       = false;
+
+
+  filtros = {
+    patente: '',
+    centro: '',
+    proveedor: '',
+    programa: '',
+    fechaInicio: '',
+    fechaFin: ''
+  };
+
    rolUsuario: string | null = null;
    nombreUsuario: string = '';
    fechaInicioFiltro: string = '';
@@ -111,23 +129,7 @@ export class CalendarioPage implements OnInit {
     events: [],
     displayEventTime: true,
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-    /*eventContent: (arg) => {
-      const p = (arg.event.extendedProps as any);
-      const div = document.createElement('div');
-      div.style.fontSize = '0.75em';
-      div.innerHTML = `
-        <b>${arg.event.title}</b><br>
-        <i>Salida: ${p.punto_salida}</i><br>
-        <i>Destino: ${p.punto_destino}</i><br>
-        <i>Vehículo: ${p.tipoVehiculo || 'No asignado'}</i><br>
-        <i>Ocupantes: ${p.ocupantes}</i><br>
-        <i>Responsable: ${p.responsable}</i><br>
-        <i>Motivo: ${p.motivo}</i><br>
-        <i>${arg.timeText}</i>
-      `;
-      return { domNodes: [div] };
-    },*/
-    
+    editable: false,    
     eventClick: (info) => this.handleEventClick(info),
   };
 
@@ -140,7 +142,23 @@ export class CalendarioPage implements OnInit {
   ) {}
 
    async ngOnInit() {
+    this.programas = this.centroSvc.obtenerPrograma('prog');
     await this.cargarDatosDelCalendario();
+
+
+  }
+
+   limpiarFiltros() {
+    this.filtros = {
+      patente: '',
+      centro: '',
+      proveedor: '',
+      programa: '',
+      fechaInicio: '',
+      fechaFin: ''
+    };
+    this.actualizarCalendario(this._todosLosViajes);
+
   }
 
   async cargarDatosDelCalendario() {
@@ -152,57 +170,37 @@ export class CalendarioPage implements OnInit {
 
     this.rolUsuario = usr.rol;
     this.nombreUsuario = usr.nombre;
-    const isAdmin = ['adminSistema', 'its', 'coordinador'].includes(this.rolUsuario ?? '');
+    const isAdmin = ['adminSistema', 'coordinador'].includes(this.rolUsuario ?? '');
 
    forkJoin({
-   // viajesNormales: this.viajesServicio.getViajes(),
-    viajesMasivos: this.viajesServicio.getViajesMasivos()
+    viajesNormales: this.viajesServicio.getViajes(),
   }).subscribe({
     next: (resultados) => {
+
       console.log("Datos recibidos del backend:", resultados);
-
-      const todosLosViajes = [
-        ...resultados.viajesMasivos];
-
-        const viajesVisibles = todosLosViajes.filter(viaje =>
-          ['aceptado', 'Agendado'].includes(viaje.estado) &&
+      
+      const todosLosViajes = [...resultados.viajesNormales];
+      
+      const viajesNormalesCargados = todosLosViajes.filter(viaje =>
+          ['aceptado', 'agendado'].includes(viaje.estado?.toLowerCase()) &&
           (isAdmin || viaje.nombre_solicitante === this.nombreUsuario)
         );
 
-     this.calendarOptions.events = viajesVisibles.map(viaje => {
+      this._todosLosViajes = [...viajesNormalesCargados];
+
+     this.calendarOptions.events = viajesNormalesCargados.map(viaje => {
       const color = this.getColorPorViaje(viaje);
       const textColor = (color === '#ffc409') ? '#000000' : '#ffffff';
-      const destinoTraducido = this.obtenerNombreUbicacion(viaje.punto_destino || '');
-      /*id: viaje.id_viaje.toString(),
-        title: `Viaje de ${viaje.nombre_solicitante}`,
-        start: `${viaje.fecha_viaje.split('T')[0]}T${viaje.hora_inicio}`,
-        allDay: false,
-        color: this.getColorPorViaje(viaje), 
-        extendedProps: viaje*/
       return {
        id: viaje.id_viaje.toString(),
-       title: `Viaje: ${destinoTraducido}`, 
+       title: `Viaje: ${viaje.punto_destino || 'N/A'}`, 
        start: `${viaje.fecha_viaje.split('T')[0]}T${viaje.hora_inicio}`,
        allDay: false,
        color: color,        
        textColor: textColor, 
-       extendedProps: { ...viaje,
-       punto_salida: this.obtenerNombreUbicacion(viaje.punto_salida || ''),
-       punto_destino: destinoTraducido
-         }
-       };
-      });
-      /*{
-        puntoSalida: s.punto_salida ? this.getSalidaLabel(s) : s.origen,
-        puntoDestino: s.punto_destino ? this.getDestinoLabel(s) : s.destino,
-        vehiculo: s.tipoVehiculo, 
-        ocupantes: s.ocupantes,
-        responsable: s.responsable || s.ocupante,
-        motivo: s.motivo,
-        fecha: s.fecha,
-        hora: s.hora_inicio || s.hora
-      }*/
-   // }));
+       extendedProps: viaje
+        };
+        });
 
     if (isAdmin) {
       this.calendarOptions.editable = true;
@@ -228,14 +226,25 @@ export class CalendarioPage implements OnInit {
   });
     }
 
+  actualizarCalendario(viajes: any[]) {
+  this.calendarOptions.events = viajes.map(viaje => {
+    const color = this.getColorPorViaje(viaje);
+    const textColor = (color === '#ffc409') ? '#000000' : '#ffffff';
+    return {
+      id: viaje.id_viaje.toString(),
+      title: `Solicitud: ${viaje.punto_destino || 'N/A'}`,
+      start: `${viaje.fecha_viaje.split('T')[0]}T${viaje.hora_inicio}`,
+      allDay: false,
+      color: color,
+      textColor: textColor,
+      extendedProps: viaje
+    };
+  });
+  
+}
  
 
   async abrirReagendar(viajeId: string, viaje: viaje) {
-  /*  const todas = await Memorialocal.obtenerSolicitudes();
-    const sol = todas.find(s => s.id === solicitudId);
-    if (!sol) {
-      return this.showToast('Solicitud no encontrada', 'danger');
-    }*/
     const alert = await this.alertCtrl.create({
       header: 'Reagendar viaje',
       inputs: [{
@@ -350,6 +359,48 @@ export class CalendarioPage implements OnInit {
     await alert.present();
   }
 
+  aplicarFiltros() {
+  let viajesFiltrados = [...this._todosLosViajes];
+
+  // Filtro por Patente
+if (this.filtros.patente) {
+  viajesFiltrados = viajesFiltrados.filter(v => 
+    v.patente_vehiculo?.toLowerCase().includes(this.filtros.patente.toLowerCase()) 
+  );
+}
+
+  // Filtro por Programa
+  if (this.filtros.programa) {
+    viajesFiltrados = viajesFiltrados.filter(v => 
+      v.nombre_programa === this.filtros.programa
+    );
+  }
+
+  // Filtro por Centro 
+  /*if (this.filtros.centro) {
+     viajesFiltrados = viajesFiltrados.filter(v => 
+      v.punto_destino.includes(this.filtros.centro)
+    );
+  }*/
+
+  // Filtro por Proveedor
+  if (this.filtros.proveedor) {
+     viajesFiltrados = viajesFiltrados.filter(v => 
+      v.responsable?.toLowerCase().includes(this.filtros.proveedor.toLowerCase())
+    );
+  }
+
+  // Filtro por Rango de Fechas
+  if (this.filtros.fechaInicio && this.filtros.fechaFin) {
+    viajesFiltrados = viajesFiltrados.filter(v => {
+      const fechaViaje = v.fecha_viaje.split('T')[0];
+      return fechaViaje >= this.filtros.fechaInicio && fechaViaje <= this.filtros.fechaFin;
+    });
+  }
+
+  this.actualizarCalendario(viajesFiltrados);
+}
+
 /*exportarCSV() {
   const eventos = this.calendarOptions.events as any[];
   if (eventos.length === 0) {
@@ -391,50 +442,52 @@ getColorPorViaje(s: any): string {
   if (s.tipo_origen === 'masivo') {
     return '#7b1df5e8'; // color viaje masivo
   }
+
+  const estadoNormalizado = s.estado ? s.estado.toLowerCase() : '';
   // colores  viajes normales segun estados
-  switch(s.estado) {
+ switch(estadoNormalizado) {
     case 'aceptado': return '#2dd36f'; // Verde
-    case 'agendado': return '#ffc409'; // Amarillo
-    default: return '#0059fdff'; // Azul 
+    case 'agendado': return '#1909ffff'; // Amarillo
+    default: return '#ecfd00ff'; // Azul 
   }
 }
 
 exportarPDF() {
 
  forkJoin({
-    viajesMasivos: this.viajesServicio.getViajesMasivos()
+    viajesNormales: this.viajesServicio.getViajes(),
   }).subscribe({
     next: (resultados) => {
-      const {  viajesMasivos } = resultados;
+      const { viajesNormales } = resultados;
 
-      if (viajesMasivos.length === 0) {
+      if (viajesNormales.length === 0) {
         this.showToast('No hay datos para exportar.', 'warning');
         return;
       }
 
       const doc = new jsPDF();
-      doc.text("Planificacion Masiva", 14, 15);
+      doc.text("Programacion Diaria", 14, 15);
       let finalY = 20; 
 
-      const head = [['ID', 'Fecha', 'Hora', 'Solicitante', 
-        'Destino', 'Vehículo']];
+      const head = [['ID', 'Fecha', 'Hora', 'Solicitante', 'Destino', 'Vehículo']];
 
-
-      if (viajesMasivos.length > 0) {
-        finalY += 10;
-        doc.text("Planificacion Masiva", 14, finalY);
-        const bodyMasivo = viajesMasivos.map(v => [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), v.hora_inicio, v.nombre_solicitante, v.punto_destino, v.tipoVehiculo || 'N/A' ]);
-
+      if (viajesNormales.length > 0) {
+        doc.text("Programacion Diaria", 14, finalY + 5);
+        const bodyNormal = viajesNormales.map(v => 
+          [ v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
+            v.hora_inicio, v.nombre_solicitante, v.punto_destino, v.tipoVehiculo || 'N/A' ]);
+        
         autoTable(doc, {
           head: head,
-          body: bodyMasivo,
-          startY: finalY + 5,
+          body: bodyNormal,
+          startY: finalY + 10,
           theme: 'grid',
           styles: { fontSize: 8 },
         });
+        finalY = (doc as any).lastAutoTable.finalY; 
       }
 
-      doc.save(`planificacion_masiva_${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`programacion_diaria_${new Date().toISOString().split('T')[0]}.pdf`);
     },
     error: (err) => {
       this.showToast('Error al cargar los datos para el PDF.', 'danger');
@@ -444,140 +497,111 @@ exportarPDF() {
 }
 
 
-/*exportarPDFNormales() {
+exportarPDFNormales() {
   this.viajesServicio.getViajes().subscribe({
     next: (viajes) => {
       let viajesFiltrados = [...viajes];
-      if (this.fechaInicioFiltro && this.fechaFinFiltro) {
-        viajesFiltrados = viajes.filter(v => {
+
+      // Filtrar solo viajes en estado 'agendado' o 'aceptado'
+      viajesFiltrados = viajesFiltrados.filter(v => 
+        ['agendado', 'aceptado'].includes(v.estado?.toLowerCase())
+      );
+
+      // Filtro por Patente
+      if (this.filtros.patente) {
+      viajesFiltrados = viajesFiltrados.filter(v => 
+        v.patente_vehiculo?.toLowerCase().includes(this.filtros.patente.toLowerCase()) // <-- CORREGIDO
+      );
+    }
+
+      // Filtro por Programa
+      if (this.filtros.programa) {
+        viajesFiltrados = viajesFiltrados.filter(v => 
+          v.nombre_programa === this.filtros.programa
+        );
+      }
+
+      // Filtro por Proveedor
+      if (this.filtros.proveedor) {
+         viajesFiltrados = viajesFiltrados.filter(v => 
+          v.responsable?.toLowerCase().includes(this.filtros.proveedor.toLowerCase())
+        );
+      }
+
+      // Filtro por Rango de Fechas 
+      if (this.filtros.fechaInicio && this.filtros.fechaFin) {
+        viajesFiltrados = viajesFiltrados.filter(v => {
           const fechaViaje = v.fecha_viaje.split('T')[0];
-          return fechaViaje >= this.fechaInicioFiltro && fechaViaje <= this.fechaFinFiltro;
+          return fechaViaje >= this.filtros.fechaInicio && fechaViaje <= this.filtros.fechaFin;
         });
       }
-      if (viajesFiltrados.length === 0) {
-        this.showToast('No hay viajes normales para exportar.', 'warning');
+    
+     if (viajesFiltrados.length === 0) {
+        this.showToast('No hay viajes para exportar con los filtros aplicados.', 'warning');
         return;
       }
+
       viajesFiltrados.sort((a, b) => a.id_viaje - b.id_viaje);
       const doc = new jsPDF();
      // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
       //doc.text("Reporte de Viajes Normales", 14, 15);
       const head = [[
-        'ID', 'Fecha', 'Hora', 'Solicitante', 'Responsable' , 
-        'Destino', 'Vehículo', 'conductor', 'patente'
+        'ID', 'Fecha', 'Hora', 'Solicitante', 'Responsable' , 'P.Salida',
+        'P.Destino', 'Vehículo', 'conductor', 'patente'
       ]];
       const body = viajesFiltrados.map(v => [ 
         v.id_viaje, new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
-        v.hora_inicio, v.nombre_solicitante || v.apellido_solicitante , 
-        v.responsable, 
+        v.hora_inicio,
+        v.nombre_solicitante || v.apellido_solicitante, 
+        v.responsable,
+        v.punto_salida, 
         v.punto_destino, 
         v.tipoVehiculo || 'N/A', 
         v.nombreConductor || 'N/A', 
-        v.patente || 'N/A'
+        v.patente_vehiculo || 'N/A'
        ]);
 
-      autoTable(doc, { head, body, startY: 30,
-        margin: { top: 30 }, 
+      autoTable(doc, { head, body, startY: 50,   styles: { fontSize: 9 },
+        margin: { top: 50}, 
        didDrawPage: (data: any) => {
           doc.setFontSize(18);
-          doc.text("Reporte de Viajes Normales", 14, 20);
-         // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
+          doc.text("Programacion Diaria", 14, 20);
+          doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
 
         }
         });
-      doc.save('reporte_viajes_normales.pdf');
-    },
-    error: (err) => this.showToast('Error al cargar datos para PDF.', 'danger')
-  });
-}*/
-
-
-exportarPDFMasivos() {
-  this.viajesServicio.getViajesMasivos().subscribe({
-    next: (viajesMasivos) => {
-
-      let viajesFiltrados = [...viajesMasivos];
-
-      if (this.fechaInicioFiltro && this.fechaFinFiltro) {
-        viajesFiltrados = viajesMasivos.filter(v => {
-          const fechaViaje = v.fecha_viaje.split('T')[0];
-          return fechaViaje >= this.fechaInicioFiltro && fechaViaje <= this.fechaFinFiltro;
-        });
-      }
-      if (viajesFiltrados.length === 0) {
-        this.showToast('No hay viajes  para exportar.', 'warning');
-        return;
-      }
-
-      viajesFiltrados.sort((a, b) => a.id_viaje - b.id_viaje);
-      const doc = new jsPDF();
-
-     // viajesFiltrados.sort((a, b) => a.id_viaje - b.id_viaje);
-      // doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
-     // doc.text("Reporte de Viajes Masivos", 18, 20);
-      const head = [[
-        'ID', 'Fecha', 'Hora', 'Solicitante', 'Responsable', 'P.Salida',
-        'P.Destino', 'Vehículo', 'Conductor', 'Patente'
-      ]];
-      const body = viajesFiltrados.map(v => [ 
-        v.id_viaje, 
-        new Date(v.fecha_viaje).toLocaleDateString('es-CL'), 
-        v.hora_inicio, 
-        v.nombre_solicitante || v.apellido_solicitante,
-        v.responsable, 
-        this.obtenerNombreUbicacion(v.punto_salida),
-        this.obtenerNombreUbicacion(v.punto_destino),
-        v.tipoVehiculo || 'N/A', 
-        v.nombreConductor || 'N/A', 
-        v.patente_vehiculo  || 'N/A' 
-       ]);
-        autoTable(doc, { head, body, startY: 50,   styles: { fontSize: 9 },
-         margin: { top: 50}, 
-          didDrawPage: (data: any) => {
-            doc.setFontSize(18);
-            doc.text("Programacion Diaria", 14, 20);
-            doc.addImage('assets/img/Logo cmpa 2.png', 'PNG', 150, 10, 40, 15);
-
-        }
-        });
-        doc.save('planificacion masiva.pdf');
+      doc.save('programacion diaria.pdf');
     },
     error: (err) => this.showToast('Error al cargar datos para PDF.', 'danger')
   });
 }
 
-obtenerNombreUbicacion(rawLocation: string): string {
-  if (!rawLocation) return 'N/A';
+onCentroChange(event: any) {
+  const centroId = event.detail.value;
 
-  const salud = this.centroSvc.obtenerEstablecimientos(2);
-  const educacion = this.centroSvc.obtenerEstablecimientos(3);
-  const atm = this.centroSvc.obtenerEstablecimientos(4);
+  this.showSalud = false;
+  this.showEducacion = false;
+  this.showAtm = false;
 
-  // Lógica para Salud
-  if (rawLocation.startsWith('Salud:')) {
-    const id = rawLocation.split(':')[1]?.trim();
-    const found = salud.find(c => c.value.toString() === id);
-    return found ? found.label : rawLocation;
+  this.filtros.centro = ''; 
+
+  switch(centroId) {
+    case '1': // Nivel Central
+      this.filtros.centro = 'Nivel Central';
+      break;
+    case '2': // Salud
+      this.showSalud = true;
+      this.establecimientosSalud = this.centroSvc.obtenerEstablecimientos(2);
+      break;
+    case '3': // Educación
+      this.showEducacion = true;
+      this.establecimientosEducacion = this.centroSvc.obtenerEstablecimientos(3);
+      break;
+    case '4': // ATM
+      this.showAtm = true;
+      this.establecimientosAtm = this.centroSvc.obtenerEstablecimientos(4);
+      break;
   }
-
-  // Lógica para Educación
-  if (rawLocation.startsWith('Educación:')) {
-    const id = rawLocation.split(':')[1]?.trim();
-    const found = educacion.find(c => c.value.toString() === id);
-    return found ? found.label : rawLocation;
-  }
-
-  // Lógica para ATM
-  if (rawLocation.startsWith('ATM:')) {
-    const id = rawLocation.split(':')[1]?.trim();
-    const found = atm.find(c => c.value.toString() === id);
-    return found ? found.label : rawLocation;
-  }
-
-  return rawLocation;
 }
 
 }
-
-
-
