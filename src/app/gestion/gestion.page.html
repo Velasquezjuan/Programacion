@@ -106,6 +106,7 @@
             <h2>{{ v.marca }} {{ v.modelo }} ({{ v.ano }}) - <b>{{ v.patente }}</b></h2>
             <p><b>Conductor:</b> {{ v.nombre_conductor }}</p>
             <p><b>Tipo:</b> {{ v.tipoVehiculo }} | <b>Capacidad:</b> {{ v.capacidad ? 'Sí' : 'No' }}</p>
+            <p><b>Área:</b> {{ v.area }} | <b>Estab:</b> {{ v.establecimiento }}</p>
             <p><b>Proveedor:</b> {{ v.responsable || 'N/A' }}</p>
             <p><b>Estado:</b> <ion-text [color]="v.activo === 'si' ? 'success' : 'danger'"><b>{{ v.activo === 'si' ? 'Activo' : 'Inactivo' }}</b></ion-text></p>
             

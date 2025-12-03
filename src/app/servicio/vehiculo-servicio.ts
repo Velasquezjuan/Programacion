@@ -88,5 +88,13 @@ private getAuthHeaders(): Observable<HttpHeaders> {
     );
   }
 
+  getVehiculosMasivos(): Observable<any[]> {
+  return this.getAuthHeaders().pipe(
+    switchMap(headers => {
+      return this.http.get<any[]>(`${this.apiUrl}/masivos`, { headers });
+    })
+  );
+}
+
 
 }

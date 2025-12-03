@@ -112,8 +112,13 @@ exports.getVehiculosPorPrograma = async (req, res) => {
   try {
     const { id_programa } = req.params;
 
-    const query = `
-      SELECT 
+    const { rol, idEstablecimiento } = req.user; 
+   
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
+      SELECT DISTINCT
         v.patente as id,
         v.patente,
         v.capacidad,
@@ -122,10 +127,21 @@ exports.getVehiculosPorPrograma = async (req, res) => {
       FROM VEHICULO v
       JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo
       JOIN VEHICULO_has_PROGRAMA vhp ON v.patente = vhp.VEHICULO_patente
-      WHERE vhp.PROGRAMA_id_programa = ? AND v.activo = 'si';
+      LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
+      WHERE vhp.PROGRAMA_id_programa = ? AND v.activo = 'si'
     `;
-    
-    const [vehiculos] = await db.query(query, [id_programa]);
+    const params = [id_programa];
+  
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+            query += ` AND vhe.ESTABLECIMIENTO_idEstablecimiento = ?`;
+            params.push(idEstablecimiento); 
+        } else {
+            return res.status(200).json([]); 
+        }
+    }
+    const [vehiculos] = await db.query(query, params);
+
     res.status(200).json(vehiculos);
 
   } catch (error) {
@@ -163,7 +179,7 @@ exports.getTiposVehiculoPorPrograma = async (req, res) => {
 exports.getProgramasPorVehiculo = async (req, res) => {
   try {
     const { patente } = req.params;
-
+    
     const query = `
       SELECT DISTINCT
         p.id_programa as value,
@@ -178,6 +194,48 @@ exports.getProgramasPorVehiculo = async (req, res) => {
 
   } catch (error) {
     console.error('Error al obtener programas por vehículo:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// --- OBTENER VEHÍCULOS MASIVOS ---
+exports.getVehiculosMasivos = async (req, res) => {
+  try {
+    const { rol, idEstablecimiento } = req.user; 
+    
+    // Roles que pueden ver TODO
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
+      SELECT DISTINCT
+        v.patente as id,
+        v.patente,
+        v.capacidad,
+        tv.nombre_tipoVehiculo as tipoVehiculo,
+        v.nombre_conductor as nombreConductor 
+      FROM VEHICULO v
+      JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo
+      LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
+      WHERE v.activo = 'si'
+    `;
+
+    const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+            query += ` AND vhe.ESTABLECIMIENTO_idEstablecimiento = ?`;
+            params.push(idEstablecimiento);
+        } else {
+            return res.status(200).json([]);
+        }
+    }
+
+    const [vehiculos] = await db.query(query, params);
+    res.status(200).json(vehiculos);
+
+  } catch (error) {
+    console.error('Error al obtener vehículos masivos:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

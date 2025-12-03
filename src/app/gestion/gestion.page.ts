@@ -55,7 +55,12 @@ export class GestionPage implements OnInit {
     private alertCtrl: AlertController,
     private toastController: ToastController
   ) {
-      addIcons({keyOutline,createOutline,saveOutline,closeCircleOutline,sync,trash,checkmarkDoneOutline,checkmarkOutline,trashOutline,checkmarkCircleOutline});}
+      addIcons({
+        keyOutline,createOutline,
+        saveOutline,closeCircleOutline,sync,
+        trash,checkmarkDoneOutline,checkmarkOutline,
+        trashOutline,checkmarkCircleOutline
+      });}
 
   rolUsuario: string = '';
 
@@ -156,14 +161,14 @@ cambiarEstadoUsuario(usuario: any) {
     }
   }
   
-  editarVehiculo(vehiculo: any) 
+editarVehiculo(vehiculo: any) 
   { this.vehiculoEditandoPatente = vehiculo.patente; }
   cancelarEdicionVehiculo() 
   { this.vehiculoEditandoPatente = null; this.cargarDatos(); }
   
-    guardarVehiculo(vehiculo: any) {
+  guardarVehiculo(vehiculo: any) {
     const datosActualizar = {
-     necesita_reemplazo: vehiculo.necesita_reemplazo,
+    necesita_reemplazo: vehiculo.necesita_reemplazo,
     nombre_conductor_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.nombre_conductor_reemplazo : null,
     patente_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.patente_reemplazo : null,
     fecha_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazo : null,
@@ -205,7 +210,7 @@ cambiarEstadoVehiculo(vehiculo: any) {
   });
 }
   
-  actualizarReemplazo(vehiculo: any) {
+actualizarReemplazo(vehiculo: any) {
     const datosActualizar = {
       requiere_reemplazo: vehiculo.requiere_reemplazo,
       patente_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.patente_reemplazo : null,
@@ -231,14 +236,14 @@ cambiarEstadoVehiculo(vehiculo: any) {
 
 
 
-  limpiarBusqueda() {
+limpiarBusqueda() {
     this.terminoBusqueda = '';
     this.criterioBusqueda = '';
     this.cargarUsuarios();
     this.cargarVehiculos();
   }
 
-  cargarUsuarios() {
+cargarUsuarios() {
     this.administracion.getUsuarios().subscribe({
       next: (data) => {
         this.usuarios = data;
@@ -248,7 +253,7 @@ cambiarEstadoVehiculo(vehiculo: any) {
     });
   }
 
-  cargarVehiculos() {
+cargarVehiculos() {
     this.administracion.getVehiculos().subscribe({
       next: (data) => {
         this.vehiculos = data;

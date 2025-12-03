@@ -258,9 +258,14 @@
                       <p>Conductor: {{ vehiculo.nombre_conductor || 'Sin asignar' }}</p>
                       <p>Proveedor: {{ vehiculo.nombre_proveedor || 'N/A' }}</p>
                       
-                      <ion-text color="danger">
+                      <ion-text [color]="vehiculo.diasInactivosReal > 0 ? 'danger' : 'medium'">
                         <p style="font-weight: bold; font-size: 1.1em;">
-                           Inactivo por {{ diasInactivosReporte }} días
+                          <span *ngIf="vehiculo.diasInactivosReal > 0">
+                            Inactivo por {{ vehiculo.diasInactivosReal }} días
+                          </span>
+                          <span *ngIf="vehiculo.diasInactivosReal === 0">
+                            Sin historial de fechas (Nuevo o sin contrato)
+                          </span>
                         </p>
                       </ion-text>
                   </ion-label>

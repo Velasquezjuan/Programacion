@@ -107,9 +107,12 @@ export class ViajesSolicitadosPage implements OnInit {
   }
 
    async ngOnInit() {
-    const usuariosActivos = await Memorialocal.obtener<Usuario>('usuarioActivo');
-    const usuario = usuariosActivos?.[0]; 
-    this.rolUsuario = usuario?.rol || '';
+    const usuario = await Memorialocal.obtenerValor<Usuario>('usuarioActivo');
+    if (usuario) {
+      this.rolUsuario = usuario.rol || '';
+  } else {
+      this.rolUsuario = '';
+  }
     this.cargarDatos();
   }
   

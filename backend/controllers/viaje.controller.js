@@ -3,7 +3,12 @@ const db = require('../db');
 // --- OBTENER TODOS LOS VIAJES ---
 exports.getViajes = async (req, res) => {
 try {
-    const query = `
+
+    const { rol, idEstablecimiento, rut } = req.user; // Datos del token
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
         SELECT 
         v.*, v.id_viaje as id,
         solicitante.nombre as nombre_solicitante, solicitante.apellido_paterno as apellido_solicitante, solicitante.correo as correo_solicitante,
@@ -11,18 +16,35 @@ try {
         prog.nombre_programa,
         COALESCE(tv_asignado.nombre_tipoVehiculo, tv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
         veh.nombre_conductor as nombreConductor,
-        'normal' as tipo_origen
+        'normal' as tipo_origen,
+        solicitante.ESTABLECIMIENTO_idEstablecimiento
       FROM VIAJE v
       JOIN USUARIO solicitante ON v.solicitante_rut_usuario = solicitante.rut_usuario
       LEFT JOIN PROGRAMA prog ON v.PROGRAMA_id_programa = prog.id_programa
       LEFT JOIN VEHICULO veh ON v.vehiculo_patente = veh.patente
       LEFT JOIN TIPO_VEHICULO tv_asignado ON veh.TIPO_VEHICULO_id_tipoVehiculo = tv_asignado.id_tipoVehiculo
       LEFT JOIN TIPO_VEHICULO tv_deseado ON v.vehiculo_deseado = tv_deseado.id_tipoVehiculo
-      ORDER BY v.fecha_solicitud DESC;
+      WHERE 1=1
     `;
-    const [rows] = await db.query(query);
+    const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+             query += ` AND solicitante.ESTABLECIMIENTO_idEstablecimiento = ?`;
+             params.push(idEstablecimiento);
+        } else {             
+             query += ` AND v.solicitante_rut_usuario = ?`;
+             params.push(rut);
+        }
+    }
+
+    query += ` ORDER BY v.fecha_solicitud DESC`;
+
+    const [rows] = await db.query(query, params);
     res.status(200).json(rows);
+
   } catch (error) {
+    
     console.error('Error al obtener viajes:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
@@ -256,33 +278,47 @@ exports.createViajeMasivo = async (req, res) => {
 
 exports.getViajesMasivos = async (req, res) => {
   try {
-    const { rol, rut } = req.user;
-    const isAdmin = ['adminSistema', 'its', 'coordinador'].includes(rol);
+    const { rol, idEstablecimiento, rut } = req.user; // Datos del token
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
     let query = `
-     SELECT 
+      SELECT 
         vm.*, vm.id_viaje as id,
-        solicitante.nombre as nombre_solicitante, solicitante.apellido_paterno as apellido_solicitante, solicitante.correo as correo_solicitante,
+        solicitante.nombre as nombre_solicitante, 
+        solicitante.apellido_paterno as apellido_solicitante, 
+        solicitante.correo as correo_solicitante,
         veh.patente as patente_vehiculo,
         prog.nombre_programa,
-        COALESCE(tv_asignado.nombre_tipoVehiculo, tv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
+        COALESCE(tv_asignado.nombre_tipoVehiculo, 
+        Wtv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
         veh.nombre_conductor as nombreConductor,
-        'masivo' as tipo_origen
+        'masivo' as tipo_origen,
+        solicitante.ESTABLECIMIENTO_idEstablecimiento
       FROM VIAJE_MASIVO vm
       JOIN USUARIO solicitante ON vm.solicitante_rut_usuario = solicitante.rut_usuario
       LEFT JOIN PROGRAMA prog ON vm.PROGRAMA_id_programa = prog.id_programa
       LEFT JOIN VEHICULO veh ON vm.vehiculo_patente = veh.patente
       LEFT JOIN TIPO_VEHICULO tv_asignado ON veh.TIPO_VEHICULO_id_tipoVehiculo = tv_asignado.id_tipoVehiculo
       LEFT JOIN TIPO_VEHICULO tv_deseado ON vm.vehiculo_deseado = tv_deseado.id_tipoVehiculo
+      WHERE 1=1  
     `;
 
-    const params = [];
-    
-    if (!isAdmin) {
-      query += ' WHERE vm.solicitante_rut_usuario = ?';
-      params.push(rut);
+   const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+             query += ` AND solicitante.ESTABLECIMIENTO_idEstablecimiento = ?`;
+             params.push(idEstablecimiento);
+        } else { 
+             query += ` AND vm.solicitante_rut_usuario = ?`;
+             params.push(rut);
+        }
     }
 
-   const [rows] = await db.query(query, params);
+    query += ` ORDER BY vm.fecha_viaje DESC, vm.hora_inicio DESC`;
+
+  const [rows] = await db.query(query, params);
     res.status(200).json(rows);
     
   } catch (error) {

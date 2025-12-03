@@ -4,7 +4,12 @@ const db = require('../db');
 // --- OBTENER TODOS LOS USUARIOS ---
 exports.getUsuarios = async (req, res) => {
   try {
-    const query = `
+
+    const { rol, idEstablecimiento } = req.user; // Datos del token
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
        SELECT 
         u.rut_usuario as rut, 
         u.nombre, 
@@ -17,9 +22,21 @@ exports.getUsuarios = async (req, res) => {
         u.bloqueado,
         e.nombre_establecimiento as establecimiento
       FROM USUARIO u
-      LEFT JOIN ESTABLECIMIENTO e ON u.ESTABLECIMIENTO_idEstablecimiento = e.idEstablecimiento;
+      LEFT JOIN ESTABLECIMIENTO e ON u.ESTABLECIMIENTO_idEstablecimiento = e.idEstablecimiento
+      WHERE 1=1
     `;
-    const [rows] = await db.query(query);
+    const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+            query += ' AND u.ESTABLECIMIENTO_idEstablecimiento = ?';
+            params.push(idEstablecimiento);
+        } else {
+            return res.status(200).json([]);
+        }
+    }
+
+    const [rows] = await db.query(query, params);
     res.status(200).json(rows);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -61,17 +78,36 @@ exports.updateUsuario = async (req, res) => {
 // --- OBTENER VEHICULOS CON CONDUCTORES ---
 exports.getVehiculosConConductores = async ( req, res ) => {
   try {
-    const  query = `
-      SELECT 
+    const { rol, idEstablecimiento } = req.user; 
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
+      SELECT DISTINCT
         v.patente, v.marca, v.modelo, v.ano, v.capacidad, v.revision_tecnica,
         v.nombre_conductor, v.nombre_conductor_reemplazo,
         tv.tipo_vehiculo,
         c.id_contrato, c.rut_proveedor, c.nombre_proveedor, c.fecha_inicio, c.fecha_termino
       FROM VEHICULO v
       JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo 
-      JOIN CONTRATO c ON v.patente = c.VEHICULO_patente;
+      JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
+      /* JOIN para filtrar por establecimiento */
+      LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
+      WHERE 1=1
     `;
-    const [rows] = await db.query(query);
+
+    const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+            query += ' AND vhe.ESTABLECIMIENTO_idEstablecimiento = ?';
+            params.push(idEstablecimiento);
+        } else {
+            return res.status(200).json([]);
+        }
+    }
+
+    const [rows] = await db.query(query, params);
     res.status(200).json(rows);
   } catch (error) {
     console.error('Error al obtener vehículos con conductores:', error);
@@ -82,8 +118,12 @@ exports.getVehiculosConConductores = async ( req, res ) => {
 // --- GESTIÓN DE VEHÍCULOS ---
 exports.getVehiculosConDetalles = async (req, res) => {
   try {
-    const query = `
-     SELECT 
+    const { rol, idEstablecimiento } = req.user; 
+    const rolesAdmin = ['adminSistema'];
+    const esAdmin = rolesAdmin.includes(rol);
+
+    let query = `
+     SELECT DISTINCT
         v.patente, v.marca, v.modelo, v.ano, v.capacidad, 
         v.revision_tecnica,
         v.permiso_circulacion,
@@ -107,9 +147,24 @@ exports.getVehiculosConDetalles = async (req, res) => {
         c.fecha_termino as fecha_contrato
       FROM VEHICULO v
       LEFT JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo 
-      LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente;
+      LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
+      /* JOIN para filtrar por establecimiento */
+      LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
+      WHERE 1=1
     `;
-    const [rows] = await db.query(query);
+
+    const params = [];
+
+    if (!esAdmin) {
+        if (idEstablecimiento) {
+            query += ' AND vhe.ESTABLECIMIENTO_idEstablecimiento = ?';
+            params.push(idEstablecimiento);
+        } else {
+            return res.status(200).json([]);
+        }
+    }
+
+    const [rows] = await db.query(query, params);
     res.status(200).json(rows);
   } catch (error) {
     console.error('Error al obtener vehículos con detalles:', error);

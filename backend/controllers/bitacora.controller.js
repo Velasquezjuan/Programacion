@@ -16,12 +16,29 @@ function calcularDias(inicio, fin) {
 
 function getFechaInicioDefault() {
     const d = new Date();
-    d.setDate(d.getDate() - 0); // Resta de dias a usar se inicia con 0 para marcar 1 dia
+    d.setDate(d.getDate() - 30); // Resta de dias a usar se inicia con 0 para marcar 1 dia
     return d.toISOString().split('T')[0];
 }
 
+function calcularDiferenciaDias(fechaReferencia) {
+    if (!fechaReferencia) return 0;
+    const oneDay = 24 * 60 * 60 * 1000; 
+    const hoy = new Date();
+    const fechaRef = new Date(fechaReferencia);
+    hoy.setHours(0,0,0,0);
+    fechaRef.setHours(0,0,0,0);
+    
+    return Math.round(Math.abs((hoy - fechaRef) / oneDay)); 
+}
+
+// Función auxiliar para rango del reporte (header)
+function calcularDiasRango(inicio, fin) {
+    const oneDay = 24 * 60 * 60 * 1000; 
+    return Math.round(Math.abs((new Date(inicio) - new Date(fin)) / oneDay)) + 1;
+}
+
 // --- Función para obtener datos para el dashboard (gráficos iniciales) ---
-exports.getDashboardData = async (req, res) => {
+/*exports.getDashboardData = async (req, res) => {
   try {
     // 1. Centros (Destinos) que más se repiten
     const [centrosMasUsan] = await db.query(`
@@ -77,10 +94,63 @@ exports.getDashboardData = async (req, res) => {
     console.error('Error al obtener datos del dashboard:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
+};*/
+exports.getDashboardData = async (req, res) => {
+  try {
+    const [centrosMasUsan] = await db.query(`
+      SELECT destino, COUNT(*) AS total_viajes FROM (
+        SELECT punto_destino AS destino FROM VIAJE
+        UNION ALL
+        SELECT punto_destino AS destino FROM VIAJE_MASIVO
+      ) AS destinos_unificados
+      GROUP BY destino ORDER BY total_viajes DESC LIMIT 5;
+    `);
+
+    const [vehiculosMasUsados] = await db.query(`
+      SELECT v.marca, v.modelo, v.patente, COUNT(*) AS total_viajes FROM (
+        SELECT vehiculo_patente FROM VIAJE WHERE vehiculo_patente IS NOT NULL
+        UNION ALL
+        SELECT vehiculo_patente FROM VIAJE_MASIVO WHERE vehiculo_patente IS NOT NULL
+      ) AS patentes
+      JOIN VEHICULO v ON patentes.vehiculo_patente = v.patente
+      GROUP BY v.patente, v.marca, v.modelo ORDER BY total_viajes DESC LIMIT 5;
+    `);
+
+    const [programaMayorUso] = await db.query(`
+      SELECT p.nombre_programa, COUNT(*) AS total_viajes FROM (
+        SELECT PROGRAMA_id_programa AS id_programa FROM VIAJE
+        UNION ALL
+        SELECT PROGRAMA_id_programa AS id_programa FROM VIAJE_MASIVO
+      ) AS programas
+      JOIN PROGRAMA p ON programas.id_programa = p.id_programa
+      GROUP BY p.nombre_programa ORDER BY total_viajes DESC LIMIT 5;
+    `);
+
+    const [usuarioMasSolicitudes] = await db.query(`
+      SELECT u.nombre, u.apellido_paterno, COUNT(*) AS total_solicitudes FROM (
+        SELECT solicitante_rut_usuario AS rut FROM VIAJE
+        UNION ALL
+        SELECT solicitante_rut_usuario AS rut FROM VIAJE_MASIVO
+      ) AS solicitantes
+      JOIN USUARIO u ON solicitantes.rut = u.rut_usuario
+      GROUP BY u.nombre, u.apellido_paterno ORDER BY total_solicitudes DESC LIMIT 5;
+    `);
+
+    res.status(200).json({
+      centrosMasUsan,
+      vehiculosMasUsados,
+      programaMayorUso,
+      usuarioMasSolicitudes
+    });
+
+  } catch (error) {
+    console.error('Error al obtener datos del dashboard:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
 };
 
 // --- Función para exportar reportes en PDF ---
- exports.exportarReporte = async (req, res) => {
+/* exports.exportarReporte = async (req, res) => {
   try {
     const { patente, centro, proveedor, programa, 
       fechaInicio, fechaFin, estado, Movimiento } = req.query;
@@ -260,11 +330,204 @@ exports.getDashboardData = async (req, res) => {
     console.error('Error al exportar el reporte:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
+};*/
+exports.exportarReporte = async (req, res) => {
+  try {
+    const { patente, centro, proveedor, programa, 
+      fechaInicio, fechaFin, estado, Movimiento } = req.query;
+
+    let fechaDesde = fechaInicio || getFechaInicioDefault(); 
+    let fechaHasta = fechaFin || new Date().toISOString().split('T')[0];
+    const diasInactivos = calcularDias(fechaDesde, fechaHasta);
+
+    let reporteResultados = [];
+    let vehiculosSinMovimiento = [];
+
+    // --- LÓGICA CON MOVIMIENTO ---
+    if (Movimiento !== 'SinMovmiento') {
+         let baseQuery = `
+          (SELECT v.id_viaje, v.fecha_viaje, v.hora_inicio, v.punto_destino, v.estado, v.vehiculo_patente,
+            u.nombre as nombre_solicitante, p.nombre_programa, veh.nombre_conductor, co.nombre_proveedor,
+            veh.necesita_reemplazo, veh.patente_reemplazo, 'Diario' as tipo_origen
+          FROM VIAJE v
+          LEFT JOIN USUARIO u ON v.solicitante_rut_usuario = u.rut_usuario
+          LEFT JOIN PROGRAMA p ON v.PROGRAMA_id_programa = p.id_programa
+          LEFT JOIN VEHICULO veh ON v.vehiculo_patente = veh.patente
+          LEFT JOIN CONTRATO co ON veh.patente = co.VEHICULO_patente)
+          UNION ALL
+          (SELECT vm.id_viaje, vm.fecha_viaje, vm.hora_inicio, vm.punto_destino, vm.estado, vm.vehiculo_patente,
+            u.nombre as nombre_solicitante, p.nombre_programa, veh.nombre_conductor, co.nombre_proveedor,
+            veh.necesita_reemplazo, veh.patente_reemplazo, 'Masivo' as tipo_origen
+          FROM VIAJE_MASIVO vm
+          LEFT JOIN USUARIO u ON vm.solicitante_rut_usuario = u.rut_usuario
+          LEFT JOIN PROGRAMA p ON vm.PROGRAMA_id_programa = p.id_programa
+          LEFT JOIN VEHICULO veh ON vm.vehiculo_patente = veh.patente
+          LEFT JOIN CONTRATO co ON veh.patente = co.VEHICULO_patente)
+        `;
+        
+        let query = `SELECT * FROM (${baseQuery}) AS viajes_unificados WHERE 1=1`;
+        const params = [];
+
+        // query += ` AND (estado = 'finalizado' OR estado = 'no realizado')`;
+
+        if (patente) { query += ` AND vehiculo_patente LIKE ?`; params.push(`%${patente}%`); }
+        if (centro) { query += ` AND punto_destino LIKE ?`; params.push(`%${centro}%`); }
+        if (proveedor) { query += ` AND nombre_proveedor LIKE ?`; params.push(`%${proveedor}%`); }
+        if (programa) { query += ` AND nombre_programa LIKE ?`; params.push(`%${programa}%`); }
+        
+        query += ` AND fecha_viaje >= ?`; params.push(fechaDesde);
+        query += ` AND fecha_viaje <= ?`; params.push(fechaHasta);
+
+        if (estado) { query += ` AND estado = ?`; params.push(estado); }
+
+        query += ` ORDER BY fecha_viaje DESC, hora_inicio DESC`;
+
+        const [rows] = await db.query(query, params);
+        reporteResultados = rows;
+    }
+
+    // --- LÓGICA SIN MOVIMIENTO ---
+    if (Movimiento === 'SinMovmiento' || (!Movimiento && !patente)) {
+        const queryOciosos = `
+            SELECT 
+                v.patente, v.marca, v.modelo, v.nombre_conductor, 
+                c.nombre_proveedor, p.nombre_programa,
+                c.fecha_inicio as fecha_contrato,
+                last_trips.ultimo_viaje_real
+            FROM VEHICULO v
+            LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
+            LEFT JOIN VEHICULO_has_PROGRAMA vhp ON v.patente = vhp.VEHICULO_patente
+            LEFT JOIN PROGRAMA p ON vhp.PROGRAMA_id_programa = p.id_programa
+            LEFT JOIN (
+                SELECT vehiculo_patente, MAX(fecha_viaje) as ultimo_viaje_real
+                FROM (
+                    SELECT vehiculo_patente, fecha_viaje FROM VIAJE
+                    UNION ALL
+                    SELECT vehiculo_patente, fecha_viaje FROM VIAJE_MASIVO
+                ) t_union
+                GROUP BY vehiculo_patente
+            ) last_trips ON v.patente = last_trips.vehiculo_patente
+            WHERE v.activo = 'si' 
+            AND v.patente NOT IN (
+                SELECT vehiculo_patente FROM VIAJE 
+                WHERE fecha_viaje BETWEEN ? AND ? AND vehiculo_patente IS NOT NULL
+                UNION
+                SELECT vehiculo_patente FROM VIAJE_MASIVO 
+                WHERE fecha_viaje BETWEEN ? AND ? AND vehiculo_patente IS NOT NULL
+            )
+        `;
+        const [rowsOc] = await db.query(queryOciosos, [fechaDesde, fechaHasta, fechaDesde, fechaHasta]);
+        vehiculosSinMovimiento = rowsOc.map(v => {
+             const fechaReferencia = v.ultimo_viaje_real || v.fecha_contrato || fechaDesde;
+             const diasReales = calcularDiferenciaDias(fechaReferencia);
+             
+             return { ...v, diasInactivosReal: diasReales };
+        });
+
+        if (proveedor) {
+             vehiculosSinMovimiento = vehiculosSinMovimiento.filter(r => r.nombre_proveedor && r.nombre_proveedor.toLowerCase().includes(proveedor.toLowerCase()));
+        }
+        if (programa) {
+             vehiculosSinMovimiento = vehiculosSinMovimiento.filter(r => r.nombre_programa && r.nombre_programa.toLowerCase().includes(programa.toLowerCase()));
+        }
+        if (patente) {
+             vehiculosSinMovimiento = vehiculosSinMovimiento.filter(r => r.patente && r.patente.toLowerCase().includes(patente.toLowerCase()));
+        }
+    }
+     
+    if (reporteResultados.length === 0 && vehiculosSinMovimiento.length === 0) {
+        return res.status(404).json({ message: "No se encontraron datos para generar el reporte en el periodo seleccionado." });
+    }
+
+    // --- GENERACIÓN DEL PDF ---
+   const doc = new jsPDF();
+    const imagen64 = logoBase64.split(',')[1];
+    const imageBuffer = Buffer.from(imagen64, 'base64');
+
+    doc.text("Reporte de Bitácora", 14, 15);
+    doc.addImage(imageBuffer, 'PNG', 150, 10, 40, 15);
+    
+    let finalY = 30; 
+
+    // Resumen
+    doc.setFontSize(10);
+    if(fechaInicio || fechaFin) {
+        doc.text(`Periodo: ${fechaInicio || 'Inicio'} al ${fechaFin || 'Hoy'} (${diasInactivos} días)`, 14, finalY);
+        finalY += 10;
+    }
+    // TABLA AZUL
+    if (Movimiento !== 'SinMovmiento' && reporteResultados.length > 0) {
+        const head = [['Fecha', 'Origen', 'Solicitante', 'Destino', 'Patente', 'Conductor', 'Estado', 'Obs.']];
+        const body = reporteResultados.map(v => {
+          const observacion = v.necesita_reemplazo === 'si' ? `Reemplazo: ${v.patente_reemplazo}` : ''; 
+          return [
+            new Date(v.fecha_viaje).toLocaleDateString('es-CL'),
+            v.tipo_origen, 
+            v.nombre_solicitante,
+            v.punto_destino,
+            v.vehiculo_patente || 'N/A',
+            v.nombre_conductor || 'N/A',
+            v.estado, 
+            observacion
+          ];
+        });
+
+        autoTable(doc, {
+          head: head,
+          body: body,
+          startY: finalY,
+          styles: { fontSize: 8 }, 
+          headStyles: { fillColor: [30, 86, 160] }
+        });
+        
+        finalY = (doc).lastAutoTable.finalY + 10;
+    } else if (Movimiento === 'ConMovimiento' && reporteResultados.length === 0) {
+        doc.text("No se encontraron viajes realizados en este periodo.", 14, finalY);
+        finalY += 10;
+    }
+
+    // TABLA ROJA
+    if ((Movimiento === 'SinMovmiento' || !Movimiento) && vehiculosSinMovimiento.length > 0) {
+        
+        if (!patente || Movimiento === 'SinMovmiento') {
+            if (finalY > 250) { doc.addPage(); finalY = 20; }
+
+            doc.setFontSize(12);
+            doc.setTextColor(200, 0, 0); 
+            doc.text(`Vehículos Sin Movimiento`, 14, finalY);
+            doc.setTextColor(0, 0, 0); 
+
+            const headOciosos = [['Patente', 'Marca / Modelo','Programa', 'Conductor', 'Proveedor', 'Días Inactivo']];
+            const bodyOciosos = vehiculosSinMovimiento.map(v => [
+                v.patente,
+                `${v.marca} ${v.modelo}`,
+                v.nombre_programa || 'Sin Asignar',
+                v.nombre_conductor || 'Sin Conductor',
+                v.nombre_proveedor || 'N/A',
+                v.diasInactivosReal + ' días' 
+            ]);
+
+            autoTable(doc, {
+                head: headOciosos,
+                body: bodyOciosos,
+                startY: finalY + 5,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [200, 50, 50] } 
+            });
+        }
+    }
+  
+    res.send(Buffer.from(doc.output('arraybuffer')));
+
+  } catch (error) {
+    console.error('Error al exportar el reporte:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
 };
 
 
 // --- Función para generar reportes con filtros ---
-exports.generarReporte = async (req, res) => {
+/*exports.generarReporte = async (req, res) => {
   try {
     const { patente, centro, proveedor, programa, fechaInicio, fechaFin } = req.query;
 
@@ -330,9 +593,9 @@ exports.generarReporte = async (req, res) => {
     console.error('Error al generar reporte:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
-};
+};*/
 
-exports.generarReporte = async (req, res) => {
+/*exports.generarReporte = async (req, res) => {
   try {
     const { patente, centro, proveedor, programa, fechaInicio, fechaFin, Movimiento } = req.query;
 
@@ -448,10 +711,147 @@ exports.generarReporte = async (req, res) => {
     console.error('Error al generar reporte:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
+};*/
+exports.generarReporte = async (req, res) => {
+  try {
+    const { patente, centro, proveedor, programa, fechaInicio, fechaFin, Movimiento } = req.query;
+
+    let fechaDesde = fechaInicio || getFechaInicioDefault();
+    let fechaHasta = fechaFin || new Date().toISOString().split('T')[0];
+    const diasRangoReporte = calcularDiasRango(fechaDesde, fechaHasta);
+
+    let resultados = [];
+    
+    if (Movimiento === 'SinMovmiento') {
+        const queryOciosos = `
+            SELECT 
+                v.patente as vehiculo_patente, 
+                v.marca, 
+                v.modelo, 
+                v.nombre_conductor, 
+                c.nombre_proveedor,
+                p.nombre_programa,
+                'Sin Movimiento' as estado_reporte,
+                c.fecha_inicio as fecha_contrato,       
+                last_trips.ultimo_viaje_real            
+            FROM VEHICULO v
+            LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
+            LEFT JOIN VEHICULO_has_PROGRAMA vhp ON v.patente = vhp.VEHICULO_patente
+            LEFT JOIN PROGRAMA p ON vhp.PROGRAMA_id_programa = p.id_programa
+            LEFT JOIN (
+                SELECT vehiculo_patente, MAX(fecha_viaje) as ultimo_viaje_real
+                FROM (
+                    SELECT vehiculo_patente, fecha_viaje FROM VIAJE
+                    UNION ALL
+                    SELECT vehiculo_patente, fecha_viaje FROM VIAJE_MASIVO
+                ) t_union
+                GROUP BY vehiculo_patente
+            ) last_trips ON v.patente = last_trips.vehiculo_patente
+            WHERE v.activo = 'si' 
+            AND v.patente NOT IN (
+                SELECT vehiculo_patente FROM VIAJE 
+                WHERE fecha_viaje BETWEEN ? AND ? AND vehiculo_patente IS NOT NULL
+                UNION
+                SELECT vehiculo_patente FROM VIAJE_MASIVO 
+                WHERE fecha_viaje BETWEEN ? AND ? AND vehiculo_patente IS NOT NULL
+            )
+        `;
+        
+        const paramsOciosos = [fechaDesde, fechaHasta, fechaDesde, fechaHasta];
+        const [rows] = await db.query(queryOciosos, paramsOciosos);
+        
+      resultados = rows.map(v => {
+     let diasReales = 0;
+     
+     if (v.ultimo_viaje_real) {
+         diasReales = calcularDiferenciaDias(v.ultimo_viaje_real);
+     } 
+     else if (v.fecha_contrato) {
+         diasReales = calcularDiferenciaDias(v.fecha_contrato);
+     } 
+     else {
+         diasReales = 0;
+         console.log(`Aviso: El vehículo ${v.vehiculo_patente} no tiene viajes ni fecha de contrato.`);
+     }
+             return { ...v, diasInactivosReal: diasReales };
+        });
+
+        if (proveedor) {
+            resultados = resultados.filter(r => r.nombre_proveedor && r.nombre_proveedor.toLowerCase().includes(proveedor.toLowerCase()));
+        }
+        if (patente) {
+             resultados = resultados.filter(r => r.vehiculo_patente.toLowerCase().includes(patente.toLowerCase()));
+        }
+        if (programa) {
+             resultados = resultados.filter(r => r.nombre_programa && r.nombre_programa.toLowerCase().includes(programa.toLowerCase()));
+        }
+
+    } else {
+        let baseQuery = `
+          (SELECT 
+            v.id_viaje, v.fecha_viaje, v.hora_inicio, v.punto_destino, v.estado, v.vehiculo_patente,
+            u.nombre as nombre_solicitante, p.nombre_programa, veh.nombre_conductor, co.nombre_proveedor,
+            'Diario' as tipo_origen
+          FROM VIAJE v
+          LEFT JOIN USUARIO u ON v.solicitante_rut_usuario = u.rut_usuario
+          LEFT JOIN PROGRAMA p ON v.PROGRAMA_id_programa = p.id_programa
+          LEFT JOIN VEHICULO veh ON v.vehiculo_patente = veh.patente
+          LEFT JOIN CONTRATO co ON veh.patente = co.VEHICULO_patente)
+          UNION ALL
+          (SELECT 
+            vm.id_viaje, vm.fecha_viaje, vm.hora_inicio, vm.punto_destino, vm.estado, vm.vehiculo_patente,
+            u.nombre as nombre_solicitante, p.nombre_programa, veh.nombre_conductor, co.nombre_proveedor,
+            'Masivo' as tipo_origen
+          FROM VIAJE_MASIVO vm
+          LEFT JOIN USUARIO u ON vm.solicitante_rut_usuario = u.rut_usuario
+          LEFT JOIN PROGRAMA p ON vm.PROGRAMA_id_programa = p.id_programa
+          LEFT JOIN VEHICULO veh ON vm.vehiculo_patente = veh.patente
+          LEFT JOIN CONTRATO co ON veh.patente = co.VEHICULO_patente)
+        `;
+
+        let query = `SELECT * FROM (${baseQuery}) AS viajes_unificados WHERE 1=1`;
+        const params = [];
+
+        // query += ` AND (estado = 'finalizado' OR estado = 'no realizado')`;
+
+        if (patente) { query += ` AND vehiculo_patente LIKE ?`; params.push(`%${patente}%`); }
+        if (centro) { query += ` AND punto_destino LIKE ?`; params.push(`%${centro}%`); }
+        if (proveedor) { query += ` AND nombre_proveedor LIKE ?`; params.push(`%${proveedor}%`); }
+        if (programa) { query += ` AND nombre_programa LIKE ?`; params.push(`%${programa}%`); }
+        query += ` AND fecha_viaje >= ?`; params.push(fechaDesde);
+        query += ` AND fecha_viaje <= ?`; params.push(fechaHasta);
+
+        query += ` ORDER BY fecha_viaje DESC, hora_inicio DESC`;
+
+        const [rows] = await db.query(query, params);
+        resultados = rows;
+    }
+
+    let vehiculosPorProveedor = 0;
+    if (proveedor) {
+      const [res] = await db.query(`SELECT COUNT(*) as total FROM CONTRATO WHERE nombre_proveedor LIKE ?`, [`%${proveedor}%`]);
+      vehiculosPorProveedor = res[0].total;
+    }
+    
+    res.status(200).json({
+      resultados: resultados,
+      esSinMovimiento: Movimiento === 'SinMovmiento',
+      diasInactivos: diasRangoReporte,
+      resumen: {
+        totalRegistros: resultados.length,
+        totalCentrosVisitados: Movimiento === 'SinMovmiento' ? 0 : new Set(resultados.map(r => r.punto_destino)).size,
+        vehiculosPorProveedor: vehiculosPorProveedor,
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al generar reporte:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
 };
 
 // --- Función para exportar el dashboard en PDF ---
-exports.exportarDashboard = async (req, res) => {
+/*exports.exportarDashboard = async (req, res) => {
   try {
     
     const [centros] = await db.query(`
@@ -491,6 +891,85 @@ exports.exportarDashboard = async (req, res) => {
     doc.text("Reportes Generales", 14, 20);
     finalY = 25;
 
+
+    // Tabla de Centros
+    doc.setFontSize(12);
+    doc.text("Centros con Mayor Uso", 14, finalY);
+    autoTable(doc, {
+      head: [['Centro', 'Total Viajes']],
+      body: centros.map(item => [item.destino, item.total_viajes]),
+      startY: finalY + 5,
+    });
+    finalY = doc.lastAutoTable.finalY + 15;
+
+    doc.text("Vehículos Más Utilizados", 14, finalY);
+    autoTable(doc, {
+      head: [['Vehículo', 'Total Viajes']],
+      body: vehiculos.map(item => [`${item.marca} ${item.modelo} (${item.patente})`, item.total_viajes]),
+      startY: finalY + 5,
+    });
+    finalY = doc.lastAutoTable.finalY + 15;
+    
+    doc.text("Programas con Mayor Uso", 14, finalY);
+    autoTable(doc, {
+      head: [['Programa', 'Total Viajes']],
+      body: programas.map(item => [item.nombre_programa, item.total_viajes]),
+      startY: finalY + 5,
+    });
+    finalY = doc.lastAutoTable.finalY + 15;
+
+    doc.text("Usuarios con Más Solicitudes", 14, finalY);
+     autoTable(doc, {
+      head: [['Usuario', 'Total Solicitudes']],
+      body: usuarios.map(item => [`${item.nombre} ${item.apellido_paterno}`, item.total_solicitudes]),
+      startY: finalY + 5,
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=reporte_dashboard.pdf');
+    res.send(Buffer.from(doc.output('arraybuffer')));
+
+  } catch (error) {
+    console.error('Error al exportar el dashboard:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};*/
+
+exports.exportarDashboard = async (req, res) => {
+  try {
+    const [centros] = await db.query(`
+      SELECT destino, COUNT(*) AS total_viajes FROM (
+        SELECT punto_destino AS destino FROM VIAJE UNION ALL SELECT punto_destino FROM VIAJE_MASIVO
+      ) AS t GROUP BY destino ORDER BY total_viajes DESC LIMIT 5;
+    `);
+    const [vehiculos] = await db.query(`
+      SELECT v.marca, v.modelo, v.patente, COUNT(*) AS total_viajes FROM (
+        SELECT vehiculo_patente FROM VIAJE WHERE vehiculo_patente IS NOT NULL UNION ALL SELECT vehiculo_patente FROM VIAJE_MASIVO WHERE vehiculo_patente IS NOT NULL
+      ) AS t JOIN VEHICULO v ON t.vehiculo_patente = v.patente GROUP BY v.patente, v.marca, v.modelo ORDER BY total_viajes DESC LIMIT 5;
+    `);
+    const [programas] = await db.query(`
+      SELECT p.nombre_programa, COUNT(*) AS total_viajes FROM (
+        SELECT PROGRAMA_id_programa AS id FROM VIAJE UNION ALL SELECT PROGRAMA_id_programa FROM VIAJE_MASIVO
+      ) AS t JOIN PROGRAMA p ON t.id = p.id_programa GROUP BY p.nombre_programa ORDER BY total_viajes DESC LIMIT 5;
+    `);
+    const [usuarios] = await db.query(`
+      SELECT u.nombre, u.apellido_paterno, COUNT(*) AS total_solicitudes FROM (
+        SELECT solicitante_rut_usuario AS rut FROM VIAJE UNION ALL SELECT solicitante_rut_usuario FROM VIAJE_MASIVO
+      ) AS t JOIN USUARIO u ON t.rut = u.rut_usuario GROUP BY u.nombre, u.apellido_paterno ORDER BY total_solicitudes DESC LIMIT 5;
+    `);
+
+    const doc = new jsPDF();
+    // Asegúrate de definir logoBase64 al inicio del archivo
+    if(logoBase64) {
+        const imagen64 = logoBase64.split(',')[1];
+        const imageBuffer = Buffer.from(imagen64, 'base64');
+        doc.addImage(imageBuffer, 'PNG', 150, 10, 40, 15);
+    }
+    
+    doc.setFontSize(18);
+    doc.text("Reportes Generales", 14, 20);
+    
+    let finalY = 25;
 
     // Tabla de Centros
     doc.setFontSize(12);

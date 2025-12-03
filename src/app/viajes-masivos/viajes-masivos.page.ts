@@ -221,10 +221,14 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
   }
 
   async cargarVehiculos() {
-      this.vehiculoServicio.getVehiculos().subscribe({
+    /*  this.vehiculoServicio.getVehiculos().subscribe({
         next: (data) => this.vehiculos = data,
         error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
-    });
+    });*/
+     this.vehiculoServicio.getVehiculosMasivos().subscribe({
+      next: (data) => this.vehiculos = data,
+      error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
+  });
   }
   
 /* cargarProgramas() {
