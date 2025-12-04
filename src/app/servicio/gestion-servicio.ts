@@ -28,6 +28,7 @@ export class GestionServicio {
     );
   }
 
+
   getUsuarios(): Observable<any[]> {
     return this.getAuthHeaders().pipe(
       switchMap(headers => {
