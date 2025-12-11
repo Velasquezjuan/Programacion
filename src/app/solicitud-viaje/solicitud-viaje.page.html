@@ -32,7 +32,8 @@
             <!-- Punto de Salida -->
            <ion-row>
           <ion-col size="12">
-              <ion-item>
+              <ion-col size="12">
+              <ion-item [class.ion-invalid]="registroForm.get('puntoSalida')?.invalid && registroForm.get('puntoSalida')?.touched">
                 <ion-label>Punto de Salida</ion-label>
                 <ion-select formControlName="puntoSalida" (ionChange)="onSalidaChange($event)" placeholder="Seleccione una salida">
                   <ion-select-option value="1">Nivel Central</ion-select-option>
@@ -42,21 +43,34 @@
                   <ion-select-option value="5">Otro</ion-select-option>
                 </ion-select>
               </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('puntoSalida')?.invalid && registroForm.get('puntoSalida')?.touched">
+                <small>* Debe seleccionar un punto de salida.</small>
+              </div>
             </ion-col>
-          <ion-col size="12" *ngIf="showOtroSalida">
-            <ion-item>
-              <ion-label position="floating">Dirección Salida</ion-label>
-              <ion-input type="text" formControlName="direccionSalida"></ion-input>
-               <small *ngIf="registroForm.get('nombre')?.errors?.['textoInvalido']">debe ingresar solamente letras</small>
-            </ion-item>
-             <div *ngIf="registroForm.get('direccionSalida')?.invalid && registroForm.get('direccionSalida')?.touched" class="error-message">
-            <div *ngIf="registroForm.get('direccionSalida')?.errors?.['required']">
-              La direccion de salida es obligatoria.
-            </div>
-            <div *ngIf="registroForm.get('direccionSalida')?.errors?.['textoInvalido']">
-              La direccion de salida solo puede contener letras y espacios.
-            </div>
-            </div>
+
+            <ion-col size="12" *ngIf="showOtroSalida">
+              <ion-item [class.ion-invalid]="registroForm.get('direccionSalida')?.invalid && registroForm.get('direccionSalida')?.touched">
+                <ion-label position="floating">Dirección Salida</ion-label>
+                <ion-input type="text" formControlName="direccionSalida"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('direccionSalida')?.invalid && registroForm.get('direccionSalida')?.touched">
+                <small *ngIf="registroForm.get('direccionSalida')?.errors?.['required']">* La dirección es obligatoria.</small>
+                <small *ngIf="registroForm.get('direccionSalida')?.errors?.['textoInvalido']">* Solo letras y números permitidos.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12" *ngIf="showSaludSalida">
+              <ion-item><ion-select label="Centro Salud" formControlName="centroSaludSalida"><ion-select-option *ngFor="let est of establecimientosSaludSalida" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
+            <ion-col size="12" *ngIf="showEducacionSalida">
+              <ion-item><ion-select label="Centro Educación" formControlName="centroEducacionSalida"><ion-select-option *ngFor="let est of establecimientosEducacionSalida" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
+            <ion-col size="12" *ngIf="showAtmSalida">
+              <ion-item><ion-select label="Centro ATM" formControlName="centroAtmSalida"><ion-select-option *ngFor="let est of establecimientosAtmSalida" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
+
           </ion-col>
           <ion-col size="12" *ngIf="showSaludSalida">
             <ion-item>
@@ -87,7 +101,7 @@
         <!-- DESTINO -->
         <ion-row>
           <ion-col size="12">
-              <ion-item>
+              <ion-item [class.ion-invalid]="registroForm.get('puntoDestino')?.invalid && registroForm.get('puntoDestino')?.touched">
                 <ion-label>Punto de Destino</ion-label>
                 <ion-select formControlName="puntoDestino" (ionChange)="onDestinoChange($event)" placeholder="Seleccione un destino">
                     <ion-select-option value="1">Nivel Central</ion-select-option>
@@ -97,145 +111,136 @@
                     <ion-select-option value="5">Otro</ion-select-option>
                 </ion-select>
               </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('puntoDestino')?.invalid && registroForm.get('puntoDestino')?.touched">
+                <small>* Debe seleccionar un destino.</small>
+              </div>
             </ion-col>
-          <ion-col size="12" *ngIf="showOtroDestino">
-            <ion-item>
-              <ion-label position="floating">Dirección Destino</ion-label>
-              <ion-input type="text"  formControlName="direccionDestino"></ion-input>
-             <small *ngIf="registroForm.get('direccionDestino')?.errors?.['textoInvalido']">debe ingresar solamente letras</small>
-            </ion-item>
-             <div *ngIf="registroForm.get('direccionDestino')?.invalid && registroForm.get('direccionDestino')?.touched" class="error-message">
-            <div *ngIf="registroForm.get('direccionDestino')?.errors?.['required']">
-              La direccion de destino es obligatoria.
-            </div>
-            <div *ngIf="registroForm.get('direccionDestino')?.errors?.['textoInvalido']">
-              La direccion de destino puede contener letras y espacios.
-            </div>
-            </div>
-          </ion-col>
-          <ion-col size="12" *ngIf="showSaludDestino">
-            <ion-item>
-              <ion-label>Centro Salud (Destino)</ion-label>
-              <ion-select formControlName="centroSaludDestino">
-                <ion-select-option *ngFor="let est of establecimientosSaludDestino" [value]="est.label">{{ est.label }}</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" *ngIf="showEducacionDestino">
-            <ion-item>
-              <ion-label>Centro Educación (Destino)</ion-label>
-              <ion-select formControlName="centroEducacionDestino">
-                <ion-select-option *ngFor="let est of establecimientosEducacionDestino" [value]="est.label">{{ est.label }}</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" *ngIf="showAtmDestino">
-            <ion-item>
-              <ion-label>Atención Menores (Destino)</ion-label>
-              <ion-select formControlName="centroAtmDestino">
-                <ion-select-option *ngFor="let est of establecimientosAtmDestino" [value]="est.label">{{ est.label }}</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" *ngIf="showOtroDestino">
-            <ion-item>
-              <ion-label>Dentro de la comuna?</ion-label>
-              <ion-toggle disabled="false"></ion-toggle>
-            </ion-item>
-          </ion-col>
+
+            <ion-col size="12" *ngIf="showOtroDestino">
+              <ion-item [class.ion-invalid]="registroForm.get('direccionDestino')?.invalid && registroForm.get('direccionDestino')?.touched">
+                <ion-label position="floating">Dirección Destino</ion-label>
+                <ion-input type="text" formControlName="direccionDestino"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('direccionDestino')?.invalid && registroForm.get('direccionDestino')?.touched">
+                <small *ngIf="registroForm.get('direccionDestino')?.errors?.['required']">* La dirección es obligatoria.</small>
+                <small *ngIf="registroForm.get('direccionDestino')?.errors?.['textoInvalido']">* Formato inválido.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12" *ngIf="showSaludDestino">
+              <ion-item><ion-select label="Centro Salud" formControlName="centroSaludDestino"><ion-select-option *ngFor="let est of establecimientosSaludDestino" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
+            <ion-col size="12" *ngIf="showEducacionDestino">
+              <ion-item><ion-select label="Centro Educación" formControlName="centroEducacionDestino"><ion-select-option *ngFor="let est of establecimientosEducacionDestino" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
+            <ion-col size="12" *ngIf="showAtmDestino">
+              <ion-item><ion-select label="Centro ATM" formControlName="centroAtmDestino"><ion-select-option *ngFor="let est of establecimientosAtmDestino" [value]="est.label">{{ est.label }}</ion-select-option></ion-select></ion-item>
+            </ion-col>
         </ion-row>
 
         <!-- DEMÁS CAMPOS -->
         <ion-row>
           <ion-col size="6">
-            <ion-item>
-              <ion-label position="floating">Fecha</ion-label>
-              <ion-input type="date" formControlName="fecha"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6">
-            <ion-item>
-              <ion-label position="floating">Hora</ion-label>
-              <ion-input type="time" formControlName="hora"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Tiempo Uso</ion-label>
-              <ion-input placeholder="Horas estimadas de uso" type= "number" formControlName="tiempoUso"></ion-input>
-            </ion-item>
-             <div *ngIf="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched" class="error-message">
-            <div *ngIf="registroForm.get('tiempoUso')?.errors?.['required']">
-              El tiempo de uso es obligatorio.
-            </div>
-            <div *ngIf="registroForm.get('tiempoUso')?.errors?.['max']">
-              El tiempo de uso no puede ser mayor a 12 horas.
-            </div>
-            <div *ngIf="registroForm.get('tiempoUso')?.errors?.['min']">
-              El tiempo de uso no puede ser menor a 1 hora.
-            </div>
-            </div>
-          </ion-col>
-          <ion-col size="12">
-            <ion-item>
-              <ion-label>Necesita carga?</ion-label>
-              <ion-toggle type ="boolean" formControlName="necesita_carga" ></ion-toggle>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12">
-            <ion-item>
-              <ion-label>Tipo Vehículo</ion-label>
-              <ion-select formControlName="vehiculo_deseado" (ionChange)="actualizarMaxOcupantes($event.detail.value)">
-                <ion-select-option *ngFor="let a of auto.vehiculo" [value]="a.value">{{a.label}}</ion-select-option>
-              </ion-select>
-            </ion-item>
+              <ion-item [class.ion-invalid]="registroForm.get('fecha')?.invalid && registroForm.get('fecha')?.touched">
+                <ion-label position="floating">Fecha</ion-label>
+                <ion-input type="date" formControlName="fecha"></ion-input>
+              </ion-item>
+              <div class="error-bubble" *ngIf="registroForm.get('fecha')?.invalid && registroForm.get('fecha')?.touched">
+                <small>* Requerida.</small>
+              </div>
             </ion-col>
+
+            <ion-col size="6">
+              <ion-item [class.ion-invalid]="registroForm.get('hora')?.invalid && registroForm.get('hora')?.touched">
+                <ion-label position="floating">Hora</ion-label>
+                <ion-input type="time" formControlName="hora"></ion-input>
+              </ion-item>
+              <div class="error-bubble" *ngIf="registroForm.get('hora')?.invalid && registroForm.get('hora')?.touched">
+                <small>* Requerida.</small>
+              </div>
+            </ion-col>
+
             <ion-col size="12">
-            <ion-item>
-                  <ion-select formControlName="programa" label="Programa Asignado" label-placement="stacked" [multiple]="false">
-                    <ion-select-option *ngFor="let p of programa.prog" [value]="p.value">{{p.label}}</ion-select-option>
-                  </ion-select>
-                </ion-item>
-          </ion-col>
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Ocupantes</ion-label>
-              <ion-input type="number" formControlName="ocupantes" [max]="maxOcupantes"></ion-input>
-            </ion-item>
-              <div *ngIf="registroForm.get('ocupantes')?.invalid && registroForm.get('ocupantes')?.touched" class="error-message">
-            <div *ngIf="registroForm.get('ocupantes')?.errors?.['required']">
-              El número de ocupantes es obligatorio.
-            </div>
-            <div *ngIf="registroForm.get('ocupantes')?.errors?.['max']">
-              El número máximo de ocupantes para el vehículo seleccionado es {{ maxOcupantes }}.
-            </div>
-            </div>
+              <ion-item [class.ion-invalid]="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched">
+                <ion-label position="floating">Tiempo Uso (Horas)</ion-label>
+                <ion-input type="number" formControlName="tiempoUso"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched">
+                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['required']">* Tiempo obligatorio.</small>
+                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['min']">* Mínimo 1 hora.</small>
+                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['max']">* Máximo 12 horas.</small>
+              </div>
             </ion-col>
-          <ion-col size="12">
-            <ion-item [class.invalid]="registroForm.get('motivo')?.invalid && registroForm.get('motivo')?.touched">
-              <ion-label position="floating">Motivo/Justificacion</ion-label>
-              <ion-input type="text" formControlName="motivo"></ion-input>
-               <small *ngIf="registroForm.get('nombre')?.errors?.['textoInvalido']">debe ingresar solamente letras</small>
-            </ion-item>
-             <div *ngIf="registroForm.get('motivo')?.invalid && registroForm.get('motivo')?.touched" class="error-message">
-            <div *ngIf="registroForm.get('motivo')?.errors?.['required']">
-              El motivo es obligatorio.
-            </div>
-            <div *ngIf="registroForm.get('motivo')?.errors?.['textoInvalido']">
-              El motivo solo puede contener letras y espacios.
-            </div>
-          </div>
-          </ion-col>
-          <ion-col size="12">
-            <ion-item>
-              <ion-label position="floating">Responsable</ion-label>
-              <ion-input type="text" formControlName="responsable"></ion-input>
-               <small *ngIf="registroForm.get('nombre')?.errors?.['textoInvalido']">debe ingresar solamente letras</small>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12">
-            <ion-button expand="block" color="primary" type="submit">Solicitar Viaje</ion-button>
-          </ion-col>
+
+            <ion-col size="12">
+              <ion-item>
+                <ion-label>¿Necesita carga?</ion-label>
+                <ion-toggle formControlName="necesita_carga"></ion-toggle>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item [class.ion-invalid]="registroForm.get('vehiculo_deseado')?.invalid && registroForm.get('vehiculo_deseado')?.touched">
+                <ion-label>Tipo Vehículo</ion-label>
+                <ion-select formControlName="vehiculo_deseado" (ionChange)="actualizarMaxOcupantes($event.detail.value)">
+                  <ion-select-option *ngFor="let a of auto.vehiculo" [value]="a.value">{{a.label}}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <div class="error-bubble" *ngIf="registroForm.get('vehiculo_deseado')?.invalid && registroForm.get('vehiculo_deseado')?.touched">
+                <small>* Selecciona un tipo.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item>
+                <ion-select formControlName="programa" label="Programa Asignado" label-placement="stacked">
+                  <ion-select-option *ngFor="let p of programa.prog" [value]="p.value">{{p.label}}</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item [class.ion-invalid]="registroForm.get('ocupantes')?.invalid && registroForm.get('ocupantes')?.touched">
+                <ion-label position="floating">Ocupantes</ion-label>
+                <ion-input type="number" formControlName="ocupantes" [max]="maxOcupantes"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('ocupantes')?.invalid && registroForm.get('ocupantes')?.touched">
+                <small *ngIf="registroForm.get('ocupantes')?.errors?.['required']">* Obligatorio.</small>
+                <small *ngIf="registroForm.get('ocupantes')?.errors?.['max']">* Máximo {{ maxOcupantes }} personas.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item [class.ion-invalid]="registroForm.get('motivo')?.invalid && registroForm.get('motivo')?.touched">
+                <ion-label position="floating">Motivo/Justificación</ion-label>
+                <ion-input type="text" formControlName="motivo"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('motivo')?.invalid && registroForm.get('motivo')?.touched">
+                <small *ngIf="registroForm.get('motivo')?.errors?.['required']">* El motivo es obligatorio.</small>
+                <small *ngIf="registroForm.get('motivo')?.errors?.['textoInvalido']">* Solo letras y números.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item [class.ion-invalid]="registroForm.get('responsable')?.invalid && registroForm.get('responsable')?.touched">
+                <ion-label position="floating">Responsable</ion-label>
+                <ion-input type="text" formControlName="responsable"></ion-input>
+              </ion-item>
+              
+              <div class="error-bubble" *ngIf="registroForm.get('responsable')?.invalid && registroForm.get('responsable')?.touched">
+                <small *ngIf="registroForm.get('responsable')?.errors?.['required']">* El responsable es obligatorio.</small>
+                <small *ngIf="registroForm.get('responsable')?.errors?.['textoInvalido']">* Solo letras.</small>
+              </div>
+            </ion-col>
+
+            <ion-col size="12" class="ion-padding-top">
+              <ion-button expand="block" color="primary" type="submit">Solicitar Viaje</ion-button>
+            </ion-col>
         </ion-row>
       
       </ion-grid>

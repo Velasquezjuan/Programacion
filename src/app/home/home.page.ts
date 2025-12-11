@@ -1,11 +1,13 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-  IonIcon, IonContent} from '@ionic/angular/standalone';
+  IonIcon, IonContent, IonMenuButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { person, logOutOutline } from 'ionicons/icons';
 import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
+import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-home',
@@ -15,12 +17,13 @@ import { AutentificacionUsuario } from '../servicio/autentificacion-usuario';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-    IonIcon, IonContent
+    IonIcon, IonContent, IonMenuButton
   ]
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   estaLogeado = false;
   nombreUsuario = '';
+  private authSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -30,10 +33,20 @@ export class HomePage implements OnInit {
   }
 
   async ngOnInit() {
-    this.estaLogeado = await this.auth.estaLogeado();
-    if (this.estaLogeado) {
-      const u = await this.auth.obtenerUsuarioActivo();
-      this.nombreUsuario = u?.nombre || '';
+    this.authSubscription = this.auth.usuarioActivo$.subscribe(usuario => {
+      if (usuario) {
+        this.estaLogeado = true;
+        this.nombreUsuario = usuario.nombre || '';
+      } else {
+        this.estaLogeado = false;
+        this.nombreUsuario = '';
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 

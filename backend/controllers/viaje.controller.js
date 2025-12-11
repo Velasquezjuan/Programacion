@@ -291,7 +291,7 @@ exports.getViajesMasivos = async (req, res) => {
         veh.patente as patente_vehiculo,
         prog.nombre_programa,
         COALESCE(tv_asignado.nombre_tipoVehiculo, 
-        Wtv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
+        tv_deseado.nombre_tipoVehiculo) as tipoVehiculo,
         veh.nombre_conductor as nombreConductor,
         'masivo' as tipo_origen,
         solicitante.ESTABLECIMIENTO_idEstablecimiento

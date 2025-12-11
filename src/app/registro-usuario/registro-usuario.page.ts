@@ -138,6 +138,18 @@ export class RegistroUsuarioPage implements OnInit {
     }
     
     const f = this.registroForm.value;
+
+    let establecimientoId = null;
+
+    const centroId = Number(f.centro); 
+
+      if (centroId === 2) {
+          establecimientoId = f.centroSalud;
+      } else if (centroId === 3) {
+          establecimientoId = f.centroEducacion;
+      } else if (centroId === 4) {
+          establecimientoId = f.centroAtm;
+      }
     
     
 
@@ -151,7 +163,7 @@ export class RegistroUsuarioPage implements OnInit {
       rol: f.cargo,
       area: f.areaDesempeno,
       centro: f.centro,
-      establecimiento: f.establecimiento
+      establecimiento: establecimientoId
     };
 
      this.auth.registrarUsuario(nuevoUsuario).subscribe({

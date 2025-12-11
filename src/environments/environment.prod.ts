@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://backend-programacion-rbgx.onrender.com/'
+  apiUrl: 'http://172.30.0.9:3000/'
 };

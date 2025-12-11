@@ -31,8 +31,19 @@ export class Validadores {
   
     // Validador de texto (solo letras y espacios)
     static soloTexto(control: AbstractControl): ValidationErrors | null {
-      if (!control.value) return null;
-      const regex = /^[a-zA-ZñÑ]/;
+     const val = control.value;
+      if (!val) return null;
+      
+      // 1. Validar que sean solo letras
+      const regex = /^[a-zA-ZñÑ\s]+$/;
+      if (!regex.test(val)) {
+        return { textoInvalido: true };
+      }
+
+      // 2. Validar largo mínimo (Ej: al menos 3 letras para evitar "A", "Si", "yo", etc.)
+      if (val.trim().length < 3) {
+        return { muyCorto: true };
+      }
       return regex.test(control.value) ? null : { textoInvalido: true };
     }
 
@@ -41,15 +52,16 @@ export class Validadores {
       const valor = control.value;
       if (!valor) return null;
 
-      if (valor.length !== 6) {
+      if (valor.length < 8 || valor.length > 12) {
         return { longitudIncorrecta: true };
       }
 
-      const tieneLetra = /[a-zA-Z]/.test(valor);
+      const tieneMayuscula = /[A-Z]/.test(valor); 
+      const tieneMinuscula = /[a-z]/.test(valor);
       const tieneNumero = /[0-9]/.test(valor);
-      const tieneSimbolo = /[!"#$%&/()=?¡]/.test(valor);
+      const tieneSimbolo = /[@,.-;:|°¬'¿¡?=)/&%$#"!}+]/.test(valor);
 
-      if (!tieneLetra || !tieneNumero || !tieneSimbolo) {
+      if (!tieneMayuscula|| !tieneMinuscula || !tieneNumero || !tieneSimbolo) {
         return { claveInsegura: true };
       }
 
@@ -75,7 +87,7 @@ export class Validadores {
     const valor = control.value;
     if (!valor) return null;
     const patente = valor.toUpperCase().trim();
-    const regex = /^[A-Z]{4}[0-9]{2}$/;
+    const regex = /^([A-Z]{4}\d{2}|[A-Z]{5}\d{1})$/;
     return regex.test(patente) ? null : { patenteInvalida: true };
   }
 

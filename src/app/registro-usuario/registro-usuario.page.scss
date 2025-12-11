@@ -70,3 +70,52 @@ ion-col[size="12"] {
     margin-top: 4px;
     font-size: 13px;
   }
+
+  // Estilo para la burbuja de cómic
+.error-bubble {
+  position: relative;
+  background: var(--ion-color-danger); // Color rojo
+  color: white;
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin-top: 15px; /* Espacio para que la flecha no toque el input */
+  margin-left: 5px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); // Sombra suave
+  width: fit-content; // La burbuja se ajusta al tamaño del texto
+  max-width: 90%;
+  
+  // Animación de entrada (opcional, para que haga "pop")
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  // La flecha de la burbuja apuntando hacia arriba
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 100%; // Se ubica justo encima de la burbuja
+    left: 20px;   // A 20px desde la izquierda
+    border-width: 10px;
+    border-style: solid;
+    // El truco CSS: Bordes transparentes excepto el de abajo que es rojo
+    border-color: transparent transparent var(--ion-color-danger) transparent;
+  }
+
+  small {
+    display: block;
+    line-height: 1.3;
+  }
+}
+
+// Animación simple
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

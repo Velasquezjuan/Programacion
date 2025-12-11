@@ -190,7 +190,7 @@ export class RegistroVehiculoPage implements OnInit {
       //vehiculo
       patente: ['',Validators.compose( [Validators.required, Validadores.validarPatente])],
       marca: ['',Validators.compose([ Validators.required, Validadores.soloTexto])],
-      modelo: ['',Validators.compose([ Validators.required, Validadores.soloTexto])],
+      modelo: ['',Validators.compose([ Validators.required])],
       capacidad: [false, Validators.required],
       tipoVehiculo: ['', Validators.required],
       anoVehiculo: ['',[Validators.required, Validators.min(2015), Validators.max(this.endYearNum)]],

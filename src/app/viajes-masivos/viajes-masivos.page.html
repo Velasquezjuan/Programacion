@@ -23,44 +23,54 @@
         <ion-row>
           <ion-col size="12">
             <ion-card>
-              <ion-card-header><ion-card-title> Seleccione Vehículo y Días</ion-card-title></ion-card-header>
+              <ion-card-header>
+                <ion-card-title> Seleccione Vehículo y Días</ion-card-title>
+              </ion-card-header>
               <ion-card-content>
-                <ion-item>
+                
+                <ion-item [class.ion-invalid]="planificacionForm.get('vehiculo')?.invalid && planificacionForm.get('vehiculo')?.touched">
                   <ion-select formControlName="vehiculo" interface="popover" label="Vehículo y Conductor" label-placement="stacked">
                     <ion-select-option *ngFor="let v of vehiculos" [value]="v.id">{{ v.patente }} - {{ v.tipoVehiculo}} - {{ v.nombreConductor }}</ion-select-option>
                   </ion-select>
                 </ion-item>
+                <div class="error-bubble" *ngIf="planificacionForm.get('vehiculo')?.invalid && planificacionForm.get('vehiculo')?.touched">
+                  <small>* Debe seleccionar un vehículo obligatorio.</small>
+                </div>
+
                 <p class="ion-padding-top ion-text-center">Seleccione los días a planificar:</p>
-                <ion-datetime formControlName="diasSeleccionados" presentation="date" [multiple]="true" [showDefaultButtons]="true" doneText="Aceptar" cancelText="Cancelar" class="calendar-embedded" [isDateEnabled]="isWeekday"></ion-datetime>
+                
+                <div class="calendar-container">
+                  <ion-datetime 
+                    formControlName="diasSeleccionados" presentation="date" [multiple]="true" 
+                    [showDefaultButtons]="true" doneText="Aceptar" cancelText="Cancelar" 
+                    class="calendar-embedded" [isDateEnabled]="isWeekday">
+                  </ion-datetime>
+                </div>                
+                <div class="error-bubble" *ngIf="planificacionForm.get('diasSeleccionados')?.invalid && planificacionForm.get('diasSeleccionados')?.touched" style="margin: 0 auto;">
+                  <small>* Debe seleccionar al menos un día en el calendario.</small>
+                </div>
               </ion-card-content>
             </ion-card>
 
             <ion-card>
-              <ion-card-header><ion-card-title> Defina los Horarios y Rutas</ion-card-title></ion-card-header>
-              <ion-card-content formArrayName="horarios">
+              <ion-card-header>
+                <ion-card-title> Defina los Horarios y Rutas</ion-card-title>
+              </ion-card-header>
+             <ion-card-content formArrayName="horarios">
                 <div *ngFor="let horario of horarios.controls; let i = index" class="schedule-row">
                   <div [formGroupName]="i" class="schedule-inputs">
-                    <ion-item><ion-input label="Hora Inicio (08-17h)" label-placement="stacked" type="time" formControlName="inicio"
-                       min="08:00" max="17:00"
-                       ></ion-input></ion-item>
-                    <ion-item><ion-input label="Hora Fin (08-17h)" label-placement="stacked" type="time" formControlName="fin"
-                       min="08:00" max="17:00"
-                       ></ion-input></ion-item>
+                    
+                    <ion-item><ion-input label="Hora Inicio" label-placement="stacked" type="time" formControlName="inicio" min="08:00" max="17:00"></ion-input></ion-item>
+                    <ion-item><ion-input label="Hora Fin" label-placement="stacked" type="time" formControlName="fin" min="08:00" max="17:00"></ion-input></ion-item>
+                    
                     <ion-item>
-                      <ion-select 
-                        formControlName="programa" label="Programa" 
-                        label-placement="stacked" placeholder="Seleccione un programa"
-                        [disabled]="programasDisponibles.length === 0"> <ion-select-option *ngFor="let p of programasDisponibles" [value]="p.value">
-                          {{p.label}}
-                        </ion-select-option>
-                        
+                      <ion-select formControlName="programa" label="Programa" label-placement="stacked" placeholder="Seleccione" [disabled]="programasDisponibles.length === 0"> 
+                        <ion-select-option *ngFor="let p of programasDisponibles" [value]="p.value">{{p.label}}</ion-select-option>
                       </ion-select>
                     </ion-item>
                     
-                    <!-- Punto de Salida por Horario -->
-                     <ion-item class="full-width-item">
-                      <ion-select formControlName="puntoSalida" label="Punto de Salida" 
-                      label-placement="stacked" (ionChange)="onSalidaChange($event, i)">
+                    <ion-item class="full-width-item">
+                      <ion-select formControlName="puntoSalida" label="Punto de Salida" label-placement="stacked" (ionChange)="onSalidaChange($event, i)">
                         <ion-select-option value="1">Nivel Central</ion-select-option>
                         <ion-select-option value="2">Salud</ion-select-option>
                         <ion-select-option value="3">Educación</ion-select-option>
@@ -73,25 +83,17 @@
                       <ion-input label="Dirección Salida" label-placement="stacked" formControlName="direccionSalida"></ion-input>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoSalida')?.value === '2'" class="full-width-item">
-                      <ion-select formControlName="centroSaludSalida" label="Centro Salud (Salida)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" 
-                      [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroSaludSalida" label="Centro Salud" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoSalida')?.value === '3'" class="full-width-item">
-                      <ion-select formControlName="centroEducacionSalida" label="Centro Educación (Salida)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" 
-                      [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroEducacionSalida" label="Centro Educación" label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoSalida')?.value === '4'" class="full-width-item">
-                      <ion-select formControlName="centroAtmSalida" label="Atención Menores (Salida)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" 
-                      [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroAtmSalida" label="Atención Menores" label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
 
-                    <!-- Punto de Destino por Horario -->
                     <ion-item class="full-width-item">
-                      <ion-select formControlName="puntoDestino" label="Punto de Destino" 
-                      label-placement="stacked" (ionChange)="onDestinoChange($event, i)">
+                      <ion-select formControlName="puntoDestino" label="Punto de Destino" label-placement="stacked" (ionChange)="onDestinoChange($event, i)">
                         <ion-select-option value="1">Nivel Central</ion-select-option>
                         <ion-select-option value="2">Salud</ion-select-option>
                         <ion-select-option value="3">Educación</ion-select-option>
@@ -104,54 +106,62 @@
                       <ion-input label="Dirección Destino" label-placement="stacked" formControlName="direccionDestino"></ion-input>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoDestino')?.value === '2'" class="full-width-item">
-                      <ion-select formControlName="centroSaludDestino" label="Centro Salud (Destino)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" 
-                      [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroSaludDestino" label="Centro Salud" label-placement="stacked"><ion-select-option *ngFor="let c of centros.salud" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoDestino')?.value === '3'" class="full-width-item">
-                      <ion-select formControlName="centroEducacionDestino" label="Centro Educación (Destino)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroEducacionDestino" label="Centro Educación" label-placement="stacked"><ion-select-option *ngFor="let c of centros.educacion" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
                     <ion-item *ngIf="horario.get('puntoDestino')?.value === '4'" class="full-width-item">
-                      <ion-select formControlName="centroAtmDestino" label="Atención Menores (Destino)" 
-                      label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" 
-                      [value]="c.value">{{c.label}}</ion-select-option></ion-select>
+                      <ion-select formControlName="centroAtmDestino" label="Atención Menores" label-placement="stacked"><ion-select-option *ngFor="let c of centros.atm" [value]="c.value">{{c.label}}</ion-select-option></ion-select>
                     </ion-item>
+
                   </div>
                   <ion-button fill="clear" color="danger" (click)="removerHorario(i)" class="remove-btn"><ion-icon name="trash-outline" slot="icon-only"></ion-icon></ion-button>
                 </div>
+                
+                <div class="error-bubble" *ngIf="planificacionForm.get('horarios')?.invalid && planificacionForm.get('horarios')?.touched">
+                   <small>* Debe completar todos los campos de horarios y rutas.</small>
+                </div>
+
                 <ion-button expand="block" fill="outline" (click)="agregarHorario()" class="ion-margin-top" [disabled]="!canAddHorario"><ion-icon name="add-circle-outline" slot="start"></ion-icon>Agregar Otro Horario</ion-button>
               </ion-card-content>
             </ion-card>
 
             <ion-card>
-              <ion-card-header><ion-card-title> Detalles Generales</ion-card-title></ion-card-header>
+              <ion-card-header>
+                <ion-card-title> Detalles Generales</ion-card-title>
+              </ion-card-header>
               <ion-card-content>
-                <ion-item [class.invalid]="planificacionForm.get('ocupantes')?.invalid && planificacionForm.get('ocupantes')?.touched">
+                
+                <ion-item [class.ion-invalid]="planificacionForm.get('ocupantes')?.invalid && planificacionForm.get('ocupantes')?.touched">
                   <ion-input 
                     label="Cantidad de Ocupantes" 
                     label-placement="stacked" 
-                    type="number" placeholder="ingrese con numeros la cantidad de ocupantes ej 2"
+                    type="number" placeholder="Ej: 2"
                     formControlName="ocupantes" 
                     [max]="maxOcupantes"> 
                   </ion-input>
                 </ion-item>
-
-                <div *ngIf="planificacionForm.get('ocupantes')?.invalid && planificacionForm.get('ocupantes')?.touched" class="error-message">
-                  <div *ngIf="planificacionForm.get('ocupantes')?.errors?.['required']">
-                    La cantidad de ocupantes es obligatoria.
-                  </div>
-                  <div *ngIf="planificacionForm.get('ocupantes')?.errors?.['min']">
-                    Debe haber al menos 1 ocupante.
-                  </div>
-                  <div *ngIf="planificacionForm.get('ocupantes')?.errors?.['max']">
-                    El máximo de ocupantes para este vehículo es {{ maxOcupantes }}.
-                  </div>
+                <div class="error-bubble" *ngIf="planificacionForm.get('ocupantes')?.invalid && planificacionForm.get('ocupantes')?.touched">
+                  <small *ngIf="planificacionForm.get('ocupantes')?.errors?.['required']">* Cantidad requerida.</small>
+                  <small *ngIf="planificacionForm.get('ocupantes')?.errors?.['min']">* Mínimo 1 ocupante.</small>
+                  <small *ngIf="planificacionForm.get('ocupantes')?.errors?.['max']">* Máximo permitido: {{ maxOcupantes }}.</small>
                 </div>
-                <ion-item><ion-input label="Motivo del viaje" label-placement="stacked" 
-                  formControlName="motivo" placeholder="ingrese motivos del uso del vehiculo"></ion-input></ion-item>
-                <ion-item><ion-input label="Responsable" label-placement="stacked" 
-                  formControlName="responsable" placeholder="ingrese quien utilizara el movil "></ion-input></ion-item>
+
+                <ion-item [class.ion-invalid]="planificacionForm.get('motivo')?.invalid && planificacionForm.get('motivo')?.touched">
+                  <ion-input label="Motivo del viaje" label-placement="stacked" formControlName="motivo" placeholder="Ingrese motivo"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="planificacionForm.get('motivo')?.invalid && planificacionForm.get('motivo')?.touched">
+                  <small>* El motivo es obligatorio.</small>
+                </div>
+
+                <ion-item [class.ion-invalid]="planificacionForm.get('responsable')?.invalid && planificacionForm.get('responsable')?.touched">
+                  <ion-input label="Responsable" label-placement="stacked" formControlName="responsable" placeholder="Quién utilizará el móvil"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="planificacionForm.get('responsable')?.invalid && planificacionForm.get('responsable')?.touched">
+                  <small>* Debe indicar un responsable.</small>
+                </div>
+
               </ion-card-content>
             </ion-card>
 

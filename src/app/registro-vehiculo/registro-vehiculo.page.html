@@ -22,15 +22,45 @@
            <ion-card>
               <ion-card-header><ion-card-title>Datos del Proveedor</ion-card-title></ion-card-header>
               <ion-card-content>
-                <ion-item>
+                
+                <ion-item [class.ion-invalid]="registroForm.get('nombreEncVehiculo')?.invalid && registroForm.get('nombreEncVehiculo')?.touched">
                   <ion-input label="Nombre Encargado" label-placement="stacked" formControlName="nombreEncVehiculo"></ion-input>
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('nombreEncVehiculo')?.invalid && registroForm.get('nombreEncVehiculo')?.touched">
+                  <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['required']">
+                    * El nombre es obligatorio.
+                  </small>
+                  <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['textoInvalido']">
+                    * Solo se permiten letras.
+                  </small>
+                  <small *ngIf="registroForm.get('nombreEncVehiculo')?.errors?.['muyCorto']">
+                    * El nombre es muy corto (mínimo 3 letras).
+                  </small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('apellidoEncVehiculo')?.invalid && registroForm.get('apellidoEncVehiculo')?.touched">
                   <ion-input label="Apellido Enc." label-placement="stacked" formControlName="apellidoEncVehiculo"></ion-input>
                 </ion-item>
-                <ion-item>
-                  <ion-input label="RUT Encargado" label-placement="stacked" formControlName="rutEncVehiculo" placeholder="12345678-9"></ion-input>
+                <div class="error-bubble" *ngIf="registroForm.get('apellidoEncVehiculo')?.invalid && registroForm.get('apellidoEncVehiculo')?.touched">
+                  <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['required']">
+                    * El apellido es obligatorio.
+                  </small>
+                  <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['textoInvalido']">
+                    * Solo se permiten letras.
+                  </small>
+                   <small *ngIf="registroForm.get('apellidoEncVehiculo')?.errors?.['muyCorto']">
+                    * El nombre es muy corto (mínimo 3 letras).
+                  </small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('rutEncVehiculo')?.invalid && registroForm.get('rutEncVehiculo')?.touched">
+                  <ion-input label="RUT Encargado" label-placement="stacked" formControlName="rutEncVehiculo" placeholder="12345678K"></ion-input>
                 </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('rutEncVehiculo')?.invalid && registroForm.get('rutEncVehiculo')?.touched">
+                  <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['required']">* El RUT es obligatorio.</small>
+                  <small *ngIf="registroForm.get('rutEncVehiculo')?.errors?.['validarRut']">* RUT inválido. Sin puntos ni guión (Ej: 12345678K).</small>
+                </div>
+
               </ion-card-content>
             </ion-card>
 
@@ -38,51 +68,78 @@
             <ion-card>
               <ion-card-header><ion-card-title>Datos del Vehículo</ion-card-title></ion-card-header>
               <ion-card-content>
-                <ion-item>
+                
+                <ion-item [class.ion-invalid]="registroForm.get('patente')?.invalid && registroForm.get('patente')?.touched">
                   <ion-input label="Patente" label-placement="stacked" formControlName="patente" placeholder="ABCD12"></ion-input>
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('patente')?.invalid && registroForm.get('patente')?.touched">
+                  <small *ngIf="registroForm.get('patente')?.errors?.['required']">
+                    * La patente es obligatoria.
+                  </small>
+                  <small *ngIf="registroForm.get('patente')?.errors?.['patenteInvalida']">
+                    * Formato inválido (Ej: ABCD12 o BBCC12).
+                  </small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('marca')?.invalid && registroForm.get('marca')?.touched">
                   <ion-input label="Marca" label-placement="stacked" formControlName="marca"></ion-input>
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('marca')?.invalid && registroForm.get('marca')?.touched">
+                  <small>
+                    * La marca es obligatoria.
+                  </small>
+                   <small *ngIf="registroForm.get('marca')?.errors?.['muyCorto']">
+                    * El nombre es muy corto (mínimo 3 letras).
+                  </small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('modelo')?.invalid && registroForm.get('modelo')?.touched">
                   <ion-input label="Modelo" label-placement="stacked" formControlName="modelo"></ion-input>
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('modelo')?.invalid && registroForm.get('modelo')?.touched">
+                  <small>
+                    * El modelo es obligatorio.
+                  </small>
+                    <small *ngIf="registroForm.get('modelo')?.errors?.['muyCorto']">
+                      * El nombre es muy corto (mínimo 1 letra).
+                    </small>
+                  
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('tipoVehiculo')?.invalid && registroForm.get('tipoVehiculo')?.touched">
                   <ion-select formControlName="tipoVehiculo" label="Tipo de Vehículo" label-placement="stacked">
                     <ion-select-option *ngFor="let item of auto.vehiculo" [value]="item.value">{{ item.label }}</ion-select-option>
                   </ion-select>
                 </ion-item>
-                  <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('tipoVehiculo')?.invalid && registroForm.get('tipoVehiculo')?.touched">
+                  <small>
+                    * Selecciona un tipo de vehículo.
+                  </small>
+                </div>
+
+                <ion-item>
                   <ion-toggle formControlName="capacidad" justify="space-between">¿Tiene capacidad de carga?</ion-toggle>
                 </ion-item>
-                  <!--<ion-item>
-                  <ion-label>Año del Vehículo</ion-label>
-                  <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('anoVehiculo')?.value ? (registroForm.get('anoVehiculo')?.value | date:'yyyy') : '' }}</ion-text>
-                    <ion-button fill="clear" (click)="isAnoPickerOpen = true">
-                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-                  </div>
-                </ion-item>-->
-                <ion-item>
+
+                <ion-item [class.ion-invalid]="registroForm.get('anoVehiculo')?.invalid && registroForm.get('anoVehiculo')?.touched">
                   <ion-input
                     label="Año del Vehículo"
                     label-placement="stacked"
-                    placeholder="Ingrese el año en numero EJ: 2015"
-                    type="year" min="2015"
+                    placeholder="Ej: 2015"
+                    type="number" min="2015"
                     (ionChange)="onAnoChange($event)"
                     formControlName="anoVehiculo">
                   </ion-input>
-                 <!-- <ion-text slot="end">{{ registroForm.get('anoVehiculo')?.value || '' }}</ion-text>-->
                 </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('anoVehiculo')?.invalid && registroForm.get('anoVehiculo')?.touched">
+                  <small *ngIf="registroForm.get('anoVehiculo')?.errors?.['required']">
+                    * El año es obligatorio.
+                  </small>
+                  <small *ngIf="registroForm.get('anoVehiculo')?.errors?.['min']">
+                    * El año debe ser 2015 o superior.
+                  </small>
+                </div>
 
-               <!--  <ion-modal [isOpen]="isAnoPickerOpen" (didDismiss)="isAnoPickerOpen = false">
-      <ng-template> <ion-datetime
-          presentation="year"
-          (ionChange)="onDateChange($event, 'anoVehiculo', 'ano')">
-        </ion-datetime>
-      </ng-template> 
-    </ion-modal>-->
               </ion-card-content>
             </ion-card>
 
@@ -90,22 +147,54 @@
             <ion-card>
               <ion-card-header><ion-card-title>Asignación y Documentación</ion-card-title></ion-card-header>
               <ion-card-content>
-                <ion-item>
+                
+                <ion-item [class.ion-invalid]="registroForm.get('conductorTitular')?.invalid && registroForm.get('conductorTitular')?.touched">
                   <ion-input label="Conductor Titular" label-placement="stacked" formControlName="conductorTitular"></ion-input>
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('conductorTitular')?.invalid && registroForm.get('conductorTitular')?.touched">
+                  <small *ngIf="registroForm.get('conductorTitular')?.errors?.['required']">
+                    * Nombre del conductor es obligatorio.
+                  </small>
+                  <small *ngIf="registroForm.get('conductorTitular')?.errors?.['textoInvalido']">
+                    * Solo se permiten letras.
+                  </small>
+                   <small *ngIf="registroForm.get('conductorTitular')?.errors?.['muyCorto']">
+                    * El nombre es muy corto (mínimo 3 letras).
+                  </small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('conductorReemplazo')?.invalid && registroForm.get('conductorReemplazo')?.touched">
                   <ion-input label="Conductor Reemplazo" label-placement="stacked" formControlName="conductorReemplazo"></ion-input>
                 </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('conductorReemplazo')?.invalid && registroForm.get('conductorReemplazo')?.touched">
+                  <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['required']">
+                    * Nombre del reemplazo es obligatorio.
+                  </small>
+                  <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['textoInvalido']">
+                    * Solo se permiten letras.
+                  </small>
+                  <small *ngIf="registroForm.get('conductorReemplazo')?.errors?.['muyCorto']">
+                    * El nombre es muy corto (mínimo 3 letras).
+                  </small>
+                </div>
+
                 <ion-item>
                   <ion-select formControlName="programa" label="Programa(s) Asignado(s)" label-placement="stacked" [multiple]="true">
                     <ion-select-option *ngFor="let p of programa.prog" [value]="p.value">{{p.label}}</ion-select-option>
-                  </ion-select>
+                  </ion-select> 
                 </ion-item>
-                <ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('programa')?.invalid && registroForm.get('centro')?.touched">
+                  <small>* Selecciona un programa.</small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
                   <ion-select formControlName="centro" label="Centro Principal" label-placement="stacked" (ionChange)="onCentroChange($event)">
                     <ion-select-option *ngFor="let centro of centrosPrincipales" [value]="centro.value">{{ centro.label }}</ion-select-option>
                   </ion-select>
                 </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('centro')?.invalid && registroForm.get('centro')?.touched">
+                  <small>* Selecciona un centro principal.</small>
+                </div>
                 
                 <div *ngIf="showSalud">
                   <ion-item><ion-select formControlName="centroSalud1" label="Centro de Salud 1" label-placement="stacked">
@@ -126,109 +215,57 @@
                   </ion-select></ion-item>
                 </div>
 
-                <ion-item>
+                <ion-item [class.ion-invalid]="registroForm.get('contrato')?.invalid && registroForm.get('contrato')?.touched">
                   <ion-input label="N° de Contrato" label-placement="stacked" formControlName="contrato"></ion-input>
                 </ion-item>
-                <!--
-                <ion-item>
-                  <ion-input label="N° de horas" label-placement="stacked" formControlName="numHoras"></ion-input>
-                </ion-item> futura actualizacion por contrato -->
+                <div class="error-bubble" *ngIf="registroForm.get('contrato')?.invalid && registroForm.get('contrato')?.touched">
+                  <small>* El número de contrato es obligatorio.</small>
+                </div>
 
-                  <!-- <ion-item>
-                  <ion-label>Vencimiento Revisión Técnica</ion-label>
-                  <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('fechaRevision')?.value | date:'dd/MM/yyyy' }}</ion-text>
-                    <ion-button fill="clear" (click)="isRevPickerOpen = true">
-                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-                  </div>
+                <ion-item [class.ion-invalid]="registroForm.get('inicioContrato')?.invalid && registroForm.get('inicioContrato')?.touched">
+                    <ion-input label="Inicio de Contrato" label-placement="stacked" type="date" [min]="minDate" [max]="maxDate" formControlName="inicioContrato"></ion-input>
                 </ion-item>
-                
-                <ion-item>
-                  <ion-label>Vencimiento Permiso Circulacion</ion-label>
-                  <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('permisoCirculacion')?.value | date:'dd/MM/yyyy' }}</ion-text>
-                    <ion-button fill="clear" (click)="isPermisoPickerOpen = true">
-                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-                  </div>
+                <div class="error-bubble" *ngIf="registroForm.get('inicioContrato')?.invalid && registroForm.get('inicioContrato')?.touched">
+                  <small>* Fecha de inicio requerida.</small>
+                </div>
+
+                <ion-item [class.ion-invalid]="registroForm.get('terminoContrato')?.invalid && registroForm.get('terminoContrato')?.touched">
+                    <ion-input label="Termino de Contrato" label-placement="stacked" type="date" [min]="minDate" [max]="maxDate" formControlName="terminoContrato"></ion-input>
                 </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('terminoContrato')?.invalid && registroForm.get('terminoContrato')?.touched">
+                  <small>* Fecha de término requerida.</small>
+                </div>
 
-                <ion-item>
-                  <ion-label>Vencimiento Seguro Obligatorio</ion-label>
-                  <div slot="end" class="date-button-container">
-                    <ion-text>{{ registroForm.get('seguroObligatorio')?.value | date:'dd/MM/yyyy' }}</ion-text>
-                    <ion-button fill="clear" (click)="isSeguroPickerOpen = true">
-                      <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-                  </div>
-                </ion-item>-->
+                <ion-item [class.ion-invalid]="registroForm.get('horasContratadas')?.invalid && registroForm.get('horasContratadas')?.touched">
+                    <ion-input label="Horas Contratadas por Semana" label-placement="stacked" type="number" formControlName="horasContratadas" min="1" max="44"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('horasContratadas')?.invalid && registroForm.get('horasContratadas')?.touched">
+                  <small *ngIf="registroForm.get('horasContratadas')?.errors?.['required']">* Las horas son obligatorias.</small>
+                  <small *ngIf="registroForm.get('horasContratadas')?.errors?.['min']">* Mínimo 1 hora.</small>
+                  <small *ngIf="registroForm.get('horasContratadas')?.errors?.['max']">* Máximo 44 horas semanales.</small>
+                </div>
 
-                <ion-item>
-                    <ion-input
-                      label="Inicio de Contrato"
-                      label-placement="stacked"
-                      type="date" 
-                       [min]="minDate"
-                       [max]="maxDate"
-                      formControlName="inicioContrato">
-                    </ion-input>
-                  </ion-item>
+                <ion-item [class.ion-invalid]="registroForm.get('fechaRevision')?.invalid && registroForm.get('fechaRevision')?.touched">
+                    <ion-input label="Vencimiento Revisión Técnica" label-placement="stacked" type="date" [min]="minDate" [max]="maxDate" formControlName="fechaRevision"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('fechaRevision')?.invalid && registroForm.get('fechaRevision')?.touched">
+                  <small>* Fecha obligatoria.</small>
+                </div>
 
-                    <ion-item>
-                    <ion-input
-                      label="Termino de Contrato"
-                      label-placement="stacked"
-                      type="date" 
-                       [min]="minDate"
-                       [max]="maxDate"
-                      formControlName="terminoContrato">
-                    </ion-input>
-                  </ion-item>
+                <ion-item [class.ion-invalid]="registroForm.get('permisoCirculacion')?.invalid && registroForm.get('permisoCirculacion')?.touched">
+                    <ion-input label="Vencimiento Permiso Circulacion" label-placement="stacked" type="date" [min]="minDate" [max]="maxDate" formControlName="permisoCirculacion"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('permisoCirculacion')?.invalid && registroForm.get('permisoCirculacion')?.touched">
+                  <small>* Fecha obligatoria.</small>
+                </div>
 
-                  <ion-item>
-                    <ion-input
-                      label="Horas Contratadas por Semana"
-                      label-placement="stacked"
-                      type="number" 
-                      formControlName="horasContratadas"
-                      min="1"
-                      max="44">
-                    </ion-input>
-                  </ion-item>
+                <ion-item [class.ion-invalid]="registroForm.get('seguroObligatorio')?.invalid && registroForm.get('seguroObligatorio')?.touched">
+                    <ion-input label="Vencimiento Seguro Obligatorio" label-placement="stacked" type="date" formControlName="seguroObligatorio" [min]="minDate" [max]="maxDate"></ion-input>
+                </ion-item>
+                <div class="error-bubble" *ngIf="registroForm.get('seguroObligatorio')?.invalid && registroForm.get('seguroObligatorio')?.touched">
+                  <small>* Fecha obligatoria.</small>
+                </div>
 
-                <ion-item>
-                    <ion-input
-                      label="Vencimiento Revisión Técnica"
-                      label-placement="stacked"
-                      type="date" 
-                       [min]="minDate"
-                       [max]="maxDate"
-                      formControlName="fechaRevision">
-                    </ion-input>
-                  </ion-item>
-
-                  <ion-item>
-                    <ion-input
-                      label="Vencimiento Permiso Circulacion"
-                      label-placement="stacked"
-                      type="date"
-                      [min]="minDate"
-                      [max]="maxDate"
-                      formControlName="permisoCirculacion">
-                    </ion-input>
-                  </ion-item>
-
-                  <ion-item>
-                    <ion-input
-                      label="Vencimiento Seguro Obligatorio"
-                      label-placement="stacked"
-                      type="date" 
-                      formControlName="seguroObligatorio"
-                      [min]="minDate"
-                      [max]="maxDate">
-                    </ion-input>
-                  </ion-item>
               </ion-card-content>
             </ion-card>
 
