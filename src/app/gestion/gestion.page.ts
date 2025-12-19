@@ -15,7 +15,7 @@ import { trash, sync, createOutline, saveOutline, closeCircleOutline,
 import { Memorialocal } from '../almacen/memorialocal';
 import { Administracion } from '../servicio/administracion';
 import { ToastController, AlertController } from '@ionic/angular';
-
+                    
 
 @Component({
   selector: 'app-gestion',
@@ -113,7 +113,7 @@ export class GestionPage implements OnInit {
       );
     }
   }
-
+ 
 
 editarUsuario(usuario: any) { this.usuarioEditandoRut = usuario.rut; }
 cancelarEdicionUsuario() { this.usuarioEditandoRut = null; this.cargarDatos(); }
@@ -161,7 +161,7 @@ cambiarEstadoUsuario(usuario: any) {
     }
   }
   
-editarVehiculo(vehiculo: any) 
+ editarVehiculo(vehiculo: any) 
   { this.vehiculoEditandoPatente = vehiculo.patente; }
   cancelarEdicionVehiculo() 
   { this.vehiculoEditandoPatente = null; this.cargarDatos(); }
@@ -171,7 +171,7 @@ editarVehiculo(vehiculo: any)
     necesita_reemplazo: vehiculo.necesita_reemplazo,
     nombre_conductor_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.nombre_conductor_reemplazo : null,
     patente_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.patente_reemplazo : null,
-    fecha_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazo : null,
+    fecha_reemplazoInicio: vehiculo.necesita_reemplazo === 'si' ? vehiculo.fecha_reemplazoInicio : null,
     revision_tecnica_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.revision_tecnica_reemplazo : null,
     justificacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.justificacion_reemplazo : null,
     autorizacion_reemplazo: vehiculo.necesita_reemplazo === 'si' ? vehiculo.autorizacion_reemplazo : null,
@@ -221,7 +221,7 @@ actualizarReemplazo(vehiculo: any) {
       permiso_circulacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.permiso_circulacion_reemplazo : null,
       seguro_obligatorio_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.seguro_obligatorio_reemplazo : null,
       revicion_tecnica_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.revision_tecnica_reemplazo : null,
-      fecha_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.fecha_reemplazo : null,
+      fecha_reemplazoInicio: vehiculo.requiere_reemplazo ? vehiculo.fecha_reemplazoInicio : null,
       fecha_reemplazoFin: vehiculo.requiere_reemplazo ? vehiculo.fecha_reemplazoFin : null,
       justificacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.justificacion_reemplazo : null,
       autorizacion_reemplazo: vehiculo.requiere_reemplazo ? vehiculo.autorizacion_reemplazo : null,

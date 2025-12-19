@@ -55,7 +55,7 @@ export class MenuLateralComponent {
     { label: 'Registro Usuario',    path: '/registro-usuario',               roles: ['adminSistema'] },
     { label: 'Registro Vehículo',   path: '/registro-vehiculo',              roles: ['adminSistema','coordinador'] },
     { label: 'Bitácora',            path: '/bitacora',                       roles: ['adminSistema','coordinador'] },
-    { label: 'Gestión',             path: '/gestion',                        roles: ['adminSistema','coordinador'] },
+    { label: 'Gestión de usuarios',             path: '/gestion',                        roles: ['adminSistema','coordinador'] },
     { label: 'Planificación Masiva',          path: '/calendario',                     roles: ['adminSistema','coordinador'] },
     { label: 'Programacion',        path: '/programacion',                     roles: ['adminSistema','coordinador'] },
     { label: 'Mis Viajes',          path: '/mis-viajes',                     roles: ['adminSistema','conductor','its','solicitante','coordinador'] },

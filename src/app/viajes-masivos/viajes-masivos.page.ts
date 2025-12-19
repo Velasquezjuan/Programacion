@@ -80,6 +80,12 @@ export class ViajesMasivosPage implements OnInit {
   showAtmDestino     = false;
 
 
+  get diasDisponiblesParaSelect(): string[] {
+    const dias = this.planificacionForm.get('diasSeleccionados')?.value || [];
+    return dias.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
+  }
+
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -92,10 +98,10 @@ export class ViajesMasivosPage implements OnInit {
   ) {
     addIcons({ trashOutline, addCircleOutline });
 
-    this.planificacionForm = this.fb.group({
+  this.planificacionForm = this.fb.group({
       vehiculo: ['', Validators.required],
       diasSeleccionados: [[], Validators.required],
-      horarios: this.fb.array([], [Validators.required, Validators.minLength(1)]),
+      horarios: this.fb.array([ this.nuevoHorario() ], [Validators.required]),
       ocupantes: ['', [Validators.required, Validators.min(1)]],
       motivo: ['', Validators.required],
       responsable: ['', Validators.required],
@@ -115,16 +121,13 @@ export class ViajesMasivosPage implements OnInit {
   async ngOnInit() {
     this.usuarioActivo = await this.auth.obtenerUsuarioActivo();
     if (this.usuarioActivo) {
-        this.rolUsuario = this.usuarioActivo.rol;
-        this.planificacionForm.get('')?.setValue(this.usuarioActivo.nombre);
-    } else {
-        this.rolUsuario = '';
+      this.rolUsuario = this.usuarioActivo.rol;
+      this.planificacionForm.get('responsable')?.setValue(this.usuarioActivo.nombre);
     }
-    
-    this.cargarVehiculos(); 
-   // this.cargarProgramas(); 
-    this.cargarCentros(); 
-    this.agregarHorario();
+
+    this.cargarVehiculos();
+    this.cargarCentros();
+    // Ya no llamamos agregarHorario aquí porque lo inicializamos en el constructor
 
     const inicialVehiculo = this.planificacionForm.get('vehiculo')?.value || '';
     this.cargarProgramasPorVehiculo(inicialVehiculo);
@@ -134,6 +137,8 @@ export class ViajesMasivosPage implements OnInit {
       this.cargarProgramasPorVehiculo(val || '');
     });
   }
+
+  
 
   updateOcupantesValidator() {
 const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
@@ -221,21 +226,12 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
   }
 
   async cargarVehiculos() {
-    /*  this.vehiculoServicio.getVehiculos().subscribe({
-        next: (data) => this.vehiculos = data,
-        error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
-    });*/
      this.vehiculoServicio.getVehiculosMasivos().subscribe({
       next: (data) => this.vehiculos = data,
       error: (err) => this.mostrarToast('Error al cargar vehículos.', 'danger')
   });
   }
   
-/* cargarProgramas() {
-    this.programa = { prog: this.centroServicio.obtenerPrograma('prog') };
-  }*/
-
- 
   cargarCentros() {
     this.centros = {
       salud: this.centroServicio.obtenerEstablecimientos(2),
@@ -251,14 +247,18 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
 
   nuevoHorario(): FormGroup {
     return this.fb.group({
-      inicio: [ /*'08:00'*/, Validators.required],
-      fin: [/*'17:00'*/, Validators.required],
+      fechasAsignadas: [[], Validators.required], 
+      
+      inicio: ['', Validators.required],
+      fin: ['', Validators.required],
       programa: ['', Validators.required],
+      
       puntoSalida: ['', Validators.required],
       direccionSalida: [''],
       centroSaludSalida: [''],
       centroEducacionSalida: [''],
       centroAtmSalida: [''],
+      
       puntoDestino: ['', Validators.required],
       direccionDestino: [''],
       centroSaludDestino: [''],
@@ -302,34 +302,6 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
     for (const horario of formValue.horarios) {
         
         const nuevoViaje = {
-          
-          /*id: `viaje-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          solicitante: this.usuarioActivo?.usuario || 'Desconocido',
-          fecha: new Date(fechaStr).toISOString().split('T')[0],
-          hora: horario.inicio,
-          puntoSalida: horario.puntoSalida,
-          direccionSalida: horario.direccionSalida,
-          centroSaludSalida: horario.centroSaludSalida,
-          centroEducacionSalida: horario.centroEducacionSalida,
-          centroAtmSalida: horario.centroAtmSalida,
-          puntoDestino: horario.puntoDestino,
-          direccionDestino: horario.direccionDestino,
-          centroSaludDestino: horario.centroSaludDestino,
-          centroEducacionDestino: horario.centroEducacionDestino,
-          centroAtmDestino: horario.centroAtmDestino,
-          tipoVehiculo: vehiculoSeleccionado.tipo || 'Vehículo',
-          ocupante: formValue.responsable,
-          hora_inicio: horario.inicio,
-          hora_fin: horario.fin,
-          ocupantes: formValue.ocupantes,
-          motivo: formValue.motivo,
-          responsable: formValue.responsable,
-          estado: 'agendado',
-          idVehiculo: vehiculoSeleccionado.id,
-          vehiculo: `${vehiculoSeleccionado.patente} - ${vehiculoSeleccionado.conductor}`,
-          idPrograma: programaSeleccionado ? programaSeleccionado.value : 'N/A',
-          programa: programaSeleccionado ? programaSeleccionado.label : 'No especificado'
-          */
         fecha_viaje: new Date(fechaStr).toISOString().split('T')[0],
         hora_inicio: horario.inicio,
         hora_fin: horario.fin,
@@ -339,7 +311,7 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
         ocupantes: formValue.ocupantes,
         programa: horario.programa,
         responsable: formValue.responsable,
-        necesita_carga: 'no',
+        necesita_carga: 'no',//erorrores en backend ojito
         vehiculo_deseado: vehiculoSeleccionado.tipoVehiculo || 'No especificado',
         vehiculo_patente: vehiculoSeleccionado.patente,
         estado: 'Agendado'
@@ -425,10 +397,6 @@ const vehiculoId = this.planificacionForm.get('vehiculo')?.value;
    if (controlToValidate) {
     horarioGroup.get(controlToValidate)?.setValidators([Validators.required]); 
    }
-
-   /* if (controlToValidate == `direccion${type}`) {
-      this.registroForm.get(controlToValidate)?.setValidators([Validators.required, Validadores.soloTexto]);
-    }*/
 
     controlsToReset.forEach(controlName => {
       this.planificacionForm.get(controlName)?.updateValueAndValidity();

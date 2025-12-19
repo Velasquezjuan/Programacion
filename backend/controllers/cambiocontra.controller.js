@@ -28,7 +28,7 @@ exports.solicitarReseteo = async (req, res) => {
 
     await db.query('UPDATE USUARIO SET reset_token = ?, reset_token_expira = ? WHERE rut_usuario = ?', [token, expira, rut]);
 
-    const resetLink = `http://localhost:8100/nueva-contrasena?token=${token}`;
+    const resetLink = `http://172.30.0.9:3000/nueva-contrasena?token=${token}`;
 
     const mailOptions = {
       from: `"GECOVI" <${process.env.EMAIL_USER}>`,

@@ -11,16 +11,20 @@ export const PlantillasCorreo = {
         ${contenido}
       </div>
       <div style="background-color: #f4f4f4; color: #555; padding: 10px; text-align: center; font-size: 0.8em;">
-        <p>Este es un correo generado automáticamente por la aplicación GECOVI by juanVelasquez.</p>
+        <p>Este es un correo generado automáticamente por la aplicación Gemovil by jv.</p>
       </div>
     </div>
   `,
 
-  bienvenida: (nombre: string) => `
+  /*bienvenida: (nombre: string) => `
     <p>¡Hola, ${nombre}!</p>
-    <p>Tu cuenta ha sido creada con éxito. Ya puedes empezar a solicitar y gestionar tus viajes.</p>
+    <p>Bienvenido a GEMOVIL, el sistema para poder administrar tus viajes de la CMPA.</p>
+    <p>Estamos encantados de tenerte a bordo y esperamos que disfrutes de una experiencia fluida y eficiente al gestionar tus viajes con nosotros.</p>
+    <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.</p>
+    <p>Por favor genere su contraseña inicial haciendo clic en el siguiente enlace:</p>
+    <p><a href="http:172.30.0.9:3000/recuperar-contrasena">Generar Contraseña Inicial</a></p>
     <p>¡Gracias por unirte!</p>
-  `,
+  `,*/
 
   solicitud: (viaje: any) => `
     <p>Hemos recibido tu solicitud de viaje con destino a <b>${viaje.punto_destino}</b>.</p>

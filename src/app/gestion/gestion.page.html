@@ -7,7 +7,7 @@
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
-        <ion-title>Gestión</ion-title>
+        <ion-title>Gestión de usuarios</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -119,7 +119,8 @@
             
             <div *ngIf="v.necesita_reemplazo === 'si'" class="reemplazo-info">
               <p><b>REQUIERE REEMPLAZO</b></p>
-              <p><b>Fecha Reemplazo:</b> {{ v.fecha_reemplazo | date:'dd/MM/yyyy' }}</p>
+              <p><b>Fecha Reemplazo:</b> {{ v.fecha_reemplazoInicio | date:'dd/MM/yyyy' }}</p>
+              <p><b>Fecha Término Reemplazo:</b> {{ v.fecha_reemplazoFin | date:'dd/MM/yyyy' }}</p>
               <p><b>Rev. Téc. Reemplazo:</b> {{ v.revision_tecnica_reemplazo | date:'dd/MM/yyyy' }}</p>
               <p><b>Marca Reemplazo:</b> {{ v.marca_reemplazo }} | <b>Modelo Reemplazo:</b> {{ v.modelo_reemplazo }} | <b>Año Reemplazo:</b> {{ v.ano_reemplazo }} | <b>Capacidad Reemplazo:</b> {{ v.capacidad_reemplazo ? 'Sí' : 'No' }}</p>
               <p><b>Justificación:</b> {{ v.justificacion_reemplazo }}</p>
@@ -185,10 +186,10 @@
                 <!--<ion-input label="Capacidad Reemplazo" label-placement="stacked" type="toggle" [value]="v.capacidad_reemplazo" (ionInput)="v.capacidad_reemplazo = $event.target.value"></ion-input>-->
               </ion-item>
               <ion-item>
-                <ion-input label="Fecha Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazo = $event.target.value"></ion-input>
+                <ion-input label="Fecha Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazoInicio | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazoInicio = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
-                <ion-input label="Fecha Termino de Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazoFin | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazo = $event.target.value"></ion-input>
+                <ion-input label="Fecha Termino de Reemplazo" label-placement="stacked" type="date" [value]="v.fecha_reemplazoFin | date:'yyyy-MM-dd'" (ionInput)="v.fecha_reemplazoFin = $event.target.value"></ion-input>
               </ion-item>
               <ion-item>
                 <ion-input label="Rev. Téc. Reemplazo" label-placement="stacked" type="date" [value]="v.revision_tecnica_reemplazo | date:'yyyy-MM-dd'" (ionInput)="v.revision_tecnica_reemplazo = $event.target.value"></ion-input>

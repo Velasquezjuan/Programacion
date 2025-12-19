@@ -122,7 +122,15 @@ export class RegistroVehiculoPage implements OnInit {
     async onSubmit() {
     if (this.registroForm.invalid) {
       this.registroForm.markAllAsTouched();
-      this.mostrarToast('Por favor, complete todos los campos requeridos.', 'danger');
+
+      console.log('--- ERRORES DE VALIDACIÓN LOCAL ---');
+      Object.keys(this.registroForm.controls).forEach(key => {
+      const control = this.registroForm.get(key);
+      if (control?.invalid) {
+        console.error(`Campo inválido: ${key}`, control.errors);
+      }
+    });
+      this.mostrarToast('Por favor, complete todos los campos requeridos.Revisa los campos marcados en rojo.', 'danger');
       return;
     }
 
@@ -143,7 +151,7 @@ export class RegistroVehiculoPage implements OnInit {
       patente: formValue.patente.toUpperCase(),
       marca: formValue.marca,
       modelo: formValue.modelo,
-      ano: new Date(formValue.anoVehiculo).getFullYear(),
+      ano: parseInt(formValue.anoVehiculo, 10),
       tipo_vehiculo: formValue.tipoVehiculo,
       capacidad: formValue.capacidad ? 1 : 0, 
       revision_tecnica: formValue.fechaRevision,
@@ -170,12 +178,23 @@ export class RegistroVehiculoPage implements OnInit {
         }
         this.registroForm.reset();
       },
-      error: (err: HttpErrorResponse) => {
-        console.error('Error al registrar vehículo:', err);
-        const errorMsg = err.error?.message || 'Error de conexión con el servidor.';
+     error: (err: HttpErrorResponse) => {
+      console.error('Error al registrar vehículo (Detalle):', err);
+      
+      let errorMsg = 'Error desconocido.';
+
+        if (err.error?.message) {
+            errorMsg = err.error.message;
+        } 
+        else if (err.error?.errors?.[0]?.msg) {
+            errorMsg = err.error.errors[0].msg;
+        }
+        else if (typeof err.error === 'string') {
+            errorMsg = err.error;
+        }
         this.mostrarToast(errorMsg, 'danger');
       }
-
+    
     });
   }
 
@@ -253,19 +272,6 @@ onRevSelectedSeguro(ev: any) {
   this.registroForm.patchValue({ seguroObligatorio: ev.detail.value });
 }
 
- /*onDateChange(event: any, controlName: string, pickerToClose: 'ano' | 'rev'| 'permiso' | 'seguro') {
- this.registroForm.get(controlName)?.setValue(event.detail.value);
-          /*if (pickerToClose === 'ano') {
-                this.isAnoPickerOpen = false;
-            } else 
-              if (pickerToClose === 'rev') {
-                this.isRevPickerOpen = false;
-            } else if (pickerToClose === 'permiso') {
-                this.isPermisoPickerOpen = false; 
-            } else if (pickerToClose === 'seguro') {
-                this.isSeguroPickerOpen = false; 
-            }
-    }*/
 
 onAnoChange(event: any) {
   const dateString = event.detail.value; 
@@ -279,11 +285,22 @@ onAnoChange(event: any) {
 onCentroChange(event: any) {
      const centroId = event.detail.value;
 
+     const estControls = ['centroSalud1', 'centroSalud2', 'centroEducacion', 'centroAtm'];
+    
+    estControls.forEach(controlName => {
+        const control = this.registroForm.get(controlName);
+        if (control) {
+            control.clearValidators();
+            control.setValue('');
+            control.updateValueAndValidity();
+        }
+    });
+
     // Resetear todo
     this.showSalud = false;
     this.showEducacion = false;
     this.showAtm = false;
-    const estControls = ['establecimientoSalud', 'establecimientoEducacion', 'establecimientoAtm'];
+    //const estControls = ['establecimientoSalud', 'establecimientoEducacion', 'establecimientoAtm'];
     estControls.forEach(controlName => {
         const control = this.registroForm.get(controlName);
         control?.clearValidators();
@@ -292,23 +309,21 @@ onCentroChange(event: any) {
     });
 
     // dejamos los 4 centros para realizar bien el registro.
-    if (centroId === 2) { // Salud
+   if (centroId === 2) { // Salud
       this.showSalud = true;
-      this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
-      this.registroForm.get('establecimientoSalud')?.setValidators([Validators.required]);
+      this.registroForm.get('centroSalud1')?.setValidators([Validators.required]);
+      this.registroForm.get('centroSalud1')?.updateValueAndValidity();
+      
     } else if (centroId === 3) { // Educación
       this.showEducacion = true;
-      this.establecimientosEducacion = this.centroServicio.obtenerEstablecimientos(centroId);
-      this.registroForm.get('establecimientoEducacion')?.setValidators([Validators.required]);
+      this.registroForm.get('centroEducacion')?.setValidators([Validators.required]);
+      this.registroForm.get('centroEducacion')?.updateValueAndValidity();
+
     } else if (centroId === 4) { // ATM
       this.showAtm = true;
-      this.establecimientosAtm = this.centroServicio.obtenerEstablecimientos(centroId);
-      this.registroForm.get('establecimientoAtm')?.setValidators([Validators.required]);
+      this.registroForm.get('centroAtm')?.setValidators([Validators.required]);
+      this.registroForm.get('centroAtm')?.updateValueAndValidity();
     }
-    /*
-    considerar que los centros estan guardados segun su id para la 
-    conversacion entren el front, backend y la bd
-    */
   }
 
 

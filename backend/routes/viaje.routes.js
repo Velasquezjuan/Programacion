@@ -15,7 +15,7 @@ const validateViaje = [
     body ('motivo').notEmpty().withMessage('el motivo del viaje es obligatorio.'),
     body ('ocupantes').notEmpty().withMessage('los ocupantes del viaje es obligatorio.'),
     body ('responsable').notEmpty().withMessage('el responsable del viaje es obligatorio.'),
-    body ('necesita_carga').isBoolean().withMessage('el campo necesita carga debe ser booleano.'),
+    body ('necesita_carga').isBoolean().withMessage('el campo necesita carga es obligatorio.'),
     body ('vehiculo_deseado').notEmpty().withMessage('el tipo de vehiculo deseado es obligatorio.'),
     body ('programa'),
 ];
@@ -29,7 +29,6 @@ const validateViajeMasivo = [
     body ('motivo').notEmpty().withMessage('el motivo del viaje es obligatorio.'),
     body ('ocupantes').notEmpty().withMessage('los ocupantes del viaje es obligatorio.'),
     body ('responsable').notEmpty().withMessage('el responsable del viaje es obligatorio.'),
-    body ('necesita_carga').isBoolean().withMessage('el campo necesita carga debe ser booleano.'),
     body ('vehiculo_deseado').notEmpty().withMessage('el tipo de vehiculo deseado es obligatorio.'),
     body ('programa'),
 ];

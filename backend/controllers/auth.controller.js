@@ -2,6 +2,7 @@ require('dotenv').config();
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const express = require('express');
 const router = express.Router(); 
 const nodemailer = require('nodemailer');
@@ -22,7 +23,7 @@ exports.register = async (req, res) => {
   apellido_paterno,
   apellido_materno,
   correo,
-  contrasena,
+  // contrasena,
   rol,
   area,
   centro,
@@ -42,8 +43,12 @@ exports.register = async (req, res) => {
       establecimientoIdFinal = centroId; 
     }
 
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenExpira = new Date(Date.now() + 20* 60 * 1000); // 24 horas para activarla
+    
+    const passTemporal = crypto.randomBytes(10).toString('hex');
     const salt = await bcrypt.genSalt(10);
-    const contrasenaHasheada = await bcrypt.hash(contrasena, salt);
+    const contrasenaHasheada = await bcrypt.hash(passTemporal, salt);
 
     const query = `INSERT INTO USUARIO (
     rut_usuario,
@@ -54,8 +59,9 @@ exports.register = async (req, res) => {
     contrasena,
     rol,
     area,
-    ESTABLECIMIENTO_idEstablecimiento
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)`;
+    ESTABLECIMIENTO_idEstablecimiento,
+    reset_token, reset_token_expira
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?)`;
     
     
  await db.query(query, [
@@ -67,8 +73,49 @@ exports.register = async (req, res) => {
   contrasenaHasheada,
   rol,
   area,
-  establecimientoIdFinal
+  establecimientoIdFinal,
+  token, tokenExpira
     ]);
+
+    const linkActivacion = `http://172.30.0.9:8100/nueva-contrasena?token=${token}`;
+
+    const mailOptions = {
+      from: `"GEMOVIL" <${process.env.EMAIL_USER}>`,
+      to: correo,
+      subject: 'Bienvenido - Activa tu cuenta',
+      html: 
+      `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+          
+          <div style="background-color: #3880ff; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">¡Bienvenido a GEMOVIL!</h1>
+          </div>
+
+          <div style="padding: 20px; line-height: 1.6; color: #333;">
+            <p style="font-size: 1.1em;">¡Hola, <b>${nombre}</b>!</p>
+            
+            <p>Bienvenido a GEMOVIL, el sistema para poder administrar tus viajes de la CMPA.</p>
+            <p>Estamos encantados de tenerte a bordo y esperamos que disfrutes de una experiencia fluida y eficiente al gestionar tus viajes con nosotros.</p>
+            <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.</p>
+            <p>Por su seguridad, genere su contraseña inicial haciendo clic en el siguiente enlace:</p>
+            
+            <div style="text-align:center; margin: 30px 0;">
+              <a href="${linkActivacion}" style="background-color: #3880ff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Crear Contraseña</a>
+            </div>
+            
+            <p style="font-size: 0.9em; color: #666;">⚠️ Por seguridad, este enlace expirará en 20 minutos.</p>
+            <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactar al administrador del sistema.</p>
+          </div>
+
+          <div style="background-color: #f4f4f4; color: #555; padding: 10px; text-align: center; font-size: 0.8em;">
+            <p style="margin: 0;">Este es un correo generado automáticamente por la aplicación Gemovil by jv.</p>
+          </div>
+
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.status(201).json({ message: 'Usuario registrado con éxito.' });
 
@@ -116,7 +163,7 @@ exports.login = async (req, res) => {
           idEstablecimiento: usuario.ESTABLECIMIENTO_idEstablecimiento
        },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '9h' }
       );
       return res.status(200).json({ token, usuario });
 
@@ -141,7 +188,7 @@ exports.login = async (req, res) => {
         
         try {
           const mailOptions = {
-            from: `"GECOVI" <${process.env.EMAIL_USER}>`,
+            from: `"GEMOVIL" <${process.env.EMAIL_USER}>`,
             to: usuario.correo,
             subject: 'Alerta de Seguridad: Su Cuenta Esta Bloqueada',
             html: `<p>Hola ${usuario.nombre},</p>

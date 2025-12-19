@@ -59,6 +59,19 @@
              <ion-card-content formArrayName="horarios">
                 <div *ngFor="let horario of horarios.controls; let i = index" class="schedule-row">
                   <div [formGroupName]="i" class="schedule-inputs">
+                    <ion-item class="full-width-item">
+                    <ion-select label="Asignar a Días" label-placement="stacked"  formControlName="fechasAsignadas" 
+                      [multiple]="true" placeholder="Seleccione días para este horario">
+                      <ion-select-option *ngFor="let dia of diasDisponiblesParaSelect" [value]="dia">
+                        {{ dia | date: 'dd/MM/yyyy' }}
+                      </ion-select-option>
+
+                    </ion-select>
+                  </ion-item>
+                  
+                  <div class="error-bubble" *ngIf="horario.get('fechasAsignadas')?.invalid && horario.get('fechasAsignadas')?.touched" style="width: 100%;">
+                    <small>* Debe asignar al menos un día a este horario.</small>
+                  </div>
                     
                     <ion-item><ion-input label="Hora Inicio" label-placement="stacked" type="time" formControlName="inicio" min="08:00" max="17:00"></ion-input></ion-item>
                     <ion-item><ion-input label="Hora Fin" label-placement="stacked" type="time" formControlName="fin" min="08:00" max="17:00"></ion-input></ion-item>
@@ -165,7 +178,7 @@
               </ion-card-content>
             </ion-card>
 
-            <ion-button expand="block" color="primary" type="submit" [disabled]="!planificacionForm.valid" class="ion-margin-top submit-button">Planificar Viajes</ion-button>
+            <ion-button fill="outline" color="primary" type="submit" [disabled]="!planificacionForm.valid" class="ion-margin-top submit-button">Planificar Viajes</ion-button>
           </ion-col>
         </ion-row>
       </ion-grid>

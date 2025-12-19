@@ -40,8 +40,8 @@ export class NuevaContrasenaPage implements OnInit {
     addIcons({ 'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline });
     
     this.passwordForm = this.fb.group({
-      contrasena: ['', [Validadores.contra, Validators.minLength(6)]],
-      confirmarContrasena: ['',  [Validadores.contra, Validators.minLength(6)]]
+      contrasena: ['', [Validadores.contra, Validators.minLength(8), Validators.maxLength(12)]],
+      confirmarContrasena: ['',  [Validadores.contra, Validators.minLength(6), Validators.maxLength(12)]]
     }, {
       validators: this.passwordMatchValidator 
     });

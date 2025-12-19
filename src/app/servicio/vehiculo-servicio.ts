@@ -49,7 +49,7 @@ private getAuthHeaders(): Observable<HttpHeaders> {
       ),
       catchError(error => {
         console.error('Error al registrar vehículo en la API:', error);
-        return throwError(() => new Error(error.error?.message || 'Error de conexión con el servidor.'));
+        return throwError(() => error);
       })
     );
   }

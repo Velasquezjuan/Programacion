@@ -12,7 +12,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-console.log('✅ Conexión con la base de datos MySQL establecida.');
+console.log(' ♪ Conexión con la base de datos MySQL establecida.');
 
 module.exports = pool;
 

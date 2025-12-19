@@ -44,7 +44,7 @@ app.post('/api/notificaciones', (req, res) => {
   }
 
   const mailOptions = {
-    from: `"GECOVI" <${process.env.EMAIL_USER}>`, 
+    from: `"GEMOVIL" <${process.env.EMAIL_USER}>`, 
     to: destinatario,
     subject: asunto,
     html: cuerpoHtml,

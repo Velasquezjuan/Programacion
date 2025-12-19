@@ -217,8 +217,9 @@ exports.createViajeMasivo = async (req, res) => {
 
   try {
     const {
-      fecha_viaje, hora_inicio, punto_salida, punto_destino, vehiculo_patente,
-      motivo, ocupantes, programa, responsable, necesita_carga, vehiculo_deseado, estado
+      fecha_viaje, hora_inicio, punto_salida, punto_destino, 
+      vehiculo_patente, motivo, ocupantes, programa, responsable, 
+       vehiculo_deseado, estado
     } = req.body;
 
 
@@ -231,12 +232,12 @@ exports.createViajeMasivo = async (req, res) => {
     const query = `
       INSERT INTO VIAJE_MASIVO (
         fecha_viaje, hora_inicio, punto_salida, punto_destino,vehiculo_patente,
-        motivo, ocupantes, PROGRAMA_id_programa, solicitante_rut_usuario, responsable, necesita_carga, vehiculo_deseado, estado
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
+        motivo, ocupantes, PROGRAMA_id_programa, solicitante_rut_usuario, responsable, vehiculo_deseado, estado
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
     const [result] = await db.query(query, [
       fecha_viaje, hora_inicio, punto_salida, punto_destino,vehiculo_patente,
-      motivo, ocupantes, programa, solicitante_rut, responsable, necesita_carga, vehiculo_deseado, estado 
+      motivo, ocupantes, programa, solicitante_rut, responsable,  vehiculo_deseado, estado 
     ]);
 
  const nuevoViajeId = result.insertId;

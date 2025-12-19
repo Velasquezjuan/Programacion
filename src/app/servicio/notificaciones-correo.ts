@@ -20,12 +20,12 @@ private apiUrl = `${environment.apiUrl}api/notificaciones`;
     });
   }
 
-  public enviarCorreoBienvenida(email: string, nombre: string) {
+  /*public enviarCorreoBienvenida(email: string, nombre: string) {
     const asunto = '¡Bienvenido a nuestra aplicación!';
     const contenido = PlantillasCorreo.bienvenida(nombre);
     const cuerpoHtml = PlantillasCorreo.base('¡Bienvenido!', contenido);
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
-  }
+  }*/
 
   public enviarCorreoVehiculoRegistrado(email: string, patente: string) {
     const asunto = `¡Tu vehículo ${patente} ha sido registrado con éxito!`;

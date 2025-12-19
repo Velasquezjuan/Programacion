@@ -91,7 +91,6 @@ exports.getVehiculosConConductores = async ( req, res ) => {
       FROM VEHICULO v
       JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo 
       JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
-      /* JOIN para filtrar por establecimiento */
       LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
       WHERE 1=1
     `;
@@ -141,14 +140,13 @@ exports.getVehiculosConDetalles = async (req, res) => {
         v.capacidad_reemplazo,
         v.fecha_reemplazoFin,
         v.autorizacion_reemplazo, 
-        v.fecha_reemplazo,
+        v.fecha_reemplazoInicio,
         tv.nombre_tipoVehiculo as tipoVehiculo,
         c.nombre_proveedor as responsable,
         c.fecha_termino as fecha_contrato
       FROM VEHICULO v
       LEFT JOIN TIPO_VEHICULO tv ON v.TIPO_VEHICULO_id_tipoVehiculo = tv.id_tipoVehiculo 
       LEFT JOIN CONTRATO c ON v.patente = c.VEHICULO_patente
-      /* JOIN para filtrar por establecimiento */
       LEFT JOIN VEHICULO_has_ESTABLECIMIENTO vhe ON v.patente = vhe.VEHICULO_patente
       WHERE 1=1
     `;
@@ -176,8 +174,8 @@ exports.updateVehiculo = async (req, res) => {
   try {
     const { patente } = req.params;
     const fields = req.body; 
-  if (fields.fecha_reemplazo) {
-      fields.fecha_reemplazo = new Date(fields.fecha_reemplazo).toISOString().split('T')[0];
+  if (fields.fecha_reemplazoInicio) {
+      fields.fecha_reemplazoInicio = new Date(fields.fecha_reemplazoInicio).toISOString().split('T')[0];
     }
     if (fields.revision_tecnica_reemplazo) {
       fields.revision_tecnica_reemplazo = new Date(fields.revision_tecnica_reemplazo).toISOString().split('T')[0];

@@ -113,7 +113,7 @@ export class RegistroUsuarioPage implements OnInit {
       apellidoMaterno: ['', Validators.compose([Validators.required, Validadores.soloTexto])],
       rut: ['', Validators.compose([Validators.required, Validadores.validarRut])],
       correo: ['', Validators.compose([Validators.required, Validadores.correoValido])],
-      contrasena: ['', Validators.compose([Validators.required, Validadores.contra])],
+      //contrasena: ['', Validators.compose([Validators.required, Validadores.contra])],
       cargo: ['', Validators.required], 
       centro: ['', Validators.required],
       establecimiento: [''],
@@ -159,7 +159,7 @@ export class RegistroUsuarioPage implements OnInit {
       apellido_paterno: f.apellidoPaterno,
       apellido_materno: f.apellidoMaterno,
       correo: f.correo,
-      contrasena: f.contrasena,
+      //contrasena: f.contrasena,
       rol: f.cargo,
       area: f.areaDesempeno,
       centro: f.centro,
@@ -168,7 +168,7 @@ export class RegistroUsuarioPage implements OnInit {
 
      this.auth.registrarUsuario(nuevoUsuario).subscribe({
       next: () => {
-        this.notificaciones.enviarCorreoBienvenida(nuevoUsuario.correo, nuevoUsuario.nombre);
+      //  this.notificaciones.enviarCorreoBienvenida(nuevoUsuario.correo, nuevoUsuario.nombre);
         this.mostrarToast('¡Usuario registrado con éxito!', 'success');
         this.registroForm.reset();
       },
@@ -241,26 +241,6 @@ onCentroChange(event: any) {
       this.establecimientosAtm = this.centroServicio.obtenerEstablecimientos(centroId);
       this.registroForm.get('establecimientoAtm')?.setValidators([Validators.required]);
     }
-    /*
-    considerar que los centros estan guardados segun su id para la 
-    conversacion entren el front, backend y bd 
-    */
-
-   /* this.showSalud = false;
-    this.showEducacion = false;
-    this.showAtm = false;
-    
-    const estControl = this.registroForm.get('establecimiento');
-    estControl?.setValue(''); 
-    estControl?.clearValidators(); 
-
-
-    if (centroId === 2) { 
-      this.showSalud = true;
-      this.establecimientosSalud = this.centroServicio.obtenerEstablecimientos(centroId);
-      estControl?.setValidators([Validators.required]);
-    }
-    estControl?.updateValueAndValidity();*/
   }
 
 

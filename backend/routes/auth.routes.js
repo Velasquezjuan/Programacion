@@ -10,7 +10,7 @@ const validateUser = [
   body('apellido_paterno').notEmpty().withMessage('El apellido paterno es obligatorio.'),
   body('apellido_materno').notEmpty().withMessage('El apellido materno es obligatorio.'),
   body('correo').isEmail().withMessage('El correo debe ser un email válido.'),
-  body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  //body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
   body('rol').notEmpty().withMessage('El rol es obligatorio.'),
   body('area').notEmpty().withMessage('El área es obligatoria.'),
   body('centro').isInt({ min: 1 }).withMessage('Debe seleccionar un centro válido.'),
