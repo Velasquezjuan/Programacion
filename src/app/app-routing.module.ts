@@ -112,6 +112,10 @@ const routes: Routes = [
     path: 'nueva-contrasena',
     loadComponent: () => import('./nueva-contrasena/nueva-contrasena.page').then( m => m.NuevaContrasenaPage)
   },
+    {
+    path: 'recuperar-contrasena',
+    loadComponent: () => import('./recuperar-contrasena/recuperar-contrasena.page').then( m => m.RecuperarContrasenaPage)
+  },
   {
     path: 'programacion',
     loadComponent: () => import('./programacion/programacion.page').then( m => m.ProgramacionPage)

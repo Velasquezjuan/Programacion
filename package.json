@@ -1,7 +1,10 @@
 {
-  "name": "cmpaappmov",
-  "version": "0.0.0",
-  "author": "Ionic Framework",
+  "name": "gecovi-app",
+  "version": "1.0.0",
+  "description": "Sistema de Control de Flota y Viajes",
+  "main": "server.js",
+  "author": "Juan Velasquez <juaveloc@gmail.com>",  
+  "license": "UNLICENSED",
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",

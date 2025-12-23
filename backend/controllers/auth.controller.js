@@ -1,3 +1,15 @@
+/**
+ * ============================================================================
+ * PROYECTO: GECOVI (Gestión de Control de Viajes)
+ * DESARROLLADO POR: Juan Velasquez
+ * FECHA DE CREACIÓN: 2024-2025
+ * ============================================================================
+ * Este código es propiedad intelectual de Juan Velasquez.
+ * Prohibida su distribución o copia sin autorización.
+ * Lo hice para mi examen de titulo y que si me salio CTM AJAJ
+ * ============================================================================
+ */
+
 require('dotenv').config();
 const db = require('../db');
 const bcrypt = require('bcryptjs');
@@ -44,7 +56,7 @@ exports.register = async (req, res) => {
     }
 
     const token = crypto.randomBytes(32).toString('hex');
-    const tokenExpira = new Date(Date.now() + 20* 60 * 1000); // 24 horas para activarla
+    const tokenExpira = new Date(Date.now() + 20* 60 * 1000); // 20 minutos de expiración
     
     const passTemporal = crypto.randomBytes(10).toString('hex');
     const salt = await bcrypt.genSalt(10);
@@ -77,7 +89,7 @@ exports.register = async (req, res) => {
   token, tokenExpira
     ]);
 
-    const linkActivacion = `http://172.30.0.9:8100/nueva-contrasena?token=${token}`;
+    const linkActivacion = `http://localhost:8100/nueva-contrasena?token=${token}`;
 
     const mailOptions = {
       from: `"GEMOVIL" <${process.env.EMAIL_USER}>`,

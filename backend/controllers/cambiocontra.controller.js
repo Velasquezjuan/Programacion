@@ -1,3 +1,14 @@
+/**
+ * ============================================================================
+ * PROYECTO: GECOVI (Gestión de Control de Viajes)
+ * DESARROLLADO POR: Juan Velasquez
+ * FECHA DE CREACIÓN: 2024-2025
+ * ============================================================================
+ * Este código es propiedad intelectual de Juan Velasquez.
+ * Prohibida su distribución o copia sin autorización.
+ * Lo hice para mi examen de titulo y que si me salio CTM AJAJ
+ * ============================================================================
+ */
 const db = require('../db');
 const crypto = require('crypto'); 
 const bcrypt = require('bcryptjs');
@@ -28,16 +39,38 @@ exports.solicitarReseteo = async (req, res) => {
 
     await db.query('UPDATE USUARIO SET reset_token = ?, reset_token_expira = ? WHERE rut_usuario = ?', [token, expira, rut]);
 
-    const resetLink = `http://172.30.0.9:3000/nueva-contrasena?token=${token}`;
+    const resetLink = `http://localhost:8100/nueva-contrasena?token=${token}`; // Cambiar por la URL real del frontend  http://172.30.0.9:3000/ la ruta tambien puede cambiar segun lo que nos entregen
 
     const mailOptions = {
-      from: `"GECOVI" <${process.env.EMAIL_USER}>`,
+      from: `"GEMOVIL" <${process.env.EMAIL_USER}>`,
       to: usuario.correo,
-      subject: 'Recuperación de Contraseña - GECOVI',
-      html: `<p>Hola ${usuario.nombre},</p>
+      subject: 'Recuperación de Contraseña - GEMOVIL',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+          
+          <div style="background-color: #3880ff; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">Solicitud de Recuperación de Contraseña</h1>
+          </div>
+
+          <div style="padding: 20px; line-height: 1.6; color: #333;">
+            <p style="font-size: 1.1em;">¡Hola!</p>
+            
              <p>Recibimos una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
-             <a href="${resetLink}">Restablecer Contraseña</a>
-             <p>Si no solicitaste esto, por favor ignora este correo.</p>`
+            
+            <div style="text-align:center; margin: 30px 0;">
+              <a href="${resetLink}" style="background-color: #3880ff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Restablecer Contraseña</a>
+            </div>
+            
+            <p style="font-size: 0.9em; color: #666;">⚠️ Por seguridad, este enlace expirará en 20 minutos.</p>
+           <p>Si no solicitaste esto, por favor ignora este correo.</p>
+          </div>
+
+          <div style="background-color: #f4f4f4; color: #555; padding: 10px; text-align: center; font-size: 0.8em;">
+            <p style="margin: 0;">Este es un correo generado automáticamente por la aplicación Gemovil by jv.</p>
+          </div>
+
+        </div>
+      `
     };
 
     await transporter.sendMail(mailOptions);

@@ -1,3 +1,14 @@
+/**
+ * ============================================================================
+ * PROYECTO: GECOVI (Gestión de Control de Viajes)
+ * DESARROLLADO POR: Juan Velasquez
+ * FECHA DE CREACIÓN: 10 DE MARZO DEL 2025
+ * ============================================================================
+ * Este código es propiedad intelectual de Juan Velasquez.
+ * Prohibida su distribución o copia sin autorización.
+ * Lo hice para mi examen de titulo y que si me salio CTM AJAJ
+ * ============================================================================
+ */
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
