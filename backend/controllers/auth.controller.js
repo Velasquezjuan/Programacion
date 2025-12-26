@@ -217,7 +217,7 @@ exports.login = async (req, res) => {
       } else {
         const intentosRestantes = MAX_INTENTOS - nuevosIntentos;
         const mensaje = `Correo o contraseña incorrectos. Quedan ${intentosRestantes} ${intentosRestantes === 1 ? 'intento' : 'intentos'}.`;
-        return res.status(401).json({ message: mensaje });
+        return res.status(400).json({ message: mensaje });
       }
     }
 

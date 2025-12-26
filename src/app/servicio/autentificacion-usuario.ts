@@ -78,8 +78,10 @@ export interface NuevoUsuario {
         this.autoLogout(token);
         this.iniciarDeteccionInactividad();
     } else {
+        await Memorialocal.eliminarValor('token');
+        await Memorialocal.eliminarValor('usuarioActivo');
+        this.usuarioActivoSubject.next(null);
       
-        this.logout(null); 
     }
   }
 
@@ -134,8 +136,16 @@ export interface NuevoUsuario {
     await Memorialocal.eliminarValor('usuarioActivo');
     this.usuarioActivoSubject.next(null);
 
-    //  Redirigimos INMEDIATAMENTE al login
-    this.router.navigate(['/login']);
+    const urlActual = this.router.url;
+    
+    // vistas fuera de la guardia
+    const esPaginaPublica = urlActual.includes('nueva-contrasena') || 
+                            urlActual.includes('recuperar-contrasena') || 
+                            urlActual.includes('registro-usuario');
+
+    if (!esPaginaPublica) {
+        this.router.navigate(['/login']);
+    }
 
     //  Mostramos mensaje si existe
     if (mensaje) {

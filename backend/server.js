@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer'); 
+const path = require('path'); // Necesario para manejar rutas de archivos estáticos
 
 // Tus rutas existentes
 const vehiculoRoutes = require('./routes/vehiculo.routes');
@@ -20,8 +21,13 @@ app.use('/api/viajes', viajeRoutes);
 app.use('/api/gestion', require('./routes/gestion.routes'));
 app.use('/api/bitacora', bitacoraRoutes);
 app.use('/api/cambiocontra', cambiocontraRoutes);
+app.use(express.static(path.join(__dirname, 'www'))); // Servir archivos estáticos desde la carpeta 'www'
 
 
+// Manejar todas las demás rutas para servir el archivo index.html (para aplicaciones SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'www', 'index.html'));
+});
 
 // --- Lógica de Notificaciones por Correo ---
 
