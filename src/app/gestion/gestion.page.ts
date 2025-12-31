@@ -133,6 +133,7 @@ cancelarEdicionUsuario() { this.usuarioEditandoRut = null; this.cargarDatos(); }
   
   const datosActualizar = {
     nombre: usuario.nombre,
+    apellido_paterno: usuario.apellido_paterno,
     rol: usuario.rol,
     area: usuario.area,
     ESTABLECIMIENTO_idEstablecimiento: usuario.ESTABLECIMIENTO_idEstablecimiento

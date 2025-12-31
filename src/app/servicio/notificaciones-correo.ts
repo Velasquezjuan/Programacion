@@ -41,7 +41,7 @@ private apiUrl = `${environment.apiUrl}api/notificaciones`;
     this.enviarPeticionCorreo({ destinatario: email, asunto, cuerpoHtml });
   }
 
-  public enviarCorreoAceptacion(email: string, viaje: any) {
+  public enviarCorreoAceptacion(email: string, viaje: any, ) {
     const asunto = `¡Tu viaje #${viaje.id_viaje} ha sido aceptado!`;
     const contenido = PlantillasCorreo.aceptacion(viaje);
     const cuerpoHtml = PlantillasCorreo.base('¡Viaje Aceptado!', contenido);

@@ -154,24 +154,22 @@
 
             <ion-col size="6">
               <ion-item [class.ion-invalid]="registroForm.get('hora')?.invalid && registroForm.get('hora')?.touched">
-                <ion-label position="floating">Hora</ion-label>
+                <ion-label position="floating">Hora Inicio de Viaje</ion-label>
                 <ion-input type="time" formControlName="hora"></ion-input>
               </ion-item>
               <div class="error-bubble" *ngIf="registroForm.get('hora')?.invalid && registroForm.get('hora')?.touched">
-                <small>* Requerida.</small>
+                <small>* Horario de inicio del viaje</small>
               </div>
             </ion-col>
 
             <ion-col size="12">
-              <ion-item [class.ion-invalid]="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched">
-                <ion-label position="floating">Tiempo Uso (Horas)</ion-label>
-                <ion-input type="number" formControlName="tiempoUso"></ion-input>
+              <ion-item [class.ion-invalid]="registroForm.get('hora_termino')?.invalid && registroForm.get('hora_termino')?.touched">
+                <ion-label position="floating">Hora Termino de viaje</ion-label>
+                <ion-input type="time" formControlName="hora_termino"></ion-input>
               </ion-item>
               
-              <div class="error-bubble" *ngIf="registroForm.get('tiempoUso')?.invalid && registroForm.get('tiempoUso')?.touched">
-                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['required']">* Tiempo obligatorio.</small>
-                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['min']">* Mínimo 1 hora.</small>
-                <small *ngIf="registroForm.get('tiempoUso')?.errors?.['max']">* Máximo 12 horas.</small>
+              <div class="error-bubble" *ngIf="registroForm.get('hora_termino')?.invalid && registroForm.get('hora_termino')?.touched">
+                <small>* Horario de termino del viaje</small>
               </div>
             </ion-col>
 

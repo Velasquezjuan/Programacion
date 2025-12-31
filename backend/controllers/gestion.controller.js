@@ -59,13 +59,14 @@ exports.updateUsuario = async (req, res) => {
   try {
     const { rut } = req.params;
     const { 
-      nombre, rol, activo, area,ESTABLECIMIENTO_idEstablecimiento
+      nombre, apellido_paterno, rol, activo, area,ESTABLECIMIENTO_idEstablecimiento
       } = req.body;
 
    
     let query = 'UPDATE USUARIO SET ';
     const params = [];
     if (nombre !== undefined) { query += 'nombre = ?, '; params.push(nombre); }
+    if (apellido_paterno !== undefined) { query += 'apellido_paterno = ?, '; params.push(apellido_paterno); }
     if (rol !== undefined) { query += 'rol = ?, '; params.push(rol); }
     if (activo !== undefined) { query += 'activo = ?, '; params.push(activo); }
     if (area !== undefined) { query += 'area = ?, '; params.push(area); }

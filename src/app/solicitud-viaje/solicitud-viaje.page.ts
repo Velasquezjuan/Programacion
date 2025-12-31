@@ -109,7 +109,7 @@ export class SolicitudViajePage implements OnInit {
       necesita_carga:[false],
       fecha: ['', Validators.required],
       hora: ['', Validators.required],
-      tiempoUso: ['', Validators.required],
+      hora_termino: ['', Validators.required],
       vehiculo_deseado: ['', Validators.required],
       programa: ['',Validators.required],
       ocupantes: ['', [Validators.required, Validators.min(1)]],
@@ -221,7 +221,7 @@ export class SolicitudViajePage implements OnInit {
       break;
   }
 
-  //console.log('Tipo seleccionado:', tipo, '| Max ocupantes:', this.maxOcupantes); // <-- Agrega esto para depurar
+  //console.log('Tipo seleccionado:', tipo, '| Max ocupantes:', this.maxOcupantes); 
 
   const ocupantesControl = this.registroForm.get('ocupantes');
   if (ocupantesControl) {
@@ -283,6 +283,7 @@ export class SolicitudViajePage implements OnInit {
       fechaRegistro: new Date().toISOString()*/
       fecha_viaje: v.fecha,
       hora_inicio: v.hora,
+      hora_fin: v.hora_termino,
       punto_salida: this.obtenerTextoUbicacion(v.puntoSalida, v),
       punto_destino: this.obtenerTextoUbicacion(v.puntoDestino, v, false),
       motivo: v.motivo,

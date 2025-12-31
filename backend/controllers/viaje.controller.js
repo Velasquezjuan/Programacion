@@ -11,6 +11,63 @@
  */
 const db = require('../db');
 
+// --- FUNCION AUXILIAR PARA CONTROLAR LOS VEHICULOS ASIGNADOS A VIAJES ---
+async function verificarDisponibilidad(patente, fecha, horaInicio, horaFin, idViajeIgnorar = null) {
+    // revisamos la tabla viaje y viaje masivo para ver si el vehiculo esta ocupado
+      let queryNormal = `
+        SELECT id_viaje FROM VIAJE 
+        WHERE vehiculo_patente = ? 
+        AND fecha_viaje = ? 
+        AND estado IN ('aprobado', 'en_curso', 'finalizado', 'Agendado', 'agendado') 
+        AND (hora_inicio < ? AND hora_fin > ?)
+    `;
+    
+    const paramsNormal = [patente, fecha, horaFin, horaInicio];
+
+    // Si estamos editando un viaje, no debemos contar el mismo viaje como conflicto
+    if (idViajeIgnorar) {
+        queryNormal += ` AND id_viaje != ?`;
+        paramsNormal.push(idViajeIgnorar);
+    }
+
+    const [normales] = await db.query(queryNormal, paramsNormal);
+    if (normales.length > 0) return false; // vehiculo ocupado en viajes nomales ojo solo los normales
+
+    // revisamos la tala de viajes masivos
+    let queryMasivo = `
+        SELECT id_viaje FROM VIAJE_MASIVO 
+        WHERE vehiculo_patente = ? 
+        AND fecha_viaje = ? 
+        AND estado IN ('aprobado', 'en_curso', 'finalizado', 'pendiente')
+        AND (hora_inicio < ? AND hora_fin > ?)
+    `;
+    
+    const paramsMasivo = [patente, fecha, horaFin, horaInicio];
+    
+    // opcion para ignorar los viajes editados
+    if (idViajeIgnorar) {
+        queryMasivo += ` AND id_viaje != ?`;
+        paramsMasivo.push(idViajeIgnorar);
+    }
+
+    const [masivos] = await db.query(queryMasivo, paramsMasivo);
+    if (masivos.length > 0) return false; // vehiculo ocupado solo en  viajes masivos ojo solo viajes masivos
+
+    return true;
+}
+
+// --- VERIFICAR DISPONIBILIDAD DE UN VEHÍCULO PARA UN VIAJE ---
+exports.verificarDisponibilidadVehiculo = async (req, res) => {
+    try {
+        const { patente, fecha_viaje, hora_inicio, hora_fin, id_viaje } = req.body;
+        const disponible = await verificarDisponibilidad(patente, fecha_viaje, hora_inicio, hora_fin, id_viaje || null);
+        res.status(200).json({ disponible });
+    } catch (error) {
+        console.error('Error al verificar disponibilidad del vehículo:', error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+};
+
 // --- OBTENER TODOS LOS VIAJES ---
 exports.getViajes = async (req, res) => {
 try {
@@ -66,7 +123,7 @@ exports.createViaje = async (req, res) => {
 
   try {
     const {
-      fecha_viaje, hora_inicio, punto_salida, punto_destino,
+      fecha_viaje, hora_inicio, hora_fin, punto_salida, punto_destino,
       motivo, ocupantes, programa, responsable, necesita_carga, vehiculo_deseado
     } = req.body;
 
@@ -79,12 +136,13 @@ exports.createViaje = async (req, res) => {
 
     const query = `
       INSERT INTO VIAJE (
-        fecha_viaje, hora_inicio, punto_salida, punto_destino,
+        fecha_viaje, hora_inicio, hora_fin, punto_salida, punto_destino,
         motivo, ocupantes, PROGRAMA_id_programa, solicitante_rut_usuario, responsable, necesita_carga, vehiculo_deseado
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
+
     const [result] = await db.query(query, [
-      fecha_viaje, hora_inicio, punto_salida, punto_destino,
+      fecha_viaje, hora_inicio, hora_fin , punto_salida, punto_destino,
       motivo, ocupantes, programa, solicitante_rut, responsable, necesita_carga, vehiculo_deseado
     ]);
 
@@ -131,6 +189,40 @@ exports.updateEstadoViaje = async (req, res) => {
         const { id_viaje } = req.params;
         const { estado, motivo_rechazo, motivo_reagendamiento, vehiculo_patente, fecha_viaje,
            hora_inicio, justificativo_no_realizado, motivo_rechazoReagendamiento } = req.body;
+
+           if (estado === 'aprobado' || estado === 'Agendado' || (estado === 'pendiente' && vehiculo_patente)) {
+            
+            // Recuperamos datos actuales de la DB por si no vienen en el body
+            let fechaCheck = fecha_viaje;
+            let horaInicioCheck = hora_inicio;
+            let horaFinCheck = null; 
+
+            const [viajeActual] = await db.query('SELECT * FROM VIAJE WHERE id_viaje = ?', [id_viaje]);
+            if (!viajeActual.length) return res.status(404).json({ message: 'Viaje no encontrado' });
+
+            // Rellenamos datos faltantes con lo que ya existe en la DB
+            fechaCheck = fechaCheck || viajeActual[0].fecha_viaje;
+            horaInicioCheck = horaInicioCheck || viajeActual[0].hora_inicio;
+            horaFinCheck = viajeActual[0].hora_fin; 
+            const patenteCheck = vehiculo_patente || viajeActual[0].vehiculo_patente;
+
+            // Validamos si hay patente para chequear
+            if (patenteCheck) {
+                const disponible = await verificarDisponibilidad(
+                    patenteCheck, 
+                    fechaCheck, 
+                    horaInicioCheck, 
+                    horaFinCheck, 
+                    id_viaje 
+                );
+
+                if (!disponible) {
+                    return res.status(409).json({ 
+                        message: 'CONFLICTO: El vehículo seleccionado ya está ocupado en ese horario.' 
+                    });
+                }
+            }
+        }
 
         let query = 'UPDATE VIAJE SET estado = ?';
         const params = [estado];
@@ -228,7 +320,7 @@ exports.createViajeMasivo = async (req, res) => {
 
   try {
     const {
-      fecha_viaje, hora_inicio, punto_salida, punto_destino, 
+      fecha_viaje, hora_inicio, hora_fin, punto_salida, punto_destino, 
       vehiculo_patente, motivo, ocupantes, programa, responsable, 
        vehiculo_deseado, estado
     } = req.body;
@@ -239,15 +331,25 @@ exports.createViajeMasivo = async (req, res) => {
     if (!solicitante_rut) {
         return res.status(403).json({ message: 'No se pudo identificar al solicitante desde el token.' });
     }
+    // Verificar disponibilidad del vehículo si se asigna uno
+    if (vehiculo_patente) {
+        const disponible = await verificarDisponibilidad(vehiculo_patente, fecha_viaje, hora_inicio, hora_fin);
+        
+        if (!disponible) {
+            return res.status(409).json({ 
+                message: 'CONFLICTO: El vehículo ya tiene un viaje asignado que choca con este horario.' 
+            });
+        }
+    }
 
     const query = `
       INSERT INTO VIAJE_MASIVO (
-        fecha_viaje, hora_inicio, punto_salida, punto_destino,vehiculo_patente,
+        fecha_viaje, hora_inicio, hora_fin, punto_salida, punto_destino,vehiculo_patente,
         motivo, ocupantes, PROGRAMA_id_programa, solicitante_rut_usuario, responsable, vehiculo_deseado, estado
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
     const [result] = await db.query(query, [
-      fecha_viaje, hora_inicio, punto_salida, punto_destino,vehiculo_patente,
+      fecha_viaje, hora_inicio, hora_fin, punto_salida, punto_destino,vehiculo_patente,
       motivo, ocupantes, programa, solicitante_rut, responsable,  vehiculo_deseado, estado 
     ]);
 
